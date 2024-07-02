@@ -1,0 +1,381 @@
+match_id_skillcorner,match_id_statsbomb,time_skillcorner,match_date_statsbomb,home_team_skillcorner,home_team_short_skillcorner,home_team_statsbomb,away_team_skillcorner,away_team_short_skillcorner,away_team_statsbomb
+1553748,3894907,2024-05-26T19:00:00Z,2024-05-26,Sevilla FC,Sevilla FC,Sevilla,FC Barcelona,FC Barcelona,Barcelona
+1553749,3894901,2024-05-26T14:15:00Z,2024-05-26,RC Celta de Vigo,Celta Vigo,Celta Vigo,Valencia CF,Valencia CF,Valencia
+1553750,3894905,2024-05-26T14:15:00Z,2024-05-26,UD Las Palmas,UD Las Palmas,Las Palmas,Deportivo Alavés,Alavés,Deportivo Alavés
+1553751,3894902,2024-05-26T12:00:00Z,2024-05-26,Getafe CF,Getafe CF,Getafe,RCD Mallorca,RCD Mallorca,Mallorca
+1552423,3894906,2024-05-25T19:00:00Z,2024-05-25,Real Madrid CF,Real Madrid,Real Madrid,Real Betis Balompié,Betis Balompié,Real Betis
+1551745,3894900,2024-05-25T16:30:00Z,2024-05-25,UD Almería,UD Almería,Almería,Cadiz CF,CF Cadiz,Cádiz
+1551746,3894899,2024-05-25T16:30:00Z,2024-05-25,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1551747,3894908,2024-05-25T14:15:00Z,2024-05-25,Real Sociedad,Real Sociedad,Real Sociedad,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1551748,3894904,2024-05-25T12:00:00Z,2024-05-25,CA Osasuna,CA Osasuna,Osasuna,Villarreal CF,Villarreal CF,Villarreal
+1551117,3894903,2024-05-24T19:00:00Z,2024-05-24,Girona FC,Girona,Girona,Granada CF,Granada CF,Granada
+1543042,3894898,2024-05-19T17:00:00Z,2024-05-19,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Sevilla FC,Sevilla FC,Sevilla
+1543043,3894897,2024-05-19T17:00:00Z,2024-05-19,Atlético Madrid,Atlético Madrid,Atlético Madrid,CA Osasuna,CA Osasuna,Osasuna
+1543044,3894896,2024-05-19T17:00:00Z,2024-05-19,FC Barcelona,FC Barcelona,Barcelona,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1543045,3894895,2024-05-19T17:00:00Z,2024-05-19,Real Betis Balompié,Betis Balompié,Real Betis,Real Sociedad,Real Sociedad,Real Sociedad
+1543046,3894889,2024-05-19T17:00:00Z,2024-05-19,Cadiz CF,CF Cadiz,Cádiz,UD Las Palmas,UD Las Palmas,Las Palmas
+1543047,3894893,2024-05-19T17:00:00Z,2024-05-19,RCD Mallorca,RCD Mallorca,Mallorca,UD Almería,UD Almería,Almería
+1543048,3894892,2024-05-19T17:00:00Z,2024-05-19,Granada CF,Granada CF,Granada,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1543049,3894891,2024-05-19T17:00:00Z,2024-05-19,Valencia CF,Valencia CF,Valencia,Girona FC,Girona,Girona
+1543050,3894890,2024-05-19T17:00:00Z,2024-05-19,Villarreal CF,Villarreal CF,Villarreal,Real Madrid CF,Real Madrid,Real Madrid
+1540744,3894894,2024-05-18T19:00:00Z,2024-05-18,Deportivo Alavés,Alavés,Deportivo Alavés,Getafe CF,Getafe CF,Getafe
+1538129,3894881,2024-05-16T20:00:00Z,2024-05-16,Real Sociedad,Real Sociedad,Real Sociedad,Valencia CF,Valencia CF,Valencia
+1538130,3894879,2024-05-16T19:30:00Z,2024-05-16,UD Almería,UD Almería,Almería,FC Barcelona,FC Barcelona,Barcelona
+1538131,3894885,2024-05-16T17:30:00Z,2024-05-16,UD Las Palmas,UD Las Palmas,Las Palmas,Real Betis Balompié,Betis Balompié,Real Betis
+1535933,3894882,2024-05-15T20:00:00Z,2024-05-15,RC Celta de Vigo,Celta Vigo,Celta Vigo,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1535934,3894883,2024-05-15T20:00:00Z,2024-05-15,Getafe CF,Getafe CF,Getafe,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1535935,3894886,2024-05-15T17:30:00Z,2024-05-15,Sevilla FC,Sevilla FC,Sevilla,Cadiz CF,CF Cadiz,Cádiz
+1535936,3894888,2024-05-15T17:30:00Z,2024-05-15,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Granada CF,Granada CF,Granada
+1534699,3894880,2024-05-14T20:00:00Z,2024-05-14,Girona FC,Girona,Girona,Villarreal CF,Villarreal CF,Villarreal
+1534700,3894884,2024-05-14T19:30:00Z,2024-05-14,Real Madrid CF,Real Madrid,Real Madrid,Deportivo Alavés,Alavés,Deportivo Alavés
+1534094,3894887,2024-05-14T17:30:00Z,2024-05-14,CA Osasuna,CA Osasuna,Osasuna,RCD Mallorca,RCD Mallorca,Mallorca
+1532852,3894872,2024-05-13T19:00:00Z,2024-05-13,FC Barcelona,FC Barcelona,Barcelona,Real Sociedad,Real Sociedad,Real Sociedad
+1530716,3894875,2024-05-12T19:00:00Z,2024-05-12,Real Betis Balompié,Betis Balompié,Real Betis,UD Almería,UD Almería,Almería
+1530717,3894876,2024-05-12T16:30:00Z,2024-05-12,Valencia CF,Valencia CF,Valencia,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1530718,3894871,2024-05-12T14:15:00Z,2024-05-12,Atlético Madrid,Atlético Madrid,Atlético Madrid,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1530719,3894869,2024-05-12T12:00:00Z,2024-05-12,Cadiz CF,CF Cadiz,Cádiz,Getafe CF,Getafe CF,Getafe
+1529228,3894870,2024-05-11T19:00:00Z,2024-05-11,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,CA Osasuna,CA Osasuna,Osasuna
+1528510,3894873,2024-05-11T16:30:00Z,2024-05-11,Granada CF,Granada CF,Granada,Real Madrid CF,Real Madrid,Real Madrid
+1529229,3894877,2024-05-11T14:15:00Z,2024-05-11,Villarreal CF,Villarreal CF,Villarreal,Sevilla FC,Sevilla FC,Sevilla
+1528512,3894878,2024-05-11T12:00:00Z,2024-05-11,RCD Mallorca,RCD Mallorca,Mallorca,UD Las Palmas,UD Las Palmas,Las Palmas
+1527186,3894874,2024-05-10T19:00:00Z,2024-05-10,Deportivo Alavés,Alavés,Deportivo Alavés,Girona FC,Girona,Girona
+1519724,3894861,2024-05-05T19:00:00Z,2024-05-05,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,UD Almería,UD Almería,Almería
+1519725,3894867,2024-05-05T19:00:00Z,2024-05-05,Sevilla FC,Sevilla FC,Sevilla,Granada CF,Granada CF,Granada
+1519065,3894863,2024-05-05T16:30:00Z,2024-05-05,Valencia CF,Valencia CF,Valencia,Deportivo Alavés,Alavés,Deportivo Alavés
+1519066,3894862,2024-05-05T14:15:00Z,2024-05-05,RC Celta de Vigo,Celta Vigo,Celta Vigo,Villarreal CF,Villarreal CF,Villarreal
+1519067,3894865,2024-05-05T12:00:00Z,2024-05-05,CA Osasuna,CA Osasuna,Osasuna,Real Betis Balompié,Betis Balompié,Real Betis
+1517773,3894859,2024-05-04T19:00:00Z,2024-05-04,RCD Mallorca,RCD Mallorca,Mallorca,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1517774,3894864,2024-05-04T16:30:00Z,2024-05-04,Girona FC,Girona,Girona,FC Barcelona,FC Barcelona,Barcelona
+1517179,3894868,2024-05-04T14:15:00Z,2024-05-04,Real Madrid CF,Real Madrid,Real Madrid,Cadiz CF,CF Cadiz,Cádiz
+1517180,3894866,2024-05-04T12:00:00Z,2024-05-04,Real Sociedad,Real Sociedad,Real Sociedad,UD Las Palmas,UD Las Palmas,Las Palmas
+1516645,3894860,2024-05-03T19:00:00Z,2024-05-03,Getafe CF,Getafe CF,Getafe,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1510458,3894854,2024-04-29T19:00:00Z,2024-04-29,FC Barcelona,FC Barcelona,Barcelona,Valencia CF,Valencia CF,Valencia
+1509250,3894855,2024-04-28T19:00:00Z,2024-04-28,Real Betis Balompié,Betis Balompié,Real Betis,Sevilla FC,Sevilla FC,Sevilla
+1509251,3894851,2024-04-28T16:30:00Z,2024-04-28,Villarreal CF,Villarreal CF,Villarreal,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1509252,3894857,2024-04-28T14:15:00Z,2024-04-28,Granada CF,Granada CF,Granada,CA Osasuna,CA Osasuna,Osasuna
+1508583,3894856,2024-04-28T12:00:00Z,2024-04-28,Cadiz CF,CF Cadiz,Cádiz,RCD Mallorca,RCD Mallorca,Mallorca
+1507306,3894849,2024-04-27T19:00:00Z,2024-04-27,Atlético Madrid,Atlético Madrid,Atlético Madrid,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1507307,3894858,2024-04-27T16:30:00Z,2024-04-27,Deportivo Alavés,Alavés,Deportivo Alavés,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1507308,3894853,2024-04-27T14:15:00Z,2024-04-27,UD Almería,UD Almería,Almería,Getafe CF,Getafe CF,Getafe
+1506680,3894850,2024-04-27T12:00:00Z,2024-04-27,UD Las Palmas,UD Las Palmas,Las Palmas,Girona FC,Girona,Girona
+1506182,3894852,2024-04-26T19:00:00Z,2024-04-26,Real Sociedad,Real Sociedad,Real Sociedad,Real Madrid CF,Real Madrid,Real Madrid
+1500814,3894845,2024-04-22T19:00:00Z,2024-04-22,Sevilla FC,Sevilla FC,Sevilla,RCD Mallorca,RCD Mallorca,Mallorca
+1498966,3894843,2024-04-21T19:00:00Z,2024-04-21,Real Madrid CF,Real Madrid,Real Madrid,FC Barcelona,FC Barcelona,Barcelona
+1498967,3894839,2024-04-21T16:30:00Z,2024-04-21,Deportivo Alavés,Alavés,Deportivo Alavés,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1498968,3894848,2024-04-21T14:15:00Z,2024-04-21,UD Almería,UD Almería,Almería,Villarreal CF,Villarreal CF,Villarreal
+1498291,3894840,2024-04-21T12:00:00Z,2024-04-21,Getafe CF,Getafe CF,Getafe,Real Sociedad,Real Sociedad,Real Sociedad
+1496887,3894846,2024-04-20T19:00:00Z,2024-04-20,Girona FC,Girona,Girona,Cadiz CF,CF Cadiz,Cádiz
+1496888,3894847,2024-04-20T16:30:00Z,2024-04-20,Valencia CF,Valencia CF,Valencia,Real Betis Balompié,Betis Balompié,Real Betis
+1496889,3894844,2024-04-20T14:15:00Z,2024-04-20,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,CA Osasuna,CA Osasuna,Osasuna
+1496890,3894841,2024-04-20T12:00:00Z,2024-04-20,RC Celta de Vigo,Celta Vigo,Celta Vigo,UD Las Palmas,UD Las Palmas,Las Palmas
+1495633,3894842,2024-04-19T19:00:00Z,2024-04-19,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Granada CF,Granada CF,Granada
+1490449,3894833,2024-04-15T19:00:00Z,2024-04-15,CA Osasuna,CA Osasuna,Osasuna,Valencia CF,Valencia CF,Valencia
+1488037,3894835,2024-04-14T19:00:00Z,2024-04-14,Real Sociedad,Real Sociedad,Real Sociedad,UD Almería,UD Almería,Almería
+1488038,3894830,2024-04-14T16:30:00Z,2024-04-14,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Villarreal CF,Villarreal CF,Villarreal
+1488039,3894837,2024-04-14T14:15:00Z,2024-04-14,Granada CF,Granada CF,Granada,Deportivo Alavés,Alavés,Deportivo Alavés
+1488040,3894834,2024-04-14T12:00:00Z,2024-04-14,UD Las Palmas,UD Las Palmas,Las Palmas,Sevilla FC,Sevilla FC,Sevilla
+1486703,3894829,2024-04-13T19:00:00Z,2024-04-13,Cadiz CF,CF Cadiz,Cádiz,FC Barcelona,FC Barcelona,Barcelona
+1486704,3894832,2024-04-13T16:30:00Z,2024-04-13,RCD Mallorca,RCD Mallorca,Mallorca,Real Madrid CF,Real Madrid,Real Madrid
+1486042,3894836,2024-04-13T14:15:00Z,2024-04-13,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Getafe CF,Getafe CF,Getafe
+1486043,3894831,2024-04-13T12:00:00Z,2024-04-13,Atlético Madrid,Atlético Madrid,Atlético Madrid,Girona FC,Girona,Girona
+1484903,3894838,2024-04-12T19:00:00Z,2024-04-12,Real Betis Balompié,Betis Balompié,Real Betis,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1470419,3894782,2024-04-04T18:00:00Z,2024-04-04,Granada CF,Granada CF,Granada,Valencia CF,Valencia CF,Valencia
+1466233,3894820,2024-04-01T19:00:00Z,2024-04-01,Villarreal CF,Villarreal CF,Villarreal,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1463749,3894821,2024-03-31T19:00:00Z,2024-03-31,Real Madrid CF,Real Madrid,Real Madrid,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1463750,3894825,2024-03-31T16:30:00Z,2024-03-31,Deportivo Alavés,Alavés,Deportivo Alavés,Real Sociedad,Real Sociedad,Real Sociedad
+1463751,3894819,2024-03-31T14:15:00Z,2024-03-31,Girona FC,Girona,Girona,Real Betis Balompié,Betis Balompié,Real Betis
+1463752,3894827,2024-03-31T12:00:00Z,2024-03-31,RC Celta de Vigo,Celta Vigo,Celta Vigo,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1462404,3894823,2024-03-30T20:00:00Z,2024-03-30,FC Barcelona,FC Barcelona,Barcelona,UD Las Palmas,UD Las Palmas,Las Palmas
+1462405,3894828,2024-03-30T17:30:00Z,2024-03-30,Valencia CF,Valencia CF,Valencia,RCD Mallorca,RCD Mallorca,Mallorca
+1462406,3894824,2024-03-30T15:15:00Z,2024-03-30,UD Almería,UD Almería,Almería,CA Osasuna,CA Osasuna,Osasuna
+1461706,3894826,2024-03-30T13:00:00Z,2024-03-30,Getafe CF,Getafe CF,Getafe,Sevilla FC,Sevilla FC,Sevilla
+1460557,3894822,2024-03-29T20:00:00Z,2024-03-29,Cadiz CF,CF Cadiz,Cádiz,Granada CF,Granada CF,Granada
+1445267,3894815,2024-03-17T20:00:00Z,2024-03-17,Atlético Madrid,Atlético Madrid,Atlético Madrid,FC Barcelona,FC Barcelona,Barcelona
+1445268,3894809,2024-03-17T17:30:00Z,2024-03-17,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Real Betis Balompié,Betis Balompié,Real Betis
+1444601,3894818,2024-03-17T15:15:00Z,2024-03-17,UD Las Palmas,UD Las Palmas,Las Palmas,UD Almería,UD Almería,Almería
+1444602,3894812,2024-03-17T15:15:00Z,2024-03-17,Villarreal CF,Villarreal CF,Villarreal,Valencia CF,Valencia CF,Valencia
+1444603,3894811,2024-03-17T13:00:00Z,2024-03-17,Sevilla FC,Sevilla FC,Sevilla,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1443281,3894814,2024-03-16T20:00:00Z,2024-03-16,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Deportivo Alavés,Alavés,Deportivo Alavés
+1443282,3894816,2024-03-16T17:30:00Z,2024-03-16,Getafe CF,Getafe CF,Getafe,Girona FC,Girona,Girona
+1443283,3894817,2024-03-16T15:15:00Z,2024-03-16,CA Osasuna,CA Osasuna,Osasuna,Real Madrid CF,Real Madrid,Real Madrid
+1442605,3894813,2024-03-16T13:00:00Z,2024-03-16,RCD Mallorca,RCD Mallorca,Mallorca,Granada CF,Granada CF,Granada
+1442058,3894810,2024-03-15T20:00:00Z,2024-03-15,Real Sociedad,Real Sociedad,Real Sociedad,Cadiz CF,CF Cadiz,Cádiz
+1436606,3894804,2024-03-11T20:00:00Z,2024-03-11,UD Almería,UD Almería,Almería,Sevilla FC,Sevilla FC,Sevilla
+1434990,3894802,2024-03-10T20:00:00Z,2024-03-10,Real Betis Balompié,Betis Balompié,Real Betis,Villarreal CF,Villarreal CF,Villarreal
+1434991,3894806,2024-03-10T17:30:00Z,2024-03-10,Real Madrid CF,Real Madrid,Real Madrid,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1434356,3894808,2024-03-10T15:15:00Z,2024-03-10,UD Las Palmas,UD Las Palmas,Las Palmas,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1434357,3894799,2024-03-10T13:00:00Z,2024-03-10,Deportivo Alavés,Alavés,Deportivo Alavés,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1433131,3894801,2024-03-09T20:00:00Z,2024-03-09,Girona FC,Girona,Girona,CA Osasuna,CA Osasuna,Osasuna
+1433132,3894800,2024-03-09T17:30:00Z,2024-03-09,Granada CF,Granada CF,Granada,Real Sociedad,Real Sociedad,Real Sociedad
+1433133,3894807,2024-03-09T15:15:00Z,2024-03-09,Cadiz CF,CF Cadiz,Cádiz,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1432512,3894805,2024-03-09T13:00:00Z,2024-03-09,Valencia CF,Valencia CF,Valencia,Getafe CF,Getafe CF,Getafe
+1431998,3894803,2024-03-08T20:00:00Z,2024-03-08,FC Barcelona,FC Barcelona,Barcelona,RCD Mallorca,RCD Mallorca,Mallorca
+1426006,3894798,2024-03-04T20:00:00Z,2024-03-04,CA Osasuna,CA Osasuna,Osasuna,Deportivo Alavés,Alavés,Deportivo Alavés
+1424847,3894790,2024-03-03T20:00:00Z,2024-03-03,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,FC Barcelona,FC Barcelona,Barcelona
+1424206,3894794,2024-03-03T17:30:00Z,2024-03-03,RCD Mallorca,RCD Mallorca,Mallorca,Girona FC,Girona,Girona
+1424207,3894791,2024-03-03T15:15:00Z,2024-03-03,Atlético Madrid,Atlético Madrid,Atlético Madrid,Real Betis Balompié,Betis Balompié,Real Betis
+1424208,3894797,2024-03-03T13:00:00Z,2024-03-03,Villarreal CF,Villarreal CF,Villarreal,Granada CF,Granada CF,Granada
+1422928,3894795,2024-03-02T20:00:00Z,2024-03-02,Valencia CF,Valencia CF,Valencia,Real Madrid CF,Real Madrid,Real Madrid
+1422310,3894792,2024-03-02T17:30:00Z,2024-03-02,Getafe CF,Getafe CF,Getafe,UD Las Palmas,UD Las Palmas,Las Palmas
+1422311,3894793,2024-03-02T15:15:00Z,2024-03-02,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Cadiz CF,CF Cadiz,Cádiz
+1422312,3894796,2024-03-02T13:00:00Z,2024-03-02,Sevilla FC,Sevilla FC,Sevilla,Real Sociedad,Real Sociedad,Real Sociedad
+1421270,3894789,2024-03-01T20:00:00Z,2024-03-01,RC Celta de Vigo,Celta Vigo,Celta Vigo,UD Almería,UD Almería,Almería
+1416085,3894787,2024-02-26T20:00:00Z,2024-02-26,Girona FC,Girona,Girona,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1414465,3894780,2024-02-25T20:00:00Z,2024-02-25,Real Madrid CF,Real Madrid,Real Madrid,Sevilla FC,Sevilla FC,Sevilla
+1414466,3894783,2024-02-25T17:30:00Z,2024-02-25,UD Las Palmas,UD Las Palmas,Las Palmas,CA Osasuna,CA Osasuna,Osasuna
+1413846,3894785,2024-02-25T15:15:00Z,2024-02-25,Real Betis Balompié,Betis Balompié,Real Betis,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1414467,3894788,2024-02-25T13:00:00Z,2024-02-25,Cadiz CF,CF Cadiz,Cádiz,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1412653,3894786,2024-02-24T20:00:00Z,2024-02-24,UD Almería,UD Almería,Almería,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1412654,3894784,2024-02-24T17:30:00Z,2024-02-24,Deportivo Alavés,Alavés,Deportivo Alavés,RCD Mallorca,RCD Mallorca,Mallorca
+1412655,3894779,2024-02-24T15:15:00Z,2024-02-24,FC Barcelona,FC Barcelona,Barcelona,Getafe CF,Getafe CF,Getafe
+1411599,3894781,2024-02-23T20:00:00Z,2024-02-23,Real Sociedad,Real Sociedad,Real Sociedad,Villarreal CF,Villarreal CF,Villarreal
+1406172,3894776,2024-02-19T20:00:00Z,2024-02-19,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Girona FC,Girona,Girona
+1404619,3894772,2024-02-18T20:00:00Z,2024-02-18,Real Betis Balompié,Betis Balompié,Real Betis,Deportivo Alavés,Alavés,Deportivo Alavés
+1404018,3894778,2024-02-18T17:30:00Z,2024-02-18,RCD Mallorca,RCD Mallorca,Mallorca,Real Sociedad,Real Sociedad,Real Sociedad
+1404019,3894773,2024-02-18T15:15:00Z,2024-02-18,Granada CF,Granada CF,Granada,UD Almería,UD Almería,Almería
+1404020,3894769,2024-02-18T13:00:00Z,2024-02-18,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Real Madrid CF,Real Madrid,Real Madrid
+1405171,3894771,2024-02-17T20:00:00Z,2024-02-17,Valencia CF,Valencia CF,Valencia,Sevilla FC,Sevilla FC,Sevilla
+1402856,3894774,2024-02-17T17:30:00Z,2024-02-17,RC Celta de Vigo,Celta Vigo,Celta Vigo,FC Barcelona,FC Barcelona,Barcelona
+1402857,3894775,2024-02-17T15:15:00Z,2024-02-17,CA Osasuna,CA Osasuna,Osasuna,Cadiz CF,CF Cadiz,Cádiz
+1402246,3894777,2024-02-17T13:00:00Z,2024-02-17,Atlético Madrid,Atlético Madrid,Atlético Madrid,UD Las Palmas,UD Las Palmas,Las Palmas
+1401257,3894770,2024-02-16T20:00:00Z,2024-02-16,Villarreal CF,Villarreal CF,Villarreal,Getafe CF,Getafe CF,Getafe
+1396064,3894766,2024-02-12T20:00:00Z,2024-02-12,UD Almería,UD Almería,Almería,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1394566,3894767,2024-02-11T20:00:00Z,2024-02-11,FC Barcelona,FC Barcelona,Barcelona,Granada CF,Granada CF,Granada
+1394567,3894761,2024-02-11T17:30:00Z,2024-02-11,Sevilla FC,Sevilla FC,Sevilla,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1394568,3894768,2024-02-11T15:15:00Z,2024-02-11,RCD Mallorca,RCD Mallorca,Mallorca,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1394569,3894763,2024-02-11T13:00:00Z,2024-02-11,Getafe CF,Getafe CF,Getafe,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1393478,3894759,2024-02-10T20:00:00Z,2024-02-10,UD Las Palmas,UD Las Palmas,Las Palmas,Valencia CF,Valencia CF,Valencia
+1392898,3894764,2024-02-10T17:30:00Z,2024-02-10,Real Madrid CF,Real Madrid,Real Madrid,Girona FC,Girona,Girona
+1392899,3894765,2024-02-10T15:15:00Z,2024-02-10,Real Sociedad,Real Sociedad,Real Sociedad,CA Osasuna,CA Osasuna,Osasuna
+1392900,3894760,2024-02-10T13:00:00Z,2024-02-10,Deportivo Alavés,Alavés,Deportivo Alavés,Villarreal CF,Villarreal CF,Villarreal
+1391849,3894762,2024-02-09T20:00:00Z,2024-02-09,Cadiz CF,CF Cadiz,Cádiz,Real Betis Balompié,Betis Balompié,Real Betis
+1386974,3894749,2024-02-05T20:00:00Z,2024-02-05,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Sevilla FC,Sevilla FC,Sevilla
+1385604,3894753,2024-02-04T20:00:00Z,2024-02-04,Real Madrid CF,Real Madrid,Real Madrid,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1385050,3894757,2024-02-04T17:30:00Z,2024-02-04,Real Betis Balompié,Betis Balompié,Real Betis,Getafe CF,Getafe CF,Getafe
+1385051,3894755,2024-02-04T15:15:00Z,2024-02-04,CA Osasuna,CA Osasuna,Osasuna,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1385052,3894754,2024-02-04T13:00:00Z,2024-02-04,Villarreal CF,Villarreal CF,Villarreal,Cadiz CF,CF Cadiz,Cádiz
+1383979,3894758,2024-02-03T20:00:00Z,2024-02-03,Girona FC,Girona,Girona,Real Sociedad,Real Sociedad,Real Sociedad
+1383980,3894751,2024-02-03T17:30:00Z,2024-02-03,Deportivo Alavés,Alavés,Deportivo Alavés,FC Barcelona,FC Barcelona,Barcelona
+1383981,3894750,2024-02-03T15:15:00Z,2024-02-03,Granada CF,Granada CF,Granada,UD Las Palmas,UD Las Palmas,Las Palmas
+1383417,3894752,2024-02-03T13:00:00Z,2024-02-03,Valencia CF,Valencia CF,Valencia,UD Almería,UD Almería,Almería
+1382433,3894756,2024-02-02T20:00:00Z,2024-02-02,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,RCD Mallorca,RCD Mallorca,Mallorca
+1380976,3894723,2024-02-01T20:00:00Z,2024-02-01,Getafe CF,Getafe CF,Getafe,Real Madrid CF,Real Madrid,Real Madrid
+1380532,3894727,2024-01-31T20:00:00Z,2024-01-31,Atlético Madrid,Atlético Madrid,Atlético Madrid,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1379622,3894726,2024-01-31T18:00:00Z,2024-01-31,FC Barcelona,FC Barcelona,Barcelona,CA Osasuna,CA Osasuna,Osasuna
+1377398,3894739,2024-01-29T20:00:00Z,2024-01-29,Getafe CF,Getafe CF,Getafe,Granada CF,Granada CF,Granada
+1375961,3894740,2024-01-28T20:00:00Z,2024-01-28,Atlético Madrid,Atlético Madrid,Atlético Madrid,Valencia CF,Valencia CF,Valencia
+1375962,3894746,2024-01-28T17:30:00Z,2024-01-28,Sevilla FC,Sevilla FC,Sevilla,CA Osasuna,CA Osasuna,Osasuna
+1375457,3894744,2024-01-28T15:15:00Z,2024-01-28,Cadiz CF,CF Cadiz,Cádiz,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1375458,3894742,2024-01-28T13:00:00Z,2024-01-28,RC Celta de Vigo,Celta Vigo,Celta Vigo,Girona FC,Girona,Girona
+1374491,3894745,2024-01-27T20:00:00Z,2024-01-27,RCD Mallorca,RCD Mallorca,Mallorca,Real Betis Balompié,Betis Balompié,Real Betis
+1374492,3894741,2024-01-27T17:30:00Z,2024-01-27,FC Barcelona,FC Barcelona,Barcelona,Villarreal CF,Villarreal CF,Villarreal
+1374493,3894743,2024-01-27T15:15:00Z,2024-01-27,UD Las Palmas,UD Las Palmas,Las Palmas,Real Madrid CF,Real Madrid,Real Madrid
+1373979,3894747,2024-01-27T13:00:00Z,2024-01-27,Real Sociedad,Real Sociedad,Real Sociedad,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1373053,3894748,2024-01-26T20:00:00Z,2024-01-26,UD Almería,UD Almería,Almería,Deportivo Alavés,Alavés,Deportivo Alavés
+1367031,3894733,2024-01-22T20:00:00Z,2024-01-22,Granada CF,Granada CF,Granada,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1366154,3894736,2024-01-21T20:00:00Z,2024-01-21,Girona FC,Girona,Girona,Sevilla FC,Sevilla FC,Sevilla
+1365684,3894732,2024-01-21T17:30:00Z,2024-01-21,Real Betis Balompié,Betis Balompié,Real Betis,FC Barcelona,FC Barcelona,Barcelona
+1365685,3894738,2024-01-21T15:15:00Z,2024-01-21,Real Madrid CF,Real Madrid,Real Madrid,UD Almería,UD Almería,Almería
+1365207,3894731,2024-01-21T13:00:00Z,2024-01-21,CA Osasuna,CA Osasuna,Osasuna,Getafe CF,Getafe CF,Getafe
+1364276,3894735,2024-01-20T20:00:00Z,2024-01-20,RC Celta de Vigo,Celta Vigo,Celta Vigo,Real Sociedad,Real Sociedad,Real Sociedad
+1364277,3894734,2024-01-20T17:30:00Z,2024-01-20,Valencia CF,Valencia CF,Valencia,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1364278,3894730,2024-01-20T15:15:00Z,2024-01-20,Villarreal CF,Villarreal CF,Villarreal,RCD Mallorca,RCD Mallorca,Mallorca
+1363789,3894729,2024-01-20T13:00:00Z,2024-01-20,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,UD Las Palmas,UD Las Palmas,Las Palmas
+1362904,3894737,2024-01-19T20:00:00Z,2024-01-19,Deportivo Alavés,Alavés,Deportivo Alavés,Cadiz CF,CF Cadiz,Cádiz
+1355616,3894724,2024-01-14T15:15:00Z,2024-01-14,Cadiz CF,CF Cadiz,Cádiz,Valencia CF,Valencia CF,Valencia
+1355617,3894719,2024-01-14T13:00:00Z,2024-01-14,UD Almería,UD Almería,Almería,Girona FC,Girona,Girona
+1354654,3894725,2024-01-13T20:00:00Z,2024-01-13,Real Betis Balompié,Betis Balompié,Real Betis,Granada CF,Granada CF,Granada
+1354142,3894728,2024-01-13T17:30:00Z,2024-01-13,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Real Sociedad,Real Sociedad,Real Sociedad
+1354143,3894721,2024-01-13T15:15:00Z,2024-01-13,RCD Mallorca,RCD Mallorca,Mallorca,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1353635,3894722,2024-01-13T13:00:00Z,2024-01-13,UD Las Palmas,UD Las Palmas,Las Palmas,Villarreal CF,Villarreal CF,Villarreal
+1352748,3894720,2024-01-12T20:00:00Z,2024-01-12,Sevilla FC,Sevilla FC,Sevilla,Deportivo Alavés,Alavés,Deportivo Alavés
+1341945,3894710,2024-01-04T20:30:00Z,2024-01-04,UD Las Palmas,UD Las Palmas,Las Palmas,FC Barcelona,FC Barcelona,Barcelona
+1341946,3894712,2024-01-04T18:15:00Z,2024-01-04,Sevilla FC,Sevilla FC,Sevilla,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1341511,3894713,2024-01-04T16:00:00Z,2024-01-04,CA Osasuna,CA Osasuna,Osasuna,UD Almería,UD Almería,Almería
+1340640,3894711,2024-01-03T20:30:00Z,2024-01-03,Girona FC,Girona,Girona,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1340200,3894709,2024-01-03T18:15:00Z,2024-01-03,RC Celta de Vigo,Celta Vigo,Celta Vigo,Real Betis Balompié,Betis Balompié,Real Betis
+1340201,3894717,2024-01-03T18:15:00Z,2024-01-03,Real Madrid CF,Real Madrid,Real Madrid,RCD Mallorca,RCD Mallorca,Mallorca
+1339748,3894718,2024-01-03T16:00:00Z,2024-01-03,Granada CF,Granada CF,Granada,Cadiz CF,CF Cadiz,Cádiz
+1339296,3894714,2024-01-02T20:30:00Z,2024-01-02,Valencia CF,Valencia CF,Valencia,Villarreal CF,Villarreal CF,Villarreal
+1338857,3894715,2024-01-02T18:15:00Z,2024-01-02,Real Sociedad,Real Sociedad,Real Sociedad,Deportivo Alavés,Alavés,Deportivo Alavés
+1338413,3894716,2024-01-02T16:00:00Z,2024-01-02,Getafe CF,Getafe CF,Getafe,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1323556,3894565,2023-12-23T15:15:00Z,2023-12-23,Atlético Madrid,Atlético Madrid,Atlético Madrid,Sevilla FC,Sevilla FC,Sevilla
+1320691,3894704,2023-12-21T20:30:00Z,2023-12-21,RCD Mallorca,RCD Mallorca,Mallorca,CA Osasuna,CA Osasuna,Osasuna
+1320692,3894708,2023-12-21T20:30:00Z,2023-12-21,Deportivo Alavés,Alavés,Deportivo Alavés,Real Madrid CF,Real Madrid,Real Madrid
+1320693,3894702,2023-12-21T18:00:00Z,2023-12-21,Real Betis Balompié,Betis Balompié,Real Betis,Girona FC,Girona,Girona
+1320694,3894703,2023-12-21T18:00:00Z,2023-12-21,Cadiz CF,CF Cadiz,Cádiz,Real Sociedad,Real Sociedad,Real Sociedad
+1319265,3894707,2023-12-20T20:30:00Z,2023-12-20,Villarreal CF,Villarreal CF,Villarreal,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1319758,3894700,2023-12-20T20:30:00Z,2023-12-20,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,UD Las Palmas,UD Las Palmas,Las Palmas
+1319266,3894699,2023-12-20T18:00:00Z,2023-12-20,FC Barcelona,FC Barcelona,Barcelona,UD Almería,UD Almería,Almería
+1317844,3894701,2023-12-19T20:30:00Z,2023-12-19,Atlético Madrid,Atlético Madrid,Atlético Madrid,Getafe CF,Getafe CF,Getafe
+1318312,3894706,2023-12-19T20:30:00Z,2023-12-19,Granada CF,Granada CF,Granada,Sevilla FC,Sevilla FC,Sevilla
+1317846,3894705,2023-12-19T18:00:00Z,2023-12-19,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Valencia CF,Valencia CF,Valencia
+1316483,3894689,2023-12-18T20:00:00Z,2023-12-18,Girona FC,Girona,Girona,Deportivo Alavés,Alavés,Deportivo Alavés
+1314538,3894694,2023-12-17T20:00:00Z,2023-12-17,Real Madrid CF,Real Madrid,Real Madrid,Villarreal CF,Villarreal CF,Villarreal
+1314539,3894697,2023-12-17T17:30:00Z,2023-12-17,UD Las Palmas,UD Las Palmas,Las Palmas,Cadiz CF,CF Cadiz,Cádiz
+1314540,3894696,2023-12-17T15:15:00Z,2023-12-17,Real Sociedad,Real Sociedad,Real Sociedad,Real Betis Balompié,Betis Balompié,Real Betis
+1314541,3894690,2023-12-17T13:00:00Z,2023-12-17,UD Almería,UD Almería,Almería,RCD Mallorca,RCD Mallorca,Mallorca
+1312938,3894695,2023-12-16T20:00:00Z,2023-12-16,Valencia CF,Valencia CF,Valencia,FC Barcelona,FC Barcelona,Barcelona
+1312939,3894698,2023-12-16T17:30:00Z,2023-12-16,Sevilla FC,Sevilla FC,Sevilla,Getafe CF,Getafe CF,Getafe
+1312940,3894691,2023-12-16T15:15:00Z,2023-12-16,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1312941,3894692,2023-12-16T13:00:00Z,2023-12-16,RC Celta de Vigo,Celta Vigo,Celta Vigo,Granada CF,Granada CF,Granada
+1311374,3894693,2023-12-15T20:00:00Z,2023-12-15,CA Osasuna,CA Osasuna,Osasuna,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1305206,3894687,2023-12-11T20:00:00Z,2023-12-11,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1306239,3894686,2023-12-11T20:00:00Z,2023-12-11,Granada CF,Granada CF,Granada,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1303515,3894680,2023-12-10T20:00:00Z,2023-12-10,FC Barcelona,FC Barcelona,Barcelona,Girona FC,Girona,Girona
+1304130,3894682,2023-12-10T17:30:00Z,2023-12-10,Cadiz CF,CF Cadiz,Cádiz,CA Osasuna,CA Osasuna,Osasuna
+1302864,3894685,2023-12-10T13:00:00Z,2023-12-10,Atlético Madrid,Atlético Madrid,Atlético Madrid,UD Almería,UD Almería,Almería
+1301583,3894683,2023-12-09T20:00:00Z,2023-12-09,RCD Mallorca,RCD Mallorca,Mallorca,Sevilla FC,Sevilla FC,Sevilla
+1300898,3894688,2023-12-09T17:30:00Z,2023-12-09,Villarreal CF,Villarreal CF,Villarreal,Real Sociedad,Real Sociedad,Real Sociedad
+1301584,3894681,2023-12-09T15:15:00Z,2023-12-09,Real Betis Balompié,Betis Balompié,Real Betis,Real Madrid CF,Real Madrid,Real Madrid
+1300900,3894684,2023-12-09T13:00:00Z,2023-12-09,Deportivo Alavés,Alavés,Deportivo Alavés,UD Las Palmas,UD Las Palmas,Las Palmas
+1299675,3894679,2023-12-08T20:00:00Z,2023-12-08,Getafe CF,Getafe CF,Getafe,Valencia CF,Valencia CF,Valencia
+1292501,3894678,2023-12-04T20:00:00Z,2023-12-04,RC Celta de Vigo,Celta Vigo,Celta Vigo,Cadiz CF,CF Cadiz,Cádiz
+1290676,3894670,2023-12-03T20:00:00Z,2023-12-03,FC Barcelona,FC Barcelona,Barcelona,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1289981,3894671,2023-12-03T17:30:00Z,2023-12-03,Sevilla FC,Sevilla FC,Sevilla,Villarreal CF,Villarreal CF,Villarreal
+1289982,3894675,2023-12-03T15:15:00Z,2023-12-03,UD Almería,UD Almería,Almería,Real Betis Balompié,Betis Balompié,Real Betis
+1289983,3894669,2023-12-03T13:00:00Z,2023-12-03,RCD Mallorca,RCD Mallorca,Mallorca,Deportivo Alavés,Alavés,Deportivo Alavés
+1288568,3894672,2023-12-02T20:00:00Z,2023-12-02,CA Osasuna,CA Osasuna,Osasuna,Real Sociedad,Real Sociedad,Real Sociedad
+1287842,3894677,2023-12-02T17:30:00Z,2023-12-02,Real Madrid CF,Real Madrid,Real Madrid,Granada CF,Granada CF,Granada
+1287843,3894674,2023-12-02T15:15:00Z,2023-12-02,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1287844,3894673,2023-12-02T13:00:00Z,2023-12-02,Girona FC,Girona,Girona,Valencia CF,Valencia CF,Valencia
+1286466,3894676,2023-12-01T20:00:00Z,2023-12-01,UD Las Palmas,UD Las Palmas,Las Palmas,Getafe CF,Getafe CF,Getafe
+1281785,3894653,2023-11-29T20:00:00Z,2023-11-29,RCD Mallorca,RCD Mallorca,Mallorca,Cadiz CF,CF Cadiz,Cádiz
+1277754,3894662,2023-11-27T20:00:00Z,2023-11-27,Girona FC,Girona,Girona,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1274918,3894668,2023-11-26T20:00:00Z,2023-11-26,Real Betis Balompié,Betis Balompié,Real Betis,UD Las Palmas,UD Las Palmas,Las Palmas
+1274919,3894667,2023-11-26T17:30:00Z,2023-11-26,Cadiz CF,CF Cadiz,Cádiz,Real Madrid CF,Real Madrid,Real Madrid
+1274920,3894665,2023-11-26T15:15:00Z,2023-11-26,Real Sociedad,Real Sociedad,Real Sociedad,Sevilla FC,Sevilla FC,Sevilla
+1274921,3894666,2023-11-26T13:00:00Z,2023-11-26,Villarreal CF,Villarreal CF,Villarreal,CA Osasuna,CA Osasuna,Osasuna
+1272679,3894659,2023-11-25T20:00:00Z,2023-11-25,Atlético Madrid,Atlético Madrid,Atlético Madrid,RCD Mallorca,RCD Mallorca,Mallorca
+1272680,3894663,2023-11-25T17:30:00Z,2023-11-25,Getafe CF,Getafe CF,Getafe,UD Almería,UD Almería,Almería
+1272681,3894660,2023-11-25T15:15:00Z,2023-11-25,Valencia CF,Valencia CF,Valencia,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1271877,3894661,2023-11-25T13:00:00Z,2023-11-25,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,FC Barcelona,FC Barcelona,Barcelona
+1270495,3894664,2023-11-24T20:00:00Z,2023-11-24,Deportivo Alavés,Alavés,Deportivo Alavés,Granada CF,Granada CF,Granada
+1244758,3894656,2023-11-12T20:00:00Z,2023-11-12,Atlético Madrid,Atlético Madrid,Atlético Madrid,Villarreal CF,Villarreal CF,Villarreal
+1243902,3894654,2023-11-12T17:30:00Z,2023-11-12,Sevilla FC,Sevilla FC,Sevilla,Real Betis Balompié,Betis Balompié,Real Betis
+1243903,3894649,2023-11-12T15:15:00Z,2023-11-12,FC Barcelona,FC Barcelona,Barcelona,Deportivo Alavés,Alavés,Deportivo Alavés
+1242274,3894655,2023-11-11T20:00:00Z,2023-11-11,Real Madrid CF,Real Madrid,Real Madrid,Valencia CF,Valencia CF,Valencia
+1241421,3894652,2023-11-11T17:30:00Z,2023-11-11,Granada CF,Granada CF,Granada,Getafe CF,Getafe CF,Getafe
+1242275,3894650,2023-11-11T17:30:00Z,2023-11-11,CA Osasuna,CA Osasuna,Osasuna,UD Las Palmas,UD Las Palmas,Las Palmas
+1241423,3894658,2023-11-11T15:15:00Z,2023-11-11,UD Almería,UD Almería,Almería,Real Sociedad,Real Sociedad,Real Sociedad
+1241424,3894651,2023-11-11T13:00:00Z,2023-11-11,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Girona FC,Girona,Girona
+1239818,3894657,2023-11-10T20:00:00Z,2023-11-10,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1230007,3894642,2023-11-06T20:00:00Z,2023-11-06,Getafe CF,Getafe CF,Getafe,Cadiz CF,CF Cadiz,Cádiz
+1227667,3894644,2023-11-05T20:00:00Z,2023-11-05,Real Madrid CF,Real Madrid,Real Madrid,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1226800,3894639,2023-11-05T17:30:00Z,2023-11-05,Villarreal CF,Villarreal CF,Villarreal,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1226801,3894645,2023-11-05T15:15:00Z,2023-11-05,Valencia CF,Valencia CF,Valencia,Granada CF,Granada CF,Granada
+1226802,3894648,2023-11-05T13:00:00Z,2023-11-05,Deportivo Alavés,Alavés,Deportivo Alavés,UD Almería,UD Almería,Almería
+1224298,3894641,2023-11-04T20:00:00Z,2023-11-04,Real Sociedad,Real Sociedad,Real Sociedad,FC Barcelona,FC Barcelona,Barcelona
+1224299,3894647,2023-11-04T17:30:00Z,2023-11-04,RC Celta de Vigo,Celta Vigo,Celta Vigo,Sevilla FC,Sevilla FC,Sevilla
+1224300,3894646,2023-11-04T15:15:00Z,2023-11-04,Real Betis Balompié,Betis Balompié,Real Betis,RCD Mallorca,RCD Mallorca,Mallorca
+1224301,3894643,2023-11-04T13:00:00Z,2023-11-04,CA Osasuna,CA Osasuna,Osasuna,Girona FC,Girona,Girona
+1221925,3894640,2023-11-03T20:00:00Z,2023-11-03,UD Las Palmas,UD Las Palmas,Las Palmas,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1211512,3894632,2023-10-30T20:00:00Z,2023-10-30,Granada CF,Granada CF,Granada,Villarreal CF,Villarreal CF,Villarreal
+1208789,3894635,2023-10-29T20:00:00Z,2023-10-29,Atlético Madrid,Atlético Madrid,Atlético Madrid,Deportivo Alavés,Alavés,Deportivo Alavés
+1208790,3894636,2023-10-29T17:30:00Z,2023-10-29,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Valencia CF,Valencia CF,Valencia
+1207768,3894633,2023-10-29T15:15:00Z,2023-10-29,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Real Sociedad,Real Sociedad,Real Sociedad
+1207769,3894631,2023-10-29T13:00:00Z,2023-10-29,Real Betis Balompié,Betis Balompié,Real Betis,CA Osasuna,CA Osasuna,Osasuna
+1205771,3894634,2023-10-28T19:00:00Z,2023-10-28,Cadiz CF,CF Cadiz,Cádiz,Sevilla FC,Sevilla FC,Sevilla
+1204768,3894638,2023-10-28T16:30:00Z,2023-10-28,RCD Mallorca,RCD Mallorca,Mallorca,Getafe CF,Getafe CF,Getafe
+1204769,3894629,2023-10-28T14:15:00Z,2023-10-28,FC Barcelona,FC Barcelona,Barcelona,Real Madrid CF,Real Madrid,Real Madrid
+1204770,3894637,2023-10-28T12:00:00Z,2023-10-28,UD Almería,UD Almería,Almería,UD Las Palmas,UD Las Palmas,Las Palmas
+1201881,3894630,2023-10-27T19:00:00Z,2023-10-27,Girona FC,Girona,Girona,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1190655,3894621,2023-10-23T19:00:00Z,2023-10-23,Valencia CF,Valencia CF,Valencia,Cadiz CF,CF Cadiz,Cádiz
+1188038,3894625,2023-10-22T19:00:00Z,2023-10-22,FC Barcelona,FC Barcelona,Barcelona,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1187060,3894628,2023-10-22T16:30:00Z,2023-10-22,Villarreal CF,Villarreal CF,Villarreal,Deportivo Alavés,Alavés,Deportivo Alavés
+1187061,3894626,2023-10-22T14:15:00Z,2023-10-22,Girona FC,Girona,Girona,UD Almería,UD Almería,Almería
+1187062,3894627,2023-10-22T12:00:00Z,2023-10-22,UD Las Palmas,UD Las Palmas,Las Palmas,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1184209,3894619,2023-10-21T19:00:00Z,2023-10-21,RC Celta de Vigo,Celta Vigo,Celta Vigo,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1184210,3894623,2023-10-21T16:30:00Z,2023-10-21,Sevilla FC,Sevilla FC,Sevilla,Real Madrid CF,Real Madrid,Real Madrid
+1183421,3894620,2023-10-21T14:15:00Z,2023-10-21,Getafe CF,Getafe CF,Getafe,Real Betis Balompié,Betis Balompié,Real Betis
+1217430,3894622,2023-10-21T12:00:00Z,2023-10-21,Real Sociedad,Real Sociedad,Real Sociedad,RCD Mallorca,RCD Mallorca,Mallorca
+1181630,3894624,2023-10-20T19:00:00Z,2023-10-20,CA Osasuna,CA Osasuna,Osasuna,Granada CF,Granada CF,Granada
+1150399,3894612,2023-10-08T19:00:00Z,2023-10-08,Granada CF,Granada CF,Granada,FC Barcelona,FC Barcelona,Barcelona
+1149507,3894617,2023-10-08T16:30:00Z,2023-10-08,RC Celta de Vigo,Celta Vigo,Celta Vigo,Getafe CF,Getafe CF,Getafe
+1150400,3894615,2023-10-08T16:30:00Z,2023-10-08,Deportivo Alavés,Alavés,Deportivo Alavés,Real Betis Balompié,Betis Balompié,Real Betis
+1149508,3894618,2023-10-08T14:15:00Z,2023-10-08,Atlético Madrid,Atlético Madrid,Atlético Madrid,Real Sociedad,Real Sociedad,Real Sociedad
+1149509,3894609,2023-10-08T12:00:00Z,2023-10-08,Villarreal CF,Villarreal CF,Villarreal,UD Las Palmas,UD Las Palmas,Las Palmas
+1147760,3894610,2023-10-07T19:00:00Z,2023-10-07,Sevilla FC,Sevilla FC,Sevilla,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1146864,3894616,2023-10-07T16:30:00Z,2023-10-07,RCD Mallorca,RCD Mallorca,Mallorca,Valencia CF,Valencia CF,Valencia
+1146865,3894611,2023-10-07T14:15:00Z,2023-10-07,Real Madrid CF,Real Madrid,Real Madrid,CA Osasuna,CA Osasuna,Osasuna
+1146866,3894614,2023-10-07T12:00:00Z,2023-10-07,Cadiz CF,CF Cadiz,Cádiz,Girona FC,Girona,Girona
+1145221,3894613,2023-10-06T19:00:00Z,2023-10-06,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,UD Almería,UD Almería,Almería
+1134595,3894603,2023-10-02T19:00:00Z,2023-10-02,UD Las Palmas,UD Las Palmas,Las Palmas,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1131206,3894608,2023-10-01T19:00:00Z,2023-10-01,Atlético Madrid,Atlético Madrid,Atlético Madrid,Cadiz CF,CF Cadiz,Cádiz
+1132116,3894599,2023-10-01T19:00:00Z,2023-10-01,Real Betis Balompié,Betis Balompié,Real Betis,Valencia CF,Valencia CF,Valencia
+1131207,3894605,2023-10-01T14:15:00Z,2023-10-01,Deportivo Alavés,Alavés,Deportivo Alavés,CA Osasuna,CA Osasuna,Osasuna
+1131208,3894601,2023-10-01T12:00:00Z,2023-10-01,UD Almería,UD Almería,Almería,Granada CF,Granada CF,Granada
+1129393,3894604,2023-09-30T19:00:00Z,2023-09-30,Real Sociedad,Real Sociedad,Real Sociedad,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1129394,3894606,2023-09-30T16:30:00Z,2023-09-30,Girona FC,Girona,Girona,Real Madrid CF,Real Madrid,Real Madrid
+1128476,3894602,2023-09-30T14:15:00Z,2023-09-30,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,RCD Mallorca,RCD Mallorca,Mallorca
+1128477,3894607,2023-09-30T12:00:00Z,2023-09-30,Getafe CF,Getafe CF,Getafe,Villarreal CF,Villarreal CF,Villarreal
+1125957,3894600,2023-09-29T19:00:00Z,2023-09-29,FC Barcelona,FC Barcelona,Barcelona,Sevilla FC,Sevilla FC,Sevilla
+1123721,3894592,2023-09-28T19:30:00Z,2023-09-28,CA Osasuna,CA Osasuna,Osasuna,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1123722,3894598,2023-09-28T17:00:00Z,2023-09-28,RC Celta de Vigo,Celta Vigo,Celta Vigo,Deportivo Alavés,Alavés,Deportivo Alavés
+1123723,3894594,2023-09-28T17:00:00Z,2023-09-28,Granada CF,Granada CF,Granada,Real Betis Balompié,Betis Balompié,Real Betis
+1121544,3894596,2023-09-27T19:30:00Z,2023-09-27,Valencia CF,Valencia CF,Valencia,Real Sociedad,Real Sociedad,Real Sociedad
+1121545,3894590,2023-09-27T19:30:00Z,2023-09-27,Cadiz CF,CF Cadiz,Cádiz,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1120811,3894589,2023-09-27T17:00:00Z,2023-09-27,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Getafe CF,Getafe CF,Getafe
+1121546,3894597,2023-09-27T17:00:00Z,2023-09-27,Real Madrid CF,Real Madrid,Real Madrid,UD Las Palmas,UD Las Palmas,Las Palmas
+1121547,3894595,2023-09-27T17:00:00Z,2023-09-27,Villarreal CF,Villarreal CF,Villarreal,Girona FC,Girona,Girona
+1119369,3894593,2023-09-26T19:30:00Z,2023-09-26,RCD Mallorca,RCD Mallorca,Mallorca,FC Barcelona,FC Barcelona,Barcelona
+1118640,3894591,2023-09-26T17:00:00Z,2023-09-26,Sevilla FC,Sevilla FC,Sevilla,UD Almería,UD Almería,Almería
+1114154,3894581,2023-09-24T19:00:00Z,2023-09-24,Atlético Madrid,Atlético Madrid,Atlético Madrid,Real Madrid CF,Real Madrid,Real Madrid
+1113350,3894584,2023-09-24T16:30:00Z,2023-09-24,UD Las Palmas,UD Las Palmas,Las Palmas,Granada CF,Granada CF,Granada
+1113351,3894588,2023-09-24T16:30:00Z,2023-09-24,Real Betis Balompié,Betis Balompié,Real Betis,Cadiz CF,CF Cadiz,Cádiz
+1113352,3894586,2023-09-24T14:15:00Z,2023-09-24,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Villarreal CF,Villarreal CF,Villarreal
+1113353,3894583,2023-09-24T12:00:00Z,2023-09-24,Real Sociedad,Real Sociedad,Real Sociedad,Getafe CF,Getafe CF,Getafe
+1110867,3894582,2023-09-23T19:00:00Z,2023-09-23,UD Almería,UD Almería,Almería,Valencia CF,Valencia CF,Valencia
+1110868,3894580,2023-09-23T16:30:00Z,2023-09-23,FC Barcelona,FC Barcelona,Barcelona,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1110869,3894587,2023-09-23T14:15:00Z,2023-09-23,CA Osasuna,CA Osasuna,Osasuna,Sevilla FC,Sevilla FC,Sevilla
+1110006,3894579,2023-09-23T12:00:00Z,2023-09-23,Girona FC,Girona,Girona,RCD Mallorca,RCD Mallorca,Mallorca
+1109188,3894585,2023-09-22T19:00:00Z,2023-09-22,Deportivo Alavés,Alavés,Deportivo Alavés,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1099622,3894575,2023-09-18T19:00:00Z,2023-09-18,Granada CF,Granada CF,Granada,Girona FC,Girona,Girona
+1096879,3894578,2023-09-17T19:00:00Z,2023-09-17,Real Madrid CF,Real Madrid,Real Madrid,Real Sociedad,Real Sociedad,Real Sociedad
+1096880,3894574,2023-09-17T16:30:00Z,2023-09-17,Sevilla FC,Sevilla FC,Sevilla,UD Las Palmas,UD Las Palmas,Las Palmas
+1096131,3894577,2023-09-17T14:15:00Z,2023-09-17,Villarreal CF,Villarreal CF,Villarreal,UD Almería,UD Almería,Almería
+1096132,3894570,2023-09-17T12:00:00Z,2023-09-17,Getafe CF,Getafe CF,Getafe,CA Osasuna,CA Osasuna,Osasuna
+1094618,3894572,2023-09-16T19:00:00Z,2023-09-16,FC Barcelona,FC Barcelona,Barcelona,Real Betis Balompié,Betis Balompié,Real Betis
+1093835,3894571,2023-09-16T16:30:00Z,2023-09-16,RC Celta de Vigo,Celta Vigo,Celta Vigo,RCD Mallorca,RCD Mallorca,Mallorca
+1093836,3894576,2023-09-16T14:15:00Z,2023-09-16,Valencia CF,Valencia CF,Valencia,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1093837,3894569,2023-09-16T12:00:00Z,2023-09-16,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Cadiz CF,CF Cadiz,Cádiz
+1091745,3894573,2023-09-15T19:00:00Z,2023-09-15,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Deportivo Alavés,Alavés,Deportivo Alavés
+1067325,3894560,2023-09-03T19:00:00Z,2023-09-03,CA Osasuna,CA Osasuna,Osasuna,FC Barcelona,FC Barcelona,Barcelona
+1066574,3894561,2023-09-03T14:15:00Z,2023-09-03,RCD Mallorca,RCD Mallorca,Mallorca,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1066575,3894567,2023-09-03T12:00:00Z,2023-09-03,Girona FC,Girona,Girona,UD Las Palmas,UD Las Palmas,Las Palmas
+1065091,3894564,2023-09-02T19:00:00Z,2023-09-02,Real Betis Balompié,Betis Balompié,Real Betis,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1064326,3894562,2023-09-02T16:30:00Z,2023-09-02,Deportivo Alavés,Alavés,Deportivo Alavés,Valencia CF,Valencia CF,Valencia
+1064327,3894568,2023-09-02T14:15:00Z,2023-09-02,Real Madrid CF,Real Madrid,Real Madrid,Getafe CF,Getafe CF,Getafe
+1063570,3894559,2023-09-02T12:00:00Z,2023-09-02,Real Sociedad,Real Sociedad,Real Sociedad,Granada CF,Granada CF,Granada
+1062305,3894566,2023-09-01T20:00:00Z,2023-09-01,UD Almería,UD Almería,Almería,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1062306,3894563,2023-09-01T17:30:00Z,2023-09-01,Cadiz CF,CF Cadiz,Cádiz,Villarreal CF,Villarreal CF,Villarreal
+1055302,3894549,2023-08-28T19:30:00Z,2023-08-28,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1054695,3894557,2023-08-28T17:30:00Z,2023-08-28,Getafe CF,Getafe CF,Getafe,Deportivo Alavés,Alavés,Deportivo Alavés
+1052789,3894553,2023-08-27T19:30:00Z,2023-08-27,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Real Betis Balompié,Betis Balompié,Real Betis
+1052790,3894556,2023-08-27T17:30:00Z,2023-08-27,Valencia CF,Valencia CF,Valencia,CA Osasuna,CA Osasuna,Osasuna
+1052087,3894558,2023-08-27T15:30:00Z,2023-08-27,Villarreal CF,Villarreal CF,Villarreal,FC Barcelona,FC Barcelona,Barcelona
+1050065,3894555,2023-08-26T19:30:00Z,2023-08-26,Sevilla FC,Sevilla FC,Sevilla,Girona FC,Girona,Girona
+1050066,3894552,2023-08-26T17:30:00Z,2023-08-26,Granada CF,Granada CF,Granada,RCD Mallorca,RCD Mallorca,Mallorca
+1050067,3894550,2023-08-26T17:00:00Z,2023-08-26,Cadiz CF,CF Cadiz,Cádiz,UD Almería,UD Almería,Almería
+1048195,3894554,2023-08-25T19:30:00Z,2023-08-25,RC Celta de Vigo,Celta Vigo,Celta Vigo,Real Madrid CF,Real Madrid,Real Madrid
+1047658,3894551,2023-08-25T17:30:00Z,2023-08-25,UD Las Palmas,UD Las Palmas,Las Palmas,Real Sociedad,Real Sociedad,Real Sociedad
+1041029,3894548,2023-08-21T19:30:00Z,2023-08-21,Granada CF,Granada CF,Granada,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
+1040446,3894547,2023-08-21T17:00:00Z,2023-08-21,Deportivo Alavés,Alavés,Deportivo Alavés,Sevilla FC,Sevilla FC,Sevilla
+1038550,3894545,2023-08-20T19:30:00Z,2023-08-20,Real Betis Balompié,Betis Balompié,Real Betis,Atlético Madrid,Atlético Madrid,Atlético Madrid
+1038551,3894541,2023-08-20T17:30:00Z,2023-08-20,FC Barcelona,FC Barcelona,Barcelona,Cadiz CF,CF Cadiz,Cádiz
+1037881,3894543,2023-08-20T17:00:00Z,2023-08-20,Girona FC,Girona,Girona,Getafe CF,Getafe CF,Getafe
+1036526,3894546,2023-08-19T19:30:00Z,2023-08-19,CA Osasuna,CA Osasuna,Osasuna,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club
+1036527,3894542,2023-08-19T17:30:00Z,2023-08-19,UD Almería,UD Almería,Almería,Real Madrid CF,Real Madrid,Real Madrid
+1035834,3894544,2023-08-19T15:00:00Z,2023-08-19,Real Sociedad,Real Sociedad,Real Sociedad,RC Celta de Vigo,Celta Vigo,Celta Vigo
+1033909,3894539,2023-08-18T19:30:00Z,2023-08-18,Valencia CF,Valencia CF,Valencia,UD Las Palmas,UD Las Palmas,Las Palmas
+1033342,3894540,2023-08-18T17:30:00Z,2023-08-18,RCD Mallorca,RCD Mallorca,Mallorca,Villarreal CF,Villarreal CF,Villarreal
+1026512,3894529,2023-08-14T19:30:00Z,2023-08-14,Atlético Madrid,Atlético Madrid,Atlético Madrid,Granada CF,Granada CF,Granada
+1025908,3894533,2023-08-14T17:30:00Z,2023-08-14,Cadiz CF,CF Cadiz,Cádiz,Deportivo Alavés,Alavés,Deportivo Alavés
+1024083,3894536,2023-08-13T19:30:00Z,2023-08-13,Getafe CF,Getafe CF,Getafe,FC Barcelona,FC Barcelona,Barcelona
+1023366,3894535,2023-08-13T17:30:00Z,2023-08-13,Villarreal CF,Villarreal CF,Villarreal,Real Betis Balompié,Betis Balompié,Real Betis
+1023367,3894530,2023-08-13T15:00:00Z,2023-08-13,RC Celta de Vigo,Celta Vigo,Celta Vigo,CA Osasuna,CA Osasuna,Osasuna
+1021404,3894538,2023-08-12T19:30:00Z,2023-08-12,Athletic Club de Bilbao,Athletic Bilbao,Athletic Club,Real Madrid CF,Real Madrid,Real Madrid
+1024084,3894532,2023-08-12T17:30:00Z,2023-08-12,UD Las Palmas,UD Las Palmas,Las Palmas,RCD Mallorca,RCD Mallorca,Mallorca
+1020746,3894534,2023-08-12T15:00:00Z,2023-08-12,Real Sociedad,Real Sociedad,Real Sociedad,Girona FC,Girona,Girona
+1024085,3894531,2023-08-11T20:00:00Z,2023-08-11,Sevilla FC,Sevilla FC,Sevilla,Valencia CF,Valencia CF,Valencia
+1018887,3894537,2023-08-11T17:30:00Z,2023-08-11,UD Almería,UD Almería,Almería,Rayo Vallecano,Rayo Vallecano,Rayo Vallecano
