@@ -28,6 +28,7 @@ def convert_df_in_dict(d):
         elif isinstance(value, dict):
             convert_df_in_dict(value)
     return d
+
 # Get Statsbomb matches data
 matches = sb.matches(competition_id=11, season_id=281, creds=creds)
 matches["competition_id"] = 11
@@ -38,7 +39,6 @@ cols = cols[-2:] + cols[:-2]
 matches = matches[cols]
 #save the matches to csv
 matches.to_csv(os.path.join(save_dir, "matches.csv"), index=False)
-
 
 # Get Statsbomb lineups and events
 os.makedirs(os.path.join(save_dir, "lineups"), exist_ok=True)
@@ -53,7 +53,7 @@ for match_id in tqdm(matches["match_id"].unique()):
         json.dump(lineups, f, indent=4)
 
 
-#load_statsbomb_skillcorner
+#Match the statsbomb and skillcorner
 statsbomb_match_id=3894907 #for the match id matching refer to id_matching.csv
 skillcorner_match_id=1553748
 output_dir="data.csv"
