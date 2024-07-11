@@ -22,6 +22,8 @@ dependencies = [
     "pandas>=1.3.0",
     "numpy>=1.21.0",
     "statsbombpy>=0.0.1",
+    "tqdm",
+    
 ]
 
 license = { text = "Apache License 2.0" }

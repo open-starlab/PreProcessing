@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import xml.etree.ElementTree as ET
 from statsbombpy import sb
+import os
 import pdb
 # import logging
 
@@ -134,9 +135,11 @@ def load_metrica(event_path: str, match_id: str = None, tracking_home_path: str 
                 record.get('start', {}).get('y', None),
                 record.get('end', {}).get('x', None),
                 record.get('end', {}).get('y', None),
-                *process_tracking_data(tracking_home_df, frame),
-                *process_tracking_data(tracking_away_df, frame)
             ]
+            if tracking_home_df is not None:
+                event_details.extend(process_tracking_data(tracking_home_df, frame))
+            if tracking_away_df is not None:
+                event_details.extend(process_tracking_data(tracking_away_df, frame))
             event_list.append(event_details)
     else:  # CSV data
         for _, record in event_data.iterrows():
@@ -153,9 +156,11 @@ def load_metrica(event_path: str, match_id: str = None, tracking_home_path: str 
                 record.get('Start Y', None),
                 record.get('End X', None),
                 record.get('End Y', None),
-                *process_tracking_data(tracking_home_df, frame),
-                *process_tracking_data(tracking_away_df, frame)
             ]
+            if tracking_home_df is not None:
+                event_details.extend(process_tracking_data(tracking_home_df, frame))
+            if tracking_away_df is not None:
+                event_details.extend(process_tracking_data(tracking_away_df, frame))
             event_list.append(event_details)
 
     # Define columns based on the availability of tracking data
@@ -516,12 +521,19 @@ def load_statsbomb(event_path: str = None, sb360_path: str = None, match_id: str
                 elif cross:
                     event_type_2="Cross"
                 elif pass_type:
-                    pass_type=pass_type.split("-")[-2:]
-                    event_type_2="_".join(pass_type)
-                    #remove space
-                    event_type_2=event_type_2.replace(" ","")
+                    pass_type=pass_type.split("-")[-1:]
+                    # event_type_2="_".join(pass_type)
+                    event_type_2=pass_type[0]
+                    #remove the first character if it is a space
+                    if event_type_2[0]==" ":
+                        event_type_2=event_type_2[1:]
+                if event_type_2==None:
+                    event_type_2=event.get('pass', {}).get('height',{}).get('name')
+
             elif event_type=="Shot":
                 event_type_2=event.get('shot', {}).get('outcome', {}).get('name')
+            elif event_type=="Own Goal For":
+                event_type_2="Own Goal"
             
             team = event.get('team', {}).get('name')
             player = event.get('player', {}).get('name')
@@ -559,8 +571,9 @@ def load_statsbomb(event_path: str = None, sb360_path: str = None, match_id: str
         match_id = event_api_data['match_id'].tolist()
         period = event_api_data['period'].tolist()
         time = event_api_data['timestamp'].tolist()
-        minute = event_api_data['minute'].tolist()
-        second = event_api_data['second'].tolist()
+        #get the minute and second from the timestamp '00:04:36.095'
+        minute=[int(t.split(":")[1]) for t in time]
+        second=[float(t.split(":")[2]) for t in time]
         event_type = event_api_data['type'].tolist()
         team = event_api_data['team'].tolist()
         player = event_api_data['player'].tolist()
@@ -592,6 +605,8 @@ def load_statsbomb(event_path: str = None, sb360_path: str = None, match_id: str
                     event_type_2[i]=pass_height
             elif event_type[i]=="Shot":
                 event_type_2[i]=event_api_data.loc[i,'shot_outcome']
+            elif event_type[i]=="Own Goal Against":
+                event_type_2[i]="Own Goal"
 
         start_x = [loc[0] if isinstance(loc, (list, np.ndarray)) else None for loc in location]
         start_y = [loc[1] if isinstance(loc, (list, np.ndarray)) else None for loc in location]
@@ -632,6 +647,17 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     
     with open(skillcorner_match_path) as f:
         match = json.load(f)
+
+    #check if the file exists
+    if not os.path.exists(statsbomb_event_path):
+        print(f"Statsbomb event file not found: {statsbomb_event_path}")
+        return None
+    if not os.path.exists(skillcorner_tracking_path):
+        print(f"Skillcorner tracking file not found: {skillcorner_tracking_path}")
+        return None
+    if not os.path.exists(skillcorner_match_path):
+        print(f"Skillcorner match file not found: {skillcorner_match_path}")
+        return None
 
     # Team name mapping
     team_name_dict = {
@@ -899,9 +925,9 @@ if __name__ == "__main__":
     # statsbomb_df=load_statsbomb(statsbomb_event_path,statsbomb_360_path)
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_data.csv",index=False)
 
-    #test load_statsbomb with api data
-    # statsbomb_df=load_statsbomb(match_id=3795108)
-    # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
+    # test load_statsbomb with api data
+    statsbomb_df=load_statsbomb(match_id=3795108)
+    statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
     # statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
@@ -909,8 +935,8 @@ if __name__ == "__main__":
     # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
-    wyscout_df=load_wyscout(wyscout_event_path)
-    wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
+    # wyscout_df=load_wyscout(wyscout_event_path)
+    # wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
 
 
     print("----------------done-----------------")
