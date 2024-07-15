@@ -2,6 +2,7 @@ test/
 test/sports/event_data/data/statsbomb_skillcorner
 test/sports/event_data/data/statsbomb/api.json
 preprocessing/example/statsbomb_skillcorner_data_test.py
+/preprocessing/sports/event_data/__pycache__
 
 
 

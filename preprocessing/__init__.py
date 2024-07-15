@@ -1,5 +1,2 @@
-from .config import setup_logging
 
-setup_logging()
-
-from . import sports
+from .sports.event_data.main import Event_data
