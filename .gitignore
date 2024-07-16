@@ -3,14 +3,7 @@ test/sports/event_data/data/statsbomb_skillcorner
 test/sports/event_data/data/statsbomb/api.json
 preprocessing/example/statsbomb_skillcorner_data_test.py
 /preprocessing/sports/event_data/__pycache__
+.pypirc
+/preprocessing/example_testing/
+openstarlab_preprocessing.egg-info/
 
-
-
-
-#ground detection
-
-#joint velocity
-
-#joint angle
-
-#overlay

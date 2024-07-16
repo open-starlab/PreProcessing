@@ -277,7 +277,7 @@ def seq2event(data):
 
     # Reorder columns
     df = df[[
-        "match_id", "poss_id", "team", "action", "start_x", "start_y", "x_diff", "y_diff", 
+        "comp", "match_id", "poss_id", "team", "action", "start_x", "start_y", "x_diff", "y_diff", 
         "distance", "distance2goal", "angle2goal", "seconds", "time_diff", "score_diff"
     ]]
 
@@ -307,7 +307,6 @@ def nmstpp(data):
         raise ValueError("The data must be a pandas DataFrame or a file path")
     
     df=seq2event(df)
-    
     #define the zone clusters for Juego de Posición
     centroid_x=[ 8.5 , 25.25, 41.75, 58.25, 74.75, 91.5,8.5 , 25.25, 41.75, 58.25, 74.75, 
                 91.5,33.5, 66.5,33.5, 66.5,33.5, 66.5,8.5,91.5]
@@ -373,7 +372,7 @@ def nmstpp(data):
 
     #reorder columns
     df = df[[
-        "match_id", "poss_id", "team", "action","zone","zone_s","zone_deltax","zone_deltay","zone_dist2goal","zone_angle2goal", 
+        "comp","match_id", "poss_id", "team", "action","zone","zone_s","zone_deltax","zone_deltay","zone_dist2goal","zone_angle2goal", 
         "seconds", "time_diff", "score_diff",]]
     
     #round numerical columns
@@ -504,7 +503,7 @@ def lem(data):
 
     #reorder columns
     df = df[[
-        "match_id", "EventType", "IsGoal", "IsAccurate","IsHome", "Period", "Minute","Second","start_x","start_y","HomeScore","AwayScore"
+        "comp", "match_id", "EventType", "IsGoal", "IsAccurate","IsHome", "Period", "Minute","Second","start_x","start_y","HomeScore","AwayScore"
     ]]
 
     #rename columns
@@ -1163,7 +1162,7 @@ def UIED_statsbomb(data):
                 else:
                     new_df.append(period_df.iloc[i])
     df=pd.concat(new_df,axis=1).T.reset_index(drop=True)
-
+    
     #reorder columns
     try:
         sb360_columns = ["h"+str(i)+"_"+j for i in range(1, 12) for j in ["teammate", "actor", "keeper", "x", "y"]] + ["a"+str(i)+"_"+j for i in range(1, 12) for j in ["teammate", "actor", "keeper", "x", "y"]]
@@ -1211,9 +1210,9 @@ if __name__ == '__main__':
     # df.to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_preprocess_seq2event.csv",index=False)
 
     # nmstpp
-    # df_path=os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv"
-    # df=nmstpp(df_path)
-    # df.to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_preprocess_nmstpp.csv",index=False)
+    df_path=os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv"
+    df=nmstpp(df_path)
+    df.to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_preprocess_nmstpp.csv",index=False)
 
     # lem
     # df_path=os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv"
@@ -1221,21 +1220,21 @@ if __name__ == '__main__':
     # df.to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_preprocess_lem.csv",index=False)
 
     # UIED
-    df_wyscout_path=os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv"
-    df_wyscout=UIED_wyscout(df_wyscout_path)  
-    df_wyscout.to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_preprocess_wyscout_UIED.csv",index=False)
+    # df_wyscout_path=os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv"
+    # df_wyscout=UIED_wyscout(df_wyscout_path)  
+    # df_wyscout.to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_preprocess_wyscout_UIED.csv",index=False)
 
-    df_statsbomb_skillcorner_path=os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv"
-    df_statsbomb_skillcorner=UIED_statsbomb(df_statsbomb_skillcorner_path)
-    df_statsbomb_skillcorner.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_preprocess_statsbomb_skillcorner_UIED.csv",index=False)
+    # df_statsbomb_skillcorner_path=os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv"
+    # df_statsbomb_skillcorner=UIED_statsbomb(df_statsbomb_skillcorner_path)
+    # df_statsbomb_skillcorner.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_preprocess_statsbomb_skillcorner_UIED.csv",index=False)
 
-    df_statsbomb_json_path=os.getcwd()+"/test/sports/event_data/data/statsbomb/test_data.csv"
-    df_statsbomb_json=UIED_statsbomb(df_statsbomb_json_path)
-    df_statsbomb_json.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_preprocess_statsbomb_json_UIED.csv",index=False)
+    # df_statsbomb_json_path=os.getcwd()+"/test/sports/event_data/data/statsbomb/test_data.csv"
+    # df_statsbomb_json=UIED_statsbomb(df_statsbomb_json_path)
+    # df_statsbomb_json.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_preprocess_statsbomb_json_UIED.csv",index=False)
 
-    df_statsbomb_api_path=os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv"
-    df_statsbomb_api=UIED_statsbomb(df_statsbomb_api_path)
-    df_statsbomb_api.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_preprocess_statsbomb_api_UIED.csv",index=False)
+    # df_statsbomb_api_path=os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv"
+    # df_statsbomb_api=UIED_statsbomb(df_statsbomb_api_path)
+    # df_statsbomb_api.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_preprocess_statsbomb_api_UIED.csv",index=False)
 
 
     print('-----------------end-----------------')

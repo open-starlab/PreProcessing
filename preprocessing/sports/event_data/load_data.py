@@ -933,6 +933,14 @@ def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
     columns = ["match_id", "period", "seconds", "event_type", "event_type_2","accurate", "team", "home_team", "player", "start_x", "start_y", "end_x", "end_y"]
     df = pd.DataFrame(event_list, columns=columns)
 
+    #create the comp column
+    df["comp"]=event_path.split("/")[-1].split("_")[1].split(".")[0]
+
+    #move the comp column to the first column
+    cols = list(df.columns)
+    cols = [cols[-1]] + cols[:-1]
+    df = df[cols]
+
     return df
 
 if __name__ == "__main__":
@@ -987,8 +995,8 @@ if __name__ == "__main__":
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_data.csv",index=False)
 
     # test load_statsbomb with api data
-    statsbomb_df=load_statsbomb(match_id=3795108)
-    statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
+    # statsbomb_df=load_statsbomb(match_id=3795108)
+    # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
     # statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
@@ -996,8 +1004,8 @@ if __name__ == "__main__":
     # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
-    # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
-    # wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
+    wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
+    wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
 
     print("----------------done-----------------")
     pdb.set_trace()

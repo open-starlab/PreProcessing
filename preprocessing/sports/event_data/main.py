@@ -16,8 +16,12 @@ import pandas as pd
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-import load_data
-import processing
+if __name__ == '__main__':
+    import load_data
+    import processing
+else:
+    from . import load_data
+    from . import processing
 import pdb
 
 #create a class to wrap the data source

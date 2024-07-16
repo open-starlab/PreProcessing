@@ -5,8 +5,8 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "preprocessing"
-version = "0.1"
+name = "openstarlab_preprocessing"
+version = "0.1.1"
 description = "openstarlab preprocessing package"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -29,4 +29,7 @@ dependencies = [
 license = { text = "Apache License 2.0" }
 
 [tool.setuptools.packages.find]
-where = ["preprocessing"]
+where = ["."]
+
+[project.urls]
+Homepage = "https://github.com/open-starlab/PreProcessing"
