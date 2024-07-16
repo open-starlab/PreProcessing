@@ -6,4 +6,5 @@ preprocessing/example/statsbomb_skillcorner_data_test.py
 .pypirc
 /preprocessing/example_testing/
 openstarlab_preprocessing.egg-info/
-
+preprocessing/__pycache__
+preprocessing/sports/event_data/__pycache__
