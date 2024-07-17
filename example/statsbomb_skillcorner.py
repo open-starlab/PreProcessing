@@ -57,7 +57,7 @@ if __name__ == "__main__":
     #path to the skillcorner tracking data
     tracking_path="/skillcorner/tracking"
     #path to the skillcorner match data
-    match_id_path="/skillcorner/match"
+    match_path="/skillcorner/match"
 
     download_statsbomb_data(creds, save_dir)
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     statsbomb_skillcorner_df=Event_data(data_provider='statsbomb_skillcorner',
                                         statsbomb_event_dir=save_dir+'/events',
                                         skillcorner_tracking_dir=tracking_path,
-                                        skillcorner_match_dir=match_id_path,
+                                        skillcorner_match_dir=match_path,
                                         statsbomb_match_id=statsbomb_match_id,
                                         skillcorner_match_id=skillcorner_match_id
                                         ).load_data()
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     statsbomb_skillcorner_df=Event_data(data_provider='statsbomb_skillcorner',
                                         statsbomb_event_dir=save_dir+'/events',
                                         skillcorner_tracking_dir=tracking_path,
-                                        skillcorner_match_dir=match_id_path,
+                                        skillcorner_match_dir=match_path,
                                         match_id_df=os.getcwd()+'/id_matching.csv', #the path of the match id matching file
                                         ).load_data()
     statsbomb_skillcorner_df.to_csv(output_dir,index=False)
