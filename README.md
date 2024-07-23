@@ -20,7 +20,7 @@ pip install -e .
 
 ## Current Features
 ### Sports
-- [Event data in football/soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/README.md)
+- [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/README.md)
 
 ## RoadMap
 - [x] Release the package
