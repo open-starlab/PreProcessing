@@ -1,10 +1,3 @@
-import sys
-print(sys.path)
-
-# import sys
-# sys.path.append('/home/c_yeung/workspace6/python/openstarlab/PreProcessing')
-
-
 import os
 import json
 from tqdm import tqdm
@@ -81,7 +74,7 @@ if __name__ == "__main__":
                                         statsbomb_event_dir=save_dir+'/events',
                                         skillcorner_tracking_dir=tracking_path,
                                         skillcorner_match_dir=match_path,
-                                        match_id_df=os.getcwd()+'/id_matching.csv', #the path of the match id matching file
+                                        match_id_df=os.getcwd()+'/id_matching.csv', #(For laliga 23-24 data, lcoated in "openstarlab_preprocessing/open/example/id_matching.csv")
                                         ).load_data()
     statsbomb_skillcorner_df.to_csv(output_dir,index=False)
     print("---------------done-----------------")
