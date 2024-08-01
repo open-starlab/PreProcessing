@@ -7,6 +7,7 @@ This package offers functions to load and preprocess event data from various sou
 You can find detailed documentation on supported data providers [here](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Data_Provider/index.html). The supported providers include:
 
 - DataFactory
+- DataStadium
 - Metrica
 - Opta
 - Robocup 2D Simulation

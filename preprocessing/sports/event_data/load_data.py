@@ -943,6 +943,176 @@ def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
 
     return df
 
+def load_datastadium(
+    datastadium_event_path: str,
+    datastadium_home_tracking_path: str,
+    datastadium_away_tracking_path: str
+) -> pd.DataFrame:
+    """
+    Loads and processes event and tracking data from stadium event recordings.
+    
+    Args:
+        datastadium_event_path (str): Path to the CSV file containing event data.
+        datastadium_home_tracking_path (str): Path to the CSV file containing home team tracking data.
+        datastadium_away_tracking_path (str): Path to the CSV file containing away team tracking data.
+        
+    Returns:
+        pd.DataFrame: A DataFrame containing the merged and processed event and tracking data.
+    """
+    # Load data
+    event = pd.read_csv(datastadium_event_path, encoding='shift_jis')
+    home_tracking = pd.read_csv(datastadium_home_tracking_path)
+    away_tracking = pd.read_csv(datastadium_away_tracking_path)
+
+    # Define required columns and flags
+    required_columns = [
+        "試合ID", "ホームアウェイF", "チーム名", "選手名", "アクション名", "F_成功",
+        "位置座標X", "位置座標Y", "敵陣F", "点差", "自スコア", "相手スコア",
+        "F_ゴール", "F_セーブ", "F_シュートGK以外", "F_ミスヒット", "ゴール角度", 
+        "ゴール距離", "F_パス", "F_クロス", "F_ドリブル", "F_クリア", 
+        "F_ハンドクリア", "F_ゴールキック", "F_コーナーキック", "F_直接フリーキック",
+        "F_間接フリーキック", "絶対時間秒数", "フレーム番号","距離"
+    ]
+    flags = [
+        "F_ゴール", "F_セーブ", "F_シュートGK以外", "F_ミスヒット", "F_パス", 
+        "F_クロス", "F_ドリブル", "F_クリア", "F_ハンドクリア", "F_ゴールキック", 
+        "F_コーナーキック", "F_直接フリーキック", "F_間接フリーキック"
+    ]
+    event_type_dict = {
+        "前半開始": "First Half Start", "前半終了": "First Half End", "後半開始": "Second Half Start", 
+        "後半終了": "Second Half End", "延長前半開始": "Overtime First Half Start", 
+        "延長前半終了": "Overtime First Half End", "延長後半開始": "Overtime Second Half Start",
+        "延長後半終了": "Overtime Second Half End", "再延長前半開始": "Second Overtime First Half Start",
+        "再延長前半終了": "Second Overtime First Half End", "再延長後半開始": "Second Overtime Second Start",
+        "再延長後半終了": "Second Overtime Second End", "PK戦開始": "PK Start", "PK戦終了": "PK End",
+        "シュート": "Shoot", "GK": "GK", "直接FK": "Direct FK", "キャッチ": "Catch", 
+        "警告(イエロー)": "YellowCard", "PK": "PK", "CK": "CK", "間接FK": "Indirect FK", 
+        "オフサイド": "Offside", "退場(レッド)": "RedCard", "交代": "Change", "キックオフ": "KickOff", 
+        "ファウルする": "Foul", "オウンゴール": "OwnGoal", "ホームパス": "HomePass", 
+        "アウェイパス": "AwayPass", "PKパス": "PKPass", "ポジション変更": "Position Change", 
+        "中断": "Suspension", "ドリブル": "Dribble", "スルーパス": "Through Pass", 
+        "ハンドクリア": "Hand Clear", "ファウル受ける": "Foul", "ドロップボール": "Drop Ball", 
+        "ボールアウト": "Ball Out", "インターセプト": "Intercept", "クリア": "Clear", 
+        "ブロック": "Block", "スローイン": "ThrowIn", "クロス": "Cross", "トラップ": "Trap", 
+        "PK合戦": "PK Battle", "試合再開": "Resume", "フィード": "Feed", "タッチ": "Touch", 
+        "タックル": "Tackle", "フリックオン": "FrickOn", "試合中断": "Suspension", 
+        "ポスト/バー": "Post Bar", "試合中断(試合中)": "Suspension(InGame)", 
+        "試合再開(試合中)": "Resume(InGame)"
+    }
+    flag_dict = {
+        "F_ゴール": "Goal", "F_セーブ": "Save", "F_シュートGK以外": "Shot(not_GK)", 
+        "F_ミスヒット": "MissHit", "F_パス": "Pass", "F_クロス": "Cross", "F_ドリブル": "Dribble",
+        "F_クリア": "Clear", "F_ハンドクリア": "HandClear", "F_ゴールキック": "GoalKick", 
+        "F_コーナーキック": "CornerKick", "F_直接フリーキック": "DirectFreeKick",
+        "F_間接フリーキック": "IndirectFreeKick"
+    }
+    
+    # Filter columns and preprocess data
+    event = event[required_columns].copy()
+    event["絶対時間秒数"] = event["絶対時間秒数"].astype(float)
+    event = event.sort_values(by="絶対時間秒数")
+
+    # Create event_type_2 column based on flags
+    def get_event_type_2(row):
+        event_types = [flag_dict[f] for f in flags if row[f] == 1]
+        return "/".join(event_types) if event_types else None
+
+    event["event_type_2"] = event.apply(get_event_type_2, axis=1)
+    event = event.drop(columns=flags)
+
+    # Rename columns
+    event.columns = [
+        "match_id", "home", "team", "player", "event_type", "success", 
+        "start_x", "start_y", "opp_field", "point_diff", "self_score", 
+        "opp_score", "angle2goal", "dist2goal", "absolute_time", 
+        "frame", "dist", "event_type_2"
+    ]
+    
+    # Reorder columns
+    event = event[[
+        "match_id", "team", "home", "player", "frame", "absolute_time",
+        "event_type", "event_type_2", "success", "start_x", "start_y","dist",
+        "opp_field", "point_diff", "self_score", "opp_score", "angle2goal",
+        "dist2goal"
+    ]]
+
+    # Convert event_type to English
+    event["event_type"] = event["event_type"].map(event_type_dict).fillna(event["event_type"])
+
+    # Calculate period, minute, and second
+    def calculate_time(row, half_start, period_flag):
+        time_elapsed = float(row["absolute_time"]) - half_start
+        return int(time_elapsed / 60), round(time_elapsed % 60, 4)
+
+    period, minute, second = [], [], []
+    half_start = float(event.iloc[0]["absolute_time"])
+    period_flag = 1
+
+    for _, row in event.iterrows():
+        if row["event_type"] == "Second Half Start":
+            period_flag = 2
+            half_start = float(row["absolute_time"])
+
+        period.append(period_flag)
+        m, s = calculate_time(row, half_start, period_flag)
+        minute.append(m)
+        second.append(s)
+
+    event["Period"] = period
+    event["Minute"] = minute
+    event["Second"] = second
+
+    # Reorder columns
+    event = event[[
+        "match_id", "Period", "Minute", "Second", "frame", "absolute_time",
+        "team", "home", "player", "event_type", "event_type_2", "success",
+        "start_x", "start_y", "dist", "opp_field", "point_diff", "self_score",
+        "opp_score", "angle2goal", "dist2goal"
+    ]]
+
+    #reset the index
+    event.reset_index(drop=True, inplace=True)
+
+    # get the tracking start time for 2nd half
+    tracking_start_time_2 = home_tracking[home_tracking["Period"] == 2].iloc[0]["Time [s]"]
+
+    #sort both tracking data
+    home_tracking = home_tracking.sort_values(by="Time [s]").reset_index(drop=True)
+    away_tracking = away_tracking.sort_values(by="Time [s]").reset_index(drop=True)
+
+    home_tracking_time = home_tracking["Time [s]"].round(2).values
+    tracking_col_home = [f"Home_{i}_x" for i in range(1, 15)] + [f"Home_{i}_y" for i in range(1, 15)]
+    tracking_col_away = [f"Away_{i}_x" for i in range(1, 15)] + [f"Away_{i}_y" for i in range(1, 15)]
+
+    # Calculate event times vectorized
+    event_time = event["Minute"] * 60 + event["Second"] + tracking_start_time_2 * (event["Period"] == 2)
+
+    # Find nearest indices using numpy
+    nearest_indices = np.searchsorted(home_tracking_time, event_time,side='left')
+    nearest_indices = np.clip(nearest_indices, 0, len(home_tracking_time) - 1)
+
+    # Get the corresponding tracking data
+    home_tracking_data = home_tracking.iloc[nearest_indices][tracking_col_home].values
+    away_tracking_data = away_tracking.iloc[nearest_indices][tracking_col_away].values
+
+    # pdb.set_trace()
+
+    # Combine the results
+    new_df = pd.concat([event, pd.DataFrame(home_tracking_data, columns=tracking_col_home),
+                        pd.DataFrame(away_tracking_data, columns=tracking_col_away)], axis=1)
+
+
+    # Create final DataFrame
+    columns = [
+        "match_id", "absolute_time", "Period", "Minute", "Second", "team", "home", "player", 
+        "event_type", "event_type_2", "success", "start_x", "start_y", "dist",
+        "opp_field", "point_diff", "self_score", "opp_score", 
+        "angle2goal", "dist2goal"] + tracking_col_home + tracking_col_away
+    
+    final_df = pd.DataFrame(new_df, columns=columns)
+
+    return final_df
+
 if __name__ == "__main__":
     import pdb
     import os
@@ -967,6 +1137,9 @@ if __name__ == "__main__":
     statsbomb_skillcorner_match_path="/data_pool_1/laliga_23/skillcorner/match"
     wyscout_event_path=os.getcwd()+"/test/sports/event_data/data/wyscout/events_England.json"
     wyscout_matches_path=os.getcwd()+"/test/sports/event_data/data/wyscout/matches_England.json"
+    datastadium_event_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/play.csv"
+    datastadium_home_tracking_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/home_tracking.csv"
+    datastadium_away_tracking_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/away_tracking.csv"
 
     #test load_datafactory
     # datafactory_df=load_datafactory(datafactory_path)
@@ -1004,8 +1177,15 @@ if __name__ == "__main__":
     # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
-    wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
-    wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
+    # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
+    # wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
 
-    print("----------------done-----------------")
-    pdb.set_trace()
+    # print("----------------done-----------------")
+    # pdb.set_trace()
+    
+    #test load_datastadium
+    event=load_datastadium(datastadium_event_path,datastadium_home_tracking_path,datastadium_away_tracking_path)
+    event.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv",index=False)
+
+    # pdb.set_trace()
+

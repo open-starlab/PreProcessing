@@ -9,6 +9,7 @@ Wyscout: json
 Opta data:xml
 DataFactory:json
 sportec:xml
+DataStadium:csv 
 '''
 
 import os
@@ -68,6 +69,8 @@ class Event_data:
             df=load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
         elif self.data_provider == 'wyscout':
             df=load_data.load_wyscout(self.event_path,self.wyscout_matches_path)
+        elif self.data_provider == "datastadium":
+            df=load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
         else:
             raise ValueError('Data provider not supported or not found')
         return df
@@ -79,8 +82,10 @@ class Event_data:
            (self.data_provider == 'statsbomb' and self.statsbomb_match_id is None and os.path.isfile(self.event_path)) or \
             (self.data_provider == 'statsbomb_skillcorner' and self.statsbomb_match_id is not None):
             df = self.load_data_single_file()
+        #load data from multiple files
         elif (self.event_path is not None and os.path.isdir(self.event_path)) or self.data_provider == 'statsbomb' or \
             (self.data_provider == 'statsbomb_skillcorner' and self.statsbomb_match_id is None and self.skillcorner_match_id is None):
+            #statsbomb_skillcorner
             if self.data_provider == 'statsbomb_skillcorner':
                 out_df_list = []
                 self.match_id_df = pd.read_csv(self.match_id_df)
@@ -123,6 +128,7 @@ class Event_data:
                     self.match_id = match_id
                 elif self.data_provider == "wyscout":
                     self.wyscout_matches_path=matches_path
+            # other data providers
             elif self.data_provider in ['metrica','robocup_2d','sportec']:
                 #warnging that the event data and tracking data will be matched via the file name
                 print('Warning: Event data and tracking data will be matched via the file name')
@@ -178,6 +184,7 @@ class Event_data:
                     self.event_path = event_path
                     self.tracking_path = tracking_path
                     self.meta_path = meta_path
+            # statsbomb
             elif self.data_provider == 'statsbomb':
                 print('Warning: Event data and 360 data will be matched via the file name')
                 out_df_list = []
@@ -192,10 +199,6 @@ class Event_data:
                         self.event_path = event_path_local
                         self.sb360_path = sb360_path_local
                         return self.load_data_single_file()
-
-
-                    # for f in tqdm(files, total=len(files)):
-                    #     out_df_list.append(process_file(f))
 
                     with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                         futures = {executor.submit(process_file, f): f for f in files}
@@ -220,15 +223,41 @@ class Event_data:
                     for f in tqdm(files, total=len(files)):
                         out_df_list.append(process_id(f))
 
-                    # with ThreadPoolExecutor() as executor:
-                    #     futures = {executor.submit(process_id, f): f for f in files}
-                    #     for future in tqdm(as_completed(futures), total=len(futures)):
-                    #         result = future.result()
-                    #         if result is not None:
-                    #             out_df_list.append(result)
-                    
                     df = pd.concat(out_df_list)
                     self.statsbomb_match_id = files
+            # datastadium
+            elif self.data_provider == "datastadium":
+                out_df_list = []
+
+                event_dir = self.event_path
+
+                def process_event_folder(f):
+                    # Define file paths for the current event folder
+                    self.event_path = os.path.join(event_dir, f, 'play.csv')
+                    self.tracking_home_path = os.path.join(event_dir, f, 'home_tracking.csv')
+                    self.tracking_away_path = os.path.join(event_dir, f, 'away_tracking.csv')
+
+                    # Load data
+                    df = self.load_data_single_file()
+                    return df
+
+                # Initialize ThreadPoolExecutor
+                with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                    # Get list of event folders
+                    event_folders = sorted(f for f in os.listdir(self.event_path) if not (f.startswith('.') or f.startswith('@')))
+                    # Submit tasks to the executor
+                    future_to_event = {executor.submit(process_event_folder, folder): folder for folder in event_folders}
+                    # Collect results
+                    out_df_list = []
+                    for future in tqdm(as_completed(future_to_event), total=len(future_to_event)):
+                        try:
+                            df = future.result()
+                            out_df_list.append(df)
+                        except Exception as e:
+                            print(f'Error processing folder {future_to_event[future]}: {e}')
+                self.event_path = event_dir
+                df = pd.concat(out_df_list)
+
         else:
             raise ValueError('Event path is not a valid file or directory')
         print(f'Loaded data from {self.data_provider}')
@@ -254,10 +283,12 @@ class Event_data:
     
     def preprocessing_single_df(self,df):
         df_out=None
-        if self.data_provider in ["statsbomb", "wyscout","statsbomb_skillcorner"]:
+        if self.data_provider in ["statsbomb", "wyscout","statsbomb_skillcorner","datastadium"]:
             if self.data_provider in ["statsbomb","statsbomb_skillcorner"]:
                 df = df.reset_index(drop=True)
                 df_out=processing.UIED_statsbomb(df)
+            elif self.data_provider == "datastadium":
+                df_out=processing.UIED_datastadium(df)
             elif self.data_provider == "wyscout":
                 if self.preprocess_method == "UIED":
                     df_out=processing.UIED_wyscout(df)
@@ -310,10 +341,6 @@ class Event_data:
         print(f'Preprocessed data from {self.data_provider} with method {self.preprocess_method}')
         return df
 
-def download_statsbomb_api():
-    123
-
-
 
 if __name__ == '__main__':
     datafactory_path=os.getcwd()+"/test/sports/event_data/data/datafactory/datafactory_events.json"
@@ -335,6 +362,10 @@ if __name__ == '__main__':
     statsbomb_skillcorner_tracking_path="/data_pool_1/laliga_23/skillcorner/tracking"
     statsbomb_skillcorner_match_path="/data_pool_1/laliga_23/skillcorner/match"
     wyscout_event_path=os.getcwd()+"/test/sports/event_data/data/wyscout/events_England.json"
+    datastadium_event_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/play.csv"
+    datastadium_tracking_home_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/home_tracking.csv"
+    datastadium_tracking_away_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/away_tracking.csv"
+    datastadium_dir="/work2/fujii/JLeagueData/Data_2019FM"
 
     #test single file
 
@@ -383,6 +414,13 @@ if __name__ == '__main__':
     # wyscout_df=Event_data(data_provider='wyscout',event_path=wyscout_event_path).load_data()
     # wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data_main.csv",index=False)
 
+    # test load_datastadium
+    # datastadium_df=Event_data(data_provider='datastadium',event_path=datastadium_event_path,
+    #                           tracking_home_path=datastadium_tracking_home_path,tracking_away_path=datastadium_tracking_away_path).load_data()
+    # datastadium_df.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load_class_single.csv",index=False)
+
+
+
     #test preprocessing
     # seq2event
     # wyscout_df=Event_data(data_provider='wyscout',event_path=wyscout_event_path,preprocess_method="SEQ2EVENT",max_workers=10).preprocessing()
@@ -418,6 +456,12 @@ if __name__ == '__main__':
     #test UIED statsbomb_api
     # df_statsbomb_api=Event_data(data_provider='statsbomb',statsbomb_match_id=3795108,preprocess_method="UIED").preprocessing()
     # df_statsbomb_api.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_preprocess_statsbomb_api_UIED_main.csv",index=False)
+
+    #test UIED datastadium
+    # df_datastadium=Event_data(data_provider='datastadium',event_path=datastadium_event_path,
+    #                           tracking_home_path=datastadium_tracking_home_path,tracking_away_path=datastadium_tracking_away_path,
+    #                           preprocess_method="UIED").preprocessing()
+    # df_datastadium.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/preprocess_UIED_class_single.csv",index=False)
 
 
 
@@ -456,6 +500,9 @@ if __name__ == '__main__':
     #                       max_workers=10).load_data()
     # wyscout_df.head(10000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data_main_multi.csv",index=False)
 
+    #test load_datastadium multiple files
+    # datastadium_df=Event_data(data_provider='datastadium',event_path=datastadium_dir,max_workers=10).load_data()
+    # datastadium_df.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load_class_multi.csv",index=False)
 
     #test preprocessing multi files
     # wyscout_event_path="/home/c_yeung/workspace6/python/openstarlab/PreProcessing/test/sports/event_data/data/wyscout/event"
@@ -500,6 +547,10 @@ if __name__ == '__main__':
     # statsbomb_df.head(10000).to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_preprocess_statsbomb_json_UIED_main_multi.csv",index=False)
 
     #UIED statsbomb_api (could not test due to Max retries exceeded)
+
+    #test UIED datastadium multiple files
+    # df_datastadium=Event_data(data_provider='datastadium',event_path=datastadium_dir,preprocess_method="UIED",max_workers=10).preprocessing()
+    # df_datastadium.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/preprocess_UIED_class_multi.csv",index=False)
 
 
     print("-----------done-----------")
