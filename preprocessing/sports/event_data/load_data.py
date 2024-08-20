@@ -812,8 +812,8 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
         away_tracking_columns.extend([f"a{i}_x", f"a{i}_y"])
     columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y"] + home_tracking_columns + away_tracking_columns
 
-    # Sort the DataFrame by 'period', 'minute', and 'second'
-    df_list = sorted(df_list, key=lambda x: (x[1], x[3], x[4]))
+    # Sort the DataFrame by 'seconds'
+    df_list = sorted(df_list, key=lambda x: x[5])
 
     # Convert the event list to a DataFrame
     df = pd.DataFrame(df_list, columns=columns)

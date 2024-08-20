@@ -744,6 +744,7 @@ def UIED_wyscout(data):
                 last_row = poss_df.iloc[-1].copy()
                 last_row["action"] = "_"
                 #change the value of the features to 0
+                last_row['goal'] = 0
                 last_row["success"]=0
                 last_row["deltaX"]=0
                 last_row["deltaY"]=0
@@ -754,6 +755,7 @@ def UIED_wyscout(data):
                 new_df.append(last_row)
             last_row = period_df.iloc[-1].copy()
             #change the value of the features to 0
+            last_row['goal'] = 0
             last_row["success"]=0
             last_row["deltaX"]=0
             last_row["deltaY"]=0
@@ -1073,6 +1075,7 @@ def UIED_statsbomb(data):
                 last_row = poss_df.iloc[-1].copy()
                 last_row["action"] = "_"
                 #change the value of the features to 0
+                last_row['goal']=0
                 last_row["success"]=0
                 last_row["deltaX"]=0
                 last_row["deltaY"]=0
@@ -1083,6 +1086,7 @@ def UIED_statsbomb(data):
                 new_df.append(last_row)
             last_row = period_df.iloc[-1].copy()
             #change the value of the features to 0
+            last_row['goal']=0
             last_row["success"]=0
             last_row["deltaX"]=0
             last_row["deltaY"]=0
@@ -1420,6 +1424,7 @@ def UIED_datastadium(data):
                 last_row = poss_df.iloc[-1].copy()
                 last_row["action"] = "_"
                 #change the value of the features to 0
+                last_row['goal']=0
                 last_row["success"]=0
                 last_row["deltaX"]=0
                 last_row["deltaY"]=0
@@ -1430,6 +1435,7 @@ def UIED_datastadium(data):
                 new_df.append(last_row)
             last_row = period_df.iloc[-1].copy()
             #change the value of the features to 0
+            last_row['goal']=0
             last_row["success"]=0
             last_row["deltaX"]=0
             last_row["deltaY"]=0
