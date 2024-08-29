@@ -432,7 +432,7 @@ def load_sportec(event_path: str, tracking_path: str = None, meta_path: str = No
 
     return df
 
-def load_statsbomb(event_path: str = None, sb360_path: str = None, match_id: str = None, *statsbomb_api_args) -> pd.DataFrame:
+def load_statsbomb(event_path: str = None, sb360_path: str = None, match_id: str = None, **statsbomb_api_kwargs) -> pd.DataFrame:
     """
     Load StatsBomb event and 360 data from files or API. (currently only the api freezeframe data is not implemented)
 
@@ -443,7 +443,7 @@ def load_statsbomb(event_path: str = None, sb360_path: str = None, match_id: str
     - event_path (str): Path to the JSON file containing the event data.
     - sb360_path (str): Path to the JSON file containing the 360 data.
     - match_id (str): Match ID to fetch the event data from the StatsBomb API.
-    - *statsbomb_api_args: Additional arguments to pass to the StatsBomb API.
+    - **statsbomb_api_kwargs: Additional keyword arguments to pass to the StatsBomb API.
 
     Returns:
     - pd.DataFrame: DataFrame containing the consolidated event and freeze frame data.
@@ -453,7 +453,7 @@ def load_statsbomb(event_path: str = None, sb360_path: str = None, match_id: str
         with open(event_path) as f:
             event_data = json.load(f)
     elif match_id:
-        event_api_data = sb.events(match_id=match_id, *statsbomb_api_args)
+        event_api_data = sb.events(match_id=match_id, **statsbomb_api_kwargs)
 
     # Read 360 data from file
     if sb360_path:
@@ -1172,9 +1172,9 @@ if __name__ == "__main__":
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
-    # statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
-    #                                                     statsbomb_skillcorner_match_path,3894907,1553748)
-    # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
+    statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
+                                                        statsbomb_skillcorner_match_path,3894907,1553748)
+    statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
     # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
@@ -1184,8 +1184,8 @@ if __name__ == "__main__":
     # pdb.set_trace()
     
     #test load_datastadium
-    event=load_datastadium(datastadium_event_path,datastadium_home_tracking_path,datastadium_away_tracking_path)
-    event.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv",index=False)
+    # event=load_datastadium(datastadium_event_path,datastadium_home_tracking_path,datastadium_away_tracking_path)
+    # event.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv",index=False)
 
     # pdb.set_trace()
 

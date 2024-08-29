@@ -18,15 +18,15 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 if __name__ == '__main__':
-    import load_data
-    import processing
+    import soccer_load_data
+    import soccer_processing
 else:
-    from . import load_data
-    from . import processing
+    from . import soccer_load_data
+    from . import soccer_processing
 import pdb
 
 #create a class to wrap the data source
-class Event_data:
+class Soccer_event_data:
     def __init__(self,data_provider,event_path=None,match_id=None,tracking_home_path=None,tracking_away_path=None,
                  tracking_path=None,meta_data=None,statsbomb_api_args=[],
                  statsbomb_match_id=None,skillcorner_match_id=None,max_workers=1,match_id_df=None,
@@ -54,23 +54,23 @@ class Event_data:
     def load_data_single_file(self):
         #based on the data provider, load the dataloading function from load_data.py (single file)
         if self.data_provider == 'datafactory':
-            df=load_data.load_datafactory(self.event_path)
+            df=soccer_load_data.load_datafactory(self.event_path)
         elif self.data_provider == 'metrica':
-            df=load_data.load_metrica(self.event_path,match_id=self.match_id,tracking_home_path=self.tracking_home_path,tracking_away_path=self.tracking_away_path)
+            df=soccer_load_data.load_metrica(self.event_path,match_id=self.match_id,tracking_home_path=self.tracking_home_path,tracking_away_path=self.tracking_away_path)
         elif self.data_provider == 'opta':
-            df=load_data.load_opta(self.event_path,match_id=self.match_id)
+            df=soccer_load_data.load_opta(self.event_path,match_id=self.match_id)
         elif self.data_provider == 'robocup_2d':
-            df=load_data.load_robocup_2d(self.event_path,match_id=self.match_id,tracking_path=self.tracking_path)
+            df=soccer_load_data.load_robocup_2d(self.event_path,match_id=self.match_id,tracking_path=self.tracking_path)
         elif self.data_provider == 'sportec':
-            df=load_data.load_sportec(self.event_path,tracking_path=self.tracking_path,meta_path=self.meta_data)
+            df=soccer_load_data.load_sportec(self.event_path,tracking_path=self.tracking_path,meta_path=self.meta_data)
         elif self.data_provider == 'statsbomb':
-            df=load_data.load_statsbomb(self.event_path,sb360_path=self.sb360_path,match_id=self.statsbomb_match_id,*self.statsbomb_api_args)
+            df=soccer_load_data.load_statsbomb(self.event_path,sb360_path=self.sb360_path,match_id=self.statsbomb_match_id,*self.statsbomb_api_args)
         elif self.data_provider == 'statsbomb_skillcorner':
-            df=load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
+            df=soccer_load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
         elif self.data_provider == 'wyscout':
-            df=load_data.load_wyscout(self.event_path,self.wyscout_matches_path)
-        elif self.data_provider == "datastadium":
-            df=load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
+            df=soccer_load_data.load_wyscout(self.event_path,self.wyscout_matches_path)
+        elif self.data_provider == 'datastadium':
+            df=soccer_load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
         else:
             raise ValueError('Data provider not supported or not found')
         return df
@@ -263,13 +263,12 @@ class Event_data:
         print(f'Loaded data from {self.data_provider}')
         return df
         
-
     def load_match_statsbomb_skillcorner(self,i, match_id_df, statsbomb_skillcorner_event_path, 
                                             statsbomb_skillcorner_tracking_path, statsbomb_skillcorner_match_path):
         statsbomb_match_id = match_id_df.loc[i, "match_id_statsbomb"]
         skillcorner_match_id = match_id_df.loc[i, "match_id_skillcorner"]
         try:
-            statsbomb_skillcorner_df = load_data.load_statsbomb_skillcorner(
+            statsbomb_skillcorner_df = soccer_load_data.load_statsbomb_skillcorner(
                 statsbomb_skillcorner_event_path, 
                 statsbomb_skillcorner_tracking_path, 
                 statsbomb_skillcorner_match_path, 
@@ -286,18 +285,18 @@ class Event_data:
         if self.data_provider in ["statsbomb", "wyscout","statsbomb_skillcorner","datastadium"]:
             if self.data_provider in ["statsbomb","statsbomb_skillcorner"]:
                 df = df.reset_index(drop=True)
-                df_out=processing.UIED_statsbomb(df)
+                df_out=soccer_processing.UIED_statsbomb(df)
             elif self.data_provider == "datastadium":
-                df_out=processing.UIED_datastadium(df)
+                df_out=soccer_processing.UIED_datastadium(df)
             elif self.data_provider == "wyscout":
                 if self.preprocess_method == "UIED":
-                    df_out=processing.UIED_wyscout(df)
+                    df_out=soccer_processing.UIED_wyscout(df)
                 elif self.preprocess_method == "LEM":
-                    df_out=processing.lem(df)
+                    df_out=soccer_processing.lem(df)
                 elif self.preprocess_method == "NMSTPP":
-                    df_out=processing.nmstpp(df)
+                    df_out=soccer_processing.nmstpp(df)
                 elif self.preprocess_method == "SEQ2EVENT":
-                    df_out=processing.seq2event(df)
+                    df_out=soccer_processing.seq2event(df)
                 else:
                     raise ValueError(f'Preprocessing method {self.preprocess_method} not found')
         else:
@@ -340,8 +339,7 @@ class Event_data:
             raise ValueError('Preprocessing method not found')
         print(f'Preprocessed data from {self.data_provider} with method {self.preprocess_method}')
         return df
-
-
+    
 if __name__ == '__main__':
     datafactory_path=os.getcwd()+"/test/sports/event_data/data/datafactory/datafactory_events.json"
     metrica_event_json_path=os.getcwd()+"/test/sports/event_data/data/metrica/metrica_events.json"
