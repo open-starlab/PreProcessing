@@ -115,17 +115,3 @@ def plot_row_soccer(df, row, save_path):
     # Save the plot
     plt.savefig(save_path + f"/row_{row}.png")
     plt.close(fig)
-
-if __name__ == '__main__':
-    from tqdm import tqdm
-
-    #check if the Soccer_event_data class is correctly implemented
-    df_path="/home/c_yeung/workspace6/python/openstarlab/Event/test/dataset/csv/valid.csv"
-    save_path="/home/c_yeung/workspace6/python/openstarlab/PreProcessing/test/sports/event_data/data/plot_row"
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    for i in tqdm(range(100)):
-        plot_row_soccer(df_path,i,save_path)
-
-
-    print ("done")
