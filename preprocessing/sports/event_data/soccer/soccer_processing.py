@@ -914,7 +914,15 @@ def UIED_statsbomb(data):
                     away_score+=1
                 elif match_df["event_type_2"].iloc[i]=="Own_goal":
                     home_score+=1
-            sucess_list.append(1) if match_df["possession_team"].iloc[i]==match_df["possession_team"].iloc[i-1] else sucess_list.append(0)
+            if match_df["possession_team"].iloc[i]==match_df["possession_team"].iloc[i-1] and match_df["event_type"].iloc[i]!='Shot':
+                sucess_list.append(1)
+            elif match_df["possession_team"].iloc[i]==match_df["possession_team"].iloc[i-1] and match_df["event_type"].iloc[i]=='Shot':
+                if match_df["event_type_2"].iloc[i]=="Goal":
+                    sucess_list.append(1)
+                else:
+                    sucess_list.append(0)
+            else:
+                sucess_list.append(0)
             goal_list.append(1) if match_df["event_type_2"].iloc[i]=="Goal" else goal_list.append(0)
             home_score_list.append(home_score)
             away_score_list.append(away_score)
@@ -1018,10 +1026,10 @@ def UIED_statsbomb(data):
         delta_y=df["start_y"].iloc[i]-df["start_y"].iloc[i-1]
         distance = ((df["start_x"].iloc[i] * (1.05/1.2) - df["start_x"].iloc[i-1] * (1.05/1.2)) ** 2 + 
                             (df["start_y"].iloc[i] * (0.68/0.8) - df["start_y"].iloc[i-1] * (0.68/0.8)) ** 2) ** 0.5
-        dist2goal = (((df["start_x"].iloc[i] - 100) * (1.05/1.2)) ** 2 + 
-                            ((df["start_y"].iloc[i] - 50) * (0.68/0.8)) ** 2) ** 0.5
-        angle2goal = np.abs(np.arctan2((df["start_y"].iloc[i] - 50) * (0.68/0.8), 
-                                    (df["start_x"].iloc[i] - 100) * (1.05/1.2)))
+        dist2goal = (((df["start_x"].iloc[i] - 120) * (1.05/1.2)) ** 2 + 
+                            ((df["start_y"].iloc[i] - 40) * (0.68/0.8)) ** 2) ** 0.5
+        angle2goal = np.abs(np.arctan2((df["start_y"].iloc[i] - 40) * (0.68/0.8), 
+                                    (df["start_x"].iloc[i] - 120) * (1.05/1.2)))
 
         delta_x_list.append(delta_x)
         delta_y_list.append(delta_y)
