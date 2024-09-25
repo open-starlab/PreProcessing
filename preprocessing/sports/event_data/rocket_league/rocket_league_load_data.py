@@ -1,7 +1,7 @@
 import carball
 import pandas as pd
 
-def load_rocket_league(replay_path: str) -> pd.DataFrame:
+def load_with_carball(replay_path: str) -> pd.DataFrame:
     """
     Loads Rocket League replay file and converts it into a DataFrame with event and tracking data.
 
@@ -81,6 +81,6 @@ if __name__ == "__main__":
     #cd to ../PreProcessing
     rocket_league_path=os.getcwd()+"/test/sports/event_data/data/rocket_league/0328fc07-13fb-4cb6-9a86-7d608196ddbd.replay"
 
-    #test load_rocket_league
-    rocket_league_df=load_rocket_league(rocket_league_path)
+    #test load_with_carball
+    rocket_league_df=load_with_carball(rocket_league_path)
     rocket_league_df.to_csv(os.getcwd()+"/test/sports/event_data/data/rocket_league/test_data.csv",index=False)
