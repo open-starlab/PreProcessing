@@ -1,5 +1,6 @@
 # OpenSTARLab PreProcessing package
 [![Documentation Status](https://readthedocs.org/projects/openstarlab/badge/?version=latest)](https://openstarlab.readthedocs.io/en/latest/?badge=latest)
+[![dm](https://img.shields.io/pypi/dm/openstarlab-preprocessing)](https://pypi.org/project/openstarlab-preprocessing/)
 
 ## Introduction
 The OpenSTARLab PreProcessing package is a core component for the OpenSTARLab suite, providing essential data preprocessing functions. It is designed with minimal dependencies and aims to avoid those that are heavily version-dependent.
@@ -20,7 +21,7 @@ pip install -e .
 
 ## Current Features
 ### Sports
-- [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/README.md)
+- [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/soccer/README.md)
 
 ## RoadMap
 - [x] Release the package
