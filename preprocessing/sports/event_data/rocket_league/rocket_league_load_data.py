@@ -39,19 +39,47 @@ def extract_hits_to_dataframe(proto_game):
     hits = proto_game.game_stats.hits
     hit_data = []
     
+    # チームごとのプレイヤーIDを辞書に格納
+    team_players = {
+        0: set(player.id for player in proto_game.teams[0].player_ids),
+        1: set(player.id for player in proto_game.teams[1].player_ids)
+    }
+    
+    poss_id = 0
+    last_team = None
+    
     for hit in hits:
+        player_id = hit.player_id.id
+        current_team = 0 if player_id in team_players[0] else 1
+        lost = False
+        
+        if last_team is not None and current_team != last_team:
+            poss_id += 1
+            lost = True
+        
         hit_dict = {
             'frame': hit.frame_number,
             'player_id': hit.player_id.id,
+            'team': proto_game.teams[current_team].name,
             'is_kickoff': hit.is_kickoff,
+            'dribble': hit.dribble,
             'dribble_continuation': hit.dribble_continuation,
             'aerial': hit.aerial,
             'assist': hit.assist,
             'distance_to_goal': hit.distance_to_goal,
             'shot': hit.shot,
             'goal': hit.goal,
+            'goal_number': hit.goal_number, 
+            'pass': hit.pass_,
+            'lost': lost,
+            'clear': hit.clear,
+            'poss_id': poss_id,
+            'ball': hit.ball_data,
+            'on_ground': hit.on_ground,
         }
         hit_data.append(hit_dict)
+        
+        last_team = current_team
     
     hits_df = pd.DataFrame(hit_data)
     hits_df = hits_df.sort_values('frame').reset_index(drop=True)
