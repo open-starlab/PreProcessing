@@ -1545,9 +1545,9 @@ if __name__ == '__main__':
     # df_statsbomb_api=UIED_statsbomb(df_statsbomb_api_path)
     # df_statsbomb_api.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_preprocess_statsbomb_api_UIED.csv",index=False)
 
-    df_datastadium_path=os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv"
-    df_datastadium=UIED_datastadium(df_datastadium_path)
-    df_datastadium.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/preprocess_UIED.csv",index=False)
+    # df_datastadium_path=os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv"
+    # df_datastadium=UIED_datastadium(df_datastadium_path)
+    # df_datastadium.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/preprocess_UIED.csv",index=False)
 
     print('-----------------end-----------------')
     # pdb.set_trace()

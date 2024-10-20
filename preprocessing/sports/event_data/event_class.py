@@ -2,7 +2,7 @@ from .soccer.soccer_event_class import Soccer_event_data
 
 class Event_data:
     soccer_data_provider = ['datafactory', 'metrica', 'opta', 'robocup_2d', 'sportec', 'statsbomb', 'statsbomb_skillcorner',
-                            'wyscout', 'datastadium']
+                            'wyscout', 'datastadium','soccertrack']
     handball_data_provider = []
     rocket_league_data_provider = []
 

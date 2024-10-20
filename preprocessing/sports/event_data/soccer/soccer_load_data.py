@@ -5,11 +5,9 @@ import pandas as pd
 import numpy as np
 import xml.etree.ElementTree as ET
 from statsbombpy import sb
+from tqdm import tqdm
 import os
 import pdb
-# import logging
-
-# logger = logging.getLogger('preprocessing.sports.event_data.load_data')
 
 def load_datafactory(event_path: str) -> pd.DataFrame:
     """
@@ -1113,6 +1111,254 @@ def load_datastadium(
 
     return final_df
 
+def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbose: bool = False) -> pd.DataFrame:
+    """
+    Loads and processes event and tracking data from soccer match recordings.
+
+    This function combines event data with tracking data by merging based on event time. It also adds 
+    additional features extracted from metadata, such as player information, and converts position 
+    coordinates to the correct scale for analysis.
+
+    Args:
+        event_path (str): Path to the CSV file containing event data.
+        tracking_path (str): Path to the XML file containing tracking data.
+        meta_path (str): Path to the XML file containing match metadata (pitch, teams, players, etc.).
+        verbose (bool, optional): If True, prints additional information about the merging process and 
+                                  feature extraction. Default is False.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the merged and processed event and tracking data, 
+                      with additional features including player positions, speeds, ball position, 
+                      and metadata (e.g., player names, shirt numbers, positions).
+    """
+    def read_meta_data(file_path):
+        # Parse the XML file
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        # Extract match information
+        # match = root.find('.//match')
+        # match_info = {attr: match.get(attr) for attr in match.attrib}
+
+        # Extract period information
+        # periods = root.findall('.//period')
+        # period_info = [{attr: period.get(attr) for attr in period.attrib} for period in periods]
+
+        # Extract pitch information
+        pitch = root.find('.//pitch')
+        pitch_info = {attr: pitch.get(attr) for attr in pitch.attrib}
+
+        # Extract team information
+        teams = root.findall('.//team')
+        team_info = [{attr: team.get(attr) for attr in team.attrib} for team in teams]
+
+        # Extract player information
+        players = root.findall('.//players//player')
+        player_info = [{attr: player.get(attr) for attr in player.attrib} for player in players]
+
+        # Extract active players information
+        # chunks = root.findall('.//chunk')
+        # active_players_info = []
+        # for chunk in chunks:
+        #     chunk_info = {attr: chunk.get(attr) for attr in chunk.attrib}
+        #     chunk_info['players'] = [
+        #         {attr: player.get(attr) for attr in player.attrib}
+        #         for player in chunk.findall('player')
+        #     ]
+        #     active_players_info.append(chunk_info)
+
+        return {
+            # 'match_info': match_info,
+            # 'period_info': period_info,
+            'pitch_info': pitch_info,
+            'team_info': team_info,
+            'player_info': player_info,
+            # 'active_players_info': active_players_info
+        }
+
+    def read_tracking_data(file_path):
+        # Parse the XML file
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        # List to store all frame data
+        frames = {}
+
+        # Iterate through each frame
+        for frame in root.findall('frame'):
+            frame_data = {
+                'matchTime': int(frame.get('matchTime')),
+                'frameNumber': int(frame.get('frameNumber')),
+                'eventPeriod': frame.get('eventPeriod'),
+                'ballStatus': frame.get('ballStatus'),
+                'players': [],
+                'ball': None
+            }
+
+            # Process player data
+            for player in frame.findall('player'):
+                player_data = {
+                    'playerId': player.get('playerId'),
+                    'loc': eval(player.get('loc')),  # Convert string to list
+                    'speed': float(player.get('speed'))
+                }
+                frame_data['players'].append(player_data)
+
+            # Process ball data
+            ball = frame.find('ball')
+            if ball is not None:
+                frame_data['ball'] = {
+                    'playerId': ball.get('playerId'),
+                    'loc': eval(ball.get('loc')),  # Convert string to list
+                    'speed': ball.get('speed')
+                }
+
+            frames[frame_data['matchTime']] = frame_data
+
+        return frames
+
+        #load the event data
+    
+    def get_additional_features(event_df, meta_data):
+        #player info: id name nameEN shirtNumber position
+        # create features period, seconds, event_type, event_type_2, outcome, home_team, x_unscaled, y_unscaled,
+        period_dict = {"FIRST_HALF": 1, "SECOND_HALF": 2, "EXTRA_FIRST_HALF": 3, "EXTRA_SECOND_HALF": 4}
+        event_df["period"] = event_df["event_period"].map(period_dict)
+        event_df["seconds"] = event_df["event_time"]/1000
+
+        event_type_list = []
+        for i in range(len(event_df)):
+            event_i = event_df.iloc[i].event_types
+            # print(event_i)
+            if not isinstance(event_i, str):
+                event_type_list.append(None)
+            else:
+                event_i = event_i.split(" ")[0]
+                event_type_list.append(event_i)
+        event_df["event_type"] = event_type_list
+
+        home_team_dict = {int(team_info["id"]):team_info["side"] for team_info in meta_data["team_info"]}
+        event_df["home_team"] = event_df["team_id"].map(home_team_dict)
+        #convert "home" to 1 and "away" to 0 for home_team
+        event_df["home_team"] = event_df["home_team"].map({"home":1,"away":0})
+
+        #x and y coordinates of the field (height,width) for the event data (inverse of the tracking data)
+        event_df["x_unscaled"] = event_df["y"]*int(meta_data["pitch_info"]["width"])
+        event_df["y_unscaled"] = event_df["x"]*int(meta_data["pitch_info"]["height"])
+        return event_df
+    
+    def get_tracking_features(event_df, tracking_data, meta_data, verbose=True):
+        # combine the event data with the tracking data via event_time and matchTime
+        #get the player info
+        time_list = [key for key in tracking_data.keys()]
+        time_diff_list = []
+        player_dict = {}
+        home_team_player_count = 0
+        away_team_player_count = 0
+        home_team_dict = {int(team_info["id"]):team_info["side"] for team_info in meta_data["team_info"]}
+        for player_i in meta_data["player_info"]:
+            player_dict[player_i["id"]] = player_i
+            team_id = int(player_dict[player_i["id"]]['teamId'])
+            if home_team_dict[team_id] == 'home':
+                player_dict[player_i["id"]]["player_num"] = home_team_player_count+1
+                home_team_player_count += 1
+            elif home_team_dict[team_id] == 'away':
+                player_dict[player_i["id"]]["player_num"] = away_team_player_count+1
+                away_team_player_count += 1
+            else:
+                print("team_id not found")
+                pdb.set_trace()
+        
+        #create the additional features
+        tracking_features=["player_id","x","y","speed"]
+        meta_features=["name","nameEn","shirtNumber","position"]
+        ball_features = ["ball_x","ball_y","ball_speed"]
+        additional_features = tracking_features+meta_features
+        additional_featurs_dict = {}
+        for i in range(home_team_player_count):
+            for j in range(len(additional_features)):
+                additional_featurs_dict[f"home_{additional_features[j]}_{i+1}"] = []
+        for i in range(away_team_player_count):
+            for j in range(len(additional_features)):
+                additional_featurs_dict[f"away_{additional_features[j]}_{i+1}"] = []
+        for j in range(len(ball_features)):
+            additional_featurs_dict[ball_features[j]] = []
+        
+        additaional_features_dict_key_list = [key for key in additional_featurs_dict.keys()]
+
+        if verbose:
+            iterable = tqdm(range(len(event_df)))
+        else:
+            iterable = range(len(event_df))
+        for i in iterable:
+            updated_features = []
+            event_time = event_df.iloc[i].event_time
+            #find the nearest time in the tracking data
+            nearest_time = min(time_list, key=lambda x:abs(x-event_time))
+            time_diff_list.append(nearest_time-event_time)
+            #get the tracking data
+            tracking_data_i = tracking_data[nearest_time]
+            for player_track_j in tracking_data_i['players']:
+                player_j_id = player_track_j['playerId']
+                player_j_num = player_dict[player_j_id]["player_num"]
+                player_j_team = player_dict[player_j_id]["teamId"]
+                player_j_home = home_team_dict[int(player_j_team)]
+                # append the tracking data and meta data to the additional features
+                additional_featurs_dict[f"{player_j_home}_player_id_{player_j_num}"].append(player_track_j['playerId'])
+                additional_featurs_dict[f"{player_j_home}_x_{player_j_num}"].append(round(player_track_j['loc'][0]*int(meta_data["pitch_info"]["width"]),2))
+                additional_featurs_dict[f"{player_j_home}_y_{player_j_num}"].append(round(player_track_j['loc'][1]*int(meta_data["pitch_info"]["height"]),2))
+                additional_featurs_dict[f"{player_j_home}_speed_{player_j_num}"].append(player_track_j['speed'])
+                additional_featurs_dict[f"{player_j_home}_name_{player_j_num}"].append(player_dict[player_j_id]["name"])
+                additional_featurs_dict[f"{player_j_home}_nameEn_{player_j_num}"].append(player_dict[player_j_id]["nameEn"])
+                additional_featurs_dict[f"{player_j_home}_shirtNumber_{player_j_num}"].append(player_dict[player_j_id]["shirtNumber"])
+                additional_featurs_dict[f"{player_j_home}_position_{player_j_num}"].append(player_dict[player_j_id]["position"])
+                updated_features+=[f"{player_j_home}_player_id_{player_j_num}",f"{player_j_home}_x_{player_j_num}",f"{player_j_home}_y_{player_j_num}",f"{player_j_home}_speed_{player_j_num}",f"{player_j_home}_name_{player_j_num}",f"{player_j_home}_nameEn_{player_j_num}",f"{player_j_home}_shirtNumber_{player_j_num}",f"{player_j_home}_position_{player_j_num}"]
+            ball_track = tracking_data_i['ball']
+            additional_featurs_dict[f"ball_x"].append(round(ball_track['loc'][0]*int(meta_data["pitch_info"]["width"]),2))
+            additional_featurs_dict[f"ball_y"].append(round(ball_track['loc'][1]*int(meta_data["pitch_info"]["height"]),2))
+            if ball_track['speed'] == 'NA':
+                additional_featurs_dict[f"ball_speed"].append(None)
+            else:
+                additional_featurs_dict[f"ball_speed"].append(ball_track['speed'])
+            updated_features+=["ball_x","ball_y","ball_speed"]
+            # for features in additaional_features_dict_key_list but not in updated_features, append None
+            for key in additaional_features_dict_key_list:
+                if key not in updated_features:
+                    additional_featurs_dict[key].append(None)
+        
+        #add the additional features to the event_df
+        out_event_df = event_df.copy()
+        if verbose:
+            for key in additional_featurs_dict.keys():
+                print(key,len(additional_featurs_dict[key]))
+
+        # Create a DataFrame from the additional features dictionary
+        additional_features_df = pd.DataFrame(additional_featurs_dict)
+
+        # Concatenate the original event_df with the additional features DataFrame
+        out_event_df = pd.concat([event_df, additional_features_df], axis=1)
+
+        #print the mean and std of the time_diff_list
+        if verbose:
+            print("mean time difference:",round(np.mean(time_diff_list),4))
+            print("std time difference:",round(np.std(time_diff_list),4))
+            print("max time difference:",round(np.max(time_diff_list),4))
+            print("min time difference:",round(np.min(time_diff_list),4))
+        return out_event_df
+    
+    # Load the event data
+    event_df = pd.read_csv(event_path)
+    # Load the tracking data
+    tracking_data = read_tracking_data(tracking_path)
+    # Load the meta data
+    meta_data = read_meta_data(meta_path)
+    # Get additional features
+    event_df = get_additional_features(event_df, meta_data)
+    # Get tracking features
+    event_df = get_tracking_features(event_df, tracking_data, meta_data, verbose=verbose)
+
+    return event_df
+
 if __name__ == "__main__":
     import pdb
     import os
@@ -1172,20 +1418,25 @@ if __name__ == "__main__":
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
-    statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
-                                                        statsbomb_skillcorner_match_path,3894907,1553748)
-    statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
+    # statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
+    #                                                     statsbomb_skillcorner_match_path,3894907,1553748)
+    # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
     # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
     # wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
 
-    # print("----------------done-----------------")
-    # pdb.set_trace()
-    
+
     #test load_datastadium
     # event=load_datastadium(datastadium_event_path,datastadium_home_tracking_path,datastadium_away_tracking_path)
     # event.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv",index=False)
 
+    soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
+    soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
+    soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
+    df_soccertrack=load_soccertrack(soccer_track_event_path,soccer_track_tracking_path,soccer_track_meta_path,True)
+    df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_function.csv",index=False)
+
+    print("----------------done-----------------")
     # pdb.set_trace()
 
