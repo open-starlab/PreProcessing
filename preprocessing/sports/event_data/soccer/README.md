@@ -11,7 +11,7 @@ You can find detailed documentation on supported data providers [here](https://o
 - Metrica
 - Opta
 - Robocup 2D Simulation
-- SoccerTrackv2
+- SoccerTrackv2 (BePro)
 - Sportec
 - Statsbomb
 - Statsbomb with Skillcorner Tracking Data

@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import pdb
 
 def seq2event(data):
     """
@@ -847,10 +848,10 @@ def UIED_statsbomb(data):
         raise ValueError("The data must be a pandas DataFrame or a file path")
 
     df=df.copy()
-    df.to_csv("/home/c_yeung/workspace6/python/openstarlab/PreProcessing/test/sports/event_data/data/statsbomb/test_data_main_testing.csv",index=False)
+
     #get possession team only event
     df["action"] = df["event_type"].astype(str) + "_" + df["event_type_2"].astype(str).replace("None","nan")
-
+    
     # Define possession team actions
 
     possession_team_actions =[ 'Pass_Ground Pass',  'Pass_Long_HighPass', 

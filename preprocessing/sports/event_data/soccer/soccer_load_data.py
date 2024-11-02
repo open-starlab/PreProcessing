@@ -61,7 +61,7 @@ def load_datafactory(event_path: str) -> pd.DataFrame:
 
     # Reorder columns and sort the DataFrame by 'seconds'
     df = df[["match_id", "period",  "minute", "second", "seconds", "event_type", "event_type_2", "team", "player", "start_x", "start_y", "start_z", "end_x", "end_y", "end_z"]]
-    df = df.sort_values(by="seconds").reset_index(drop=True)
+    df = df.sort_values(by=["period","seconds"]).reset_index(drop=True)
 
     return df
 
@@ -172,7 +172,7 @@ def load_metrica(event_path: str, match_id: str = None, tracking_home_path: str 
 
     # Convert the event list to a DataFrame and sort by 'seconds'
     df = pd.DataFrame(event_list, columns=columns)
-    df = df.sort_values(by="seconds").reset_index(drop=True)
+    df = df.sort_values(by=["period", "seconds"]).reset_index(drop=True)
 
     return df
 
@@ -218,11 +218,11 @@ def load_opta(f24_path: str, match_id: str = None) -> pd.DataFrame:
     # Convert minute and second to total seconds for sorting
     df["total_seconds"] = df["minute"] * 60 + df["second"]
 
-    # Sort the DataFrame by 'total_seconds'
-    df = df.sort_values(by="total_seconds").reset_index(drop=True)
-
     # Reorder columns
     df = df[["match_id", "period", "minute", "second", "total_seconds", "event_type", "event_type_2", "outcome", "team", "start_x", "start_y"]]
+
+    #sort the DataFrame by 'period' and 'total_seconds'
+    df = df.sort_values(by=["period", "total_seconds"]).reset_index(drop=True)
 
     return df
 
@@ -811,10 +811,13 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y"] + home_tracking_columns + away_tracking_columns
 
     # Sort the DataFrame by 'seconds'
-    df_list = sorted(df_list, key=lambda x: x[5])
+    # df_list = sorted(df_list, key=lambda x: x[5])
 
     # Convert the event list to a DataFrame
     df = pd.DataFrame(df_list, columns=columns)
+
+    #Sort the DataFrame by 'period' then 'seconds'
+    df = df.sort_values(by=["period", "seconds"]).reset_index(drop=True)
 
     return df
     

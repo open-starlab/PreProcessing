@@ -76,7 +76,7 @@ class Soccer_event_data:
             df=soccer_load_data.load_wyscout(self.event_path,self.wyscout_matches_path)
         elif self.data_provider == 'datastadium':
             df=soccer_load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
-        elif self.data_provider == 'soccertrack':
+        elif self.data_provider == 'bepro':
             df=soccer_load_data.load_soccertrack(self.event_path, self.st_track_path, self.st_meta_path, self.verbose)
         else:
             raise ValueError('Data provider not supported or not found')
@@ -337,7 +337,7 @@ class Soccer_event_data:
                     except Exception as e:
                         print(f'Exception for match_id {match_id}: {e}')
             
-            df = pd.concat(out_df_list)
+            df = pd.concat(out_df_list) if len(out_df_list) > 1 else out_df_list[0]
             df = df.reset_index(drop=True)
             df['index_column'] = df.index
             df = df.sort_values(by=['match_id', "index_column"])
