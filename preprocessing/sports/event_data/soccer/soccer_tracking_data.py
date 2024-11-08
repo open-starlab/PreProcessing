@@ -3,7 +3,7 @@ import os
 import pdb
 import pandas as pd
 
-def statsbomb_skillcorner_tracking_data_preprocessing(df_raw, save_path=None):
+def statsbomb_skillcorner_tracking_data_preprocessing(df_raw, save_path=None, process_event_coord=True):
     """
     Preprocess tracking data for StatsBomb and SkillCorner data formats to standardize the coordinates
 
@@ -11,6 +11,7 @@ def statsbomb_skillcorner_tracking_data_preprocessing(df_raw, save_path=None):
     - df (pd.DataFrame or str): DataFrame containing tracking data or a path to a CSV file.
       Expected columns include 'home_team', 'home_side', and optional columns like 'action' or 'event_type'.
     - save_path (str): Path to save the preprocessed data as a CSV file.
+    - process_event_coord (bool): Flag to scale event data coordinates to field dimensions.
 
     Steps:
     1. Load CSV if `df` is a file path; validate the input to ensure it is a DataFrame.
@@ -81,12 +82,13 @@ def statsbomb_skillcorner_tracking_data_preprocessing(df_raw, save_path=None):
             if (home_team == 1 and home_side == 'right') or (home_team == 0 and home_side == 'left'):
                 switch_sides = True
         elif 'event_type' in df.columns:
-            # Scale start_x and start_y for event data
-            df.at[idx, "start_x"] *= (1.05 / 1.2)
-            df.at[idx, "start_y"] *= (0.68 / 0.8)
-            #round to 2 decimal places
-            df.at[idx, "start_x"] = round(df.at[idx, "start_x"], 2)
-            df.at[idx, "start_y"] = round(df.at[idx, "start_y"], 2)
+            if process_event_coord:
+                # Scale start_x and start_y for event data
+                df.at[idx, "start_x"] *= (1.05 / 1.2)
+                df.at[idx, "start_y"] *= (0.68 / 0.8)
+                #round to 2 decimal places
+                df.at[idx, "start_x"] = round(df.at[idx, "start_x"], 2)
+                df.at[idx, "start_y"] = round(df.at[idx, "start_y"], 2)
 
             action_type = f"{df.at[idx, 'event_type']}_{str(df.at[idx, 'event_type_2']).replace('None', 'nan')}"
             is_possession_action = action_type in team_actions

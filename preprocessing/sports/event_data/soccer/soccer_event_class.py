@@ -59,6 +59,7 @@ class Soccer_event_data:
         self.st_meta_path = st_meta_path
         self.preprocess_tracking = preprocess_tracking
         self.verbose = verbose
+        self.call_preprocess = False
 
     def load_data_single_file(self):
         #based on the data provider, load the dataloading function from load_data.py (single file)
@@ -76,8 +77,10 @@ class Soccer_event_data:
             df=soccer_load_data.load_statsbomb(self.event_path,sb360_path=self.sb360_path,match_id=self.statsbomb_match_id,*self.statsbomb_api_args)
         elif self.data_provider == 'statsbomb_skillcorner':
             df=soccer_load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
-            if self.preprocess_tracking:
+            if self.preprocess_tracking and not self.call_preprocess:
                 df=soccer_tracking_data.statsbomb_skillcorner_tracking_data_preprocessing(df)
+            if self.preprocess_method is not None and not self.call_preprocess:
+                df=soccer_tracking_data.statsbomb_skillcorner_event_data_preprocessing(df,process_event_coord=False)
         elif self.data_provider == 'wyscout':
             df=soccer_load_data.load_wyscout(self.event_path,self.wyscout_matches_path)
         elif self.data_provider == 'datastadium':
@@ -317,6 +320,7 @@ class Soccer_event_data:
         return df_out
     
     def preprocessing(self):
+        self.call_preprocess = True
         print(f'Preprocessing data from {self.data_provider} with method {self.preprocess_method}')
         if self.preprocess_method is not None:
             df = self.load_data()
@@ -351,6 +355,7 @@ class Soccer_event_data:
         else:
             raise ValueError('Preprocessing method not found')
         print(f'Preprocessed data from {self.data_provider} with method {self.preprocess_method}')
+        self.call_preprocess = False
         return df
     
 if __name__ == '__main__':

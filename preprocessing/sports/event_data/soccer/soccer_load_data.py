@@ -1044,7 +1044,7 @@ def load_datastadium(
     datastadium_event_path: str,
     datastadium_home_tracking_path: str,
     datastadium_away_tracking_path: str
-) -> pd.DataFrame:
+    ) -> pd.DataFrame:
     """
     Loads and processes event and tracking data from stadium event recordings.
     
