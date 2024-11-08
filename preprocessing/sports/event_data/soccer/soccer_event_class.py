@@ -21,9 +21,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 if __name__ == '__main__':
     import soccer_load_data
     import soccer_processing
+    import soccer_tracking_data
 else:
     from . import soccer_load_data
     from . import soccer_processing
+    from . import soccer_tracking_data
 import pdb
 
 #create a class to wrap the data source
@@ -33,7 +35,8 @@ class Soccer_event_data:
                  statsbomb_match_id=None,skillcorner_match_id=None,max_workers=1,match_id_df=None,
                  statsbomb_event_dir=None, skillcorner_tracking_dir=None, skillcorner_match_dir=None,
                  preprocess_method=None,sb360_path=None,wyscout_matches_path=None,
-                 st_track_path=None, st_meta_path=None,verbose=False):
+                 st_track_path=None, st_meta_path=None,verbose=False,
+                 preprocess_tracking=False):
         self.data_provider = data_provider
         self.event_path = event_path
         self.match_id = match_id
@@ -54,6 +57,7 @@ class Soccer_event_data:
         self.wyscout_matches_path=wyscout_matches_path
         self.st_track_path = st_track_path
         self.st_meta_path = st_meta_path
+        self.preprocess_tracking = preprocess_tracking
         self.verbose = verbose
 
     def load_data_single_file(self):
@@ -72,6 +76,8 @@ class Soccer_event_data:
             df=soccer_load_data.load_statsbomb(self.event_path,sb360_path=self.sb360_path,match_id=self.statsbomb_match_id,*self.statsbomb_api_args)
         elif self.data_provider == 'statsbomb_skillcorner':
             df=soccer_load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
+            if self.preprocess_tracking:
+                df=soccer_tracking_data.statsbomb_skillcorner_tracking_data_preprocessing(df)
         elif self.data_provider == 'wyscout':
             df=soccer_load_data.load_wyscout(self.event_path,self.wyscout_matches_path)
         elif self.data_provider == 'datastadium':

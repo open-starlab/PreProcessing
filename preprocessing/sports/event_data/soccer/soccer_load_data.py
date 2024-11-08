@@ -6,6 +6,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 from statsbombpy import sb
 from tqdm import tqdm
+from datetime import datetime
 import os
 import pdb
 
@@ -703,12 +704,14 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     
     for player in match['players']:
         role = team_dict[player['team_id']]['role']
+        position = player['player_role']['name']
         if role == 'home':
             trackable_objects[player['trackable_object']] = {
                 'name': f"{player['first_name']} {player['last_name']}",
                 'team': team_dict[player['team_id']]['name'],
                 'role': role,
-                'id': home_count
+                'id': home_count,
+                'position': position
             }
             home_count += 1
         elif role == 'away':
@@ -716,11 +719,43 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
                 'name': f"{player['first_name']} {player['last_name']}",
                 'team': team_dict[player['team_id']]['name'],
                 'role': role,
-                'id': away_count
+                'id': away_count,
+                'position': position
             }
             away_count += 1
 
-    trackable_objects[match['ball']['trackable_object']] = {'name': 'ball', 'team': 'ball', 'role': 'ball'}
+    trackable_objects[match['ball']['trackable_object']] = {'name': 'ball', 'team': 'ball', 'role': 'ball', 'position': 'ball'}
+    ball_id = match['ball']['trackable_object']
+
+    ##sync the tracking data with the events based on the ball velocity
+    #get the first 5s of the match
+    ball_velocity_period_1 = []
+    ball_velocity_period_2 = []
+
+    for frame in tracking:
+        time = frame['timestamp']
+        period = frame['period']
+        data = frame['data']
+        time_components = time.split(':') if time else None
+        seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2]) if time else 0
+        if time and period==1 and seconds<=5:
+            for obj in data:
+                if obj['trackable_object']==ball_id:
+                    ball_velocity_period_1.append([time, obj['x'], obj['y'],obj['z']])
+
+        if time and period==2 and seconds <= 45*60+5:
+            for obj in data:
+                if obj['trackable_object']==ball_id:
+                    ball_velocity_period_2.append([time, obj['x'], obj['y'],obj['z']])
+            
+    
+    max_velocity_timestamp1, max_velocity1 = calculate_velocity_and_max_timestamp(ball_velocity_period_1)
+    max_velocity_timestamp2, max_velocity2 = calculate_velocity_and_max_timestamp(ball_velocity_period_2)
+    max_velocity_seconds1 = max_velocity_timestamp1.split(':')
+    max_velocity_seconds1 = float(max_velocity_seconds1[0]) * 3600 + float(max_velocity_seconds1[1]) * 60 + float(max_velocity_seconds1[2])
+    max_velocity_seconds2 = max_velocity_timestamp2.split(':')
+    max_velocity_seconds2 = float(max_velocity_seconds2[0]) * 3600 + float(max_velocity_seconds2[1]) * 60 + float(max_velocity_seconds2[2])
+    max_velocity_seconds2 = max_velocity_seconds2 - 45*60
 
     # Process tracking data
     tracking_dict = {}
@@ -730,9 +765,14 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
             time_components = time.split(':')
             seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2])
             period = frame['period']
+            if period == 1:
+                seconds = seconds - max_velocity_seconds1
+            elif period == 2:
+                seconds = seconds - max_velocity_seconds2
+            seconds = round(seconds, 1)
             uid = f"{period}_{seconds}"
             tracking_dict[uid] = frame['data']
-
+    
     # Prepare data for DataFrame
     df_list = []
     for _, event in events.iterrows():
@@ -789,6 +829,7 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
         tracking_data = tracking_dict.get(uid)
         home_tracking = [None] * 2 * 23
         away_tracking = [None] * 2 * 23
+        home_side = [None]
         
         if tracking_data:
             for obj in tracking_data:
@@ -800,7 +841,22 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
                     away_tracking[2 * track_obj['id']] = obj['x']
                     away_tracking[2 * track_obj['id'] + 1] = obj['y']
 
-        df_list.append([match_id, period, time, minute, second, seconds, event_type, event_type_2, team, home_team, player, start_x, start_y, end_x, end_y, *home_tracking, *away_tracking])
+                if track_obj['position'] == "Goalkeeper":
+                    if track_obj['role'] == 'home':
+                        home_gk_x = obj['x']
+                    elif track_obj['role'] == 'away':
+                        away_gk_x = obj['x']
+
+                
+            # Determine the side of the home team based on the goalkeeper's position
+            if home_gk_x < away_gk_x:
+                home_side = 'left'
+            else:
+                home_side = 'right'
+            
+            home_side = [home_side]
+
+        df_list.append([match_id, period, time, minute, second, seconds, event_type, event_type_2, team, home_team, player, start_x, start_y, end_x, end_y, *home_tracking, *away_tracking, *home_side])
     
     # Define DataFrame columns
     home_tracking_columns = []
@@ -808,10 +864,7 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     for i in range(1, 24):
         home_tracking_columns.extend([f"h{i}_x", f"h{i}_y"])
         away_tracking_columns.extend([f"a{i}_x", f"a{i}_y"])
-    columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y"] + home_tracking_columns + away_tracking_columns
-
-    # Sort the DataFrame by 'seconds'
-    # df_list = sorted(df_list, key=lambda x: x[5])
+    columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y"] + home_tracking_columns + away_tracking_columns + ["home_side"]
 
     # Convert the event list to a DataFrame
     df = pd.DataFrame(df_list, columns=columns)
@@ -820,7 +873,50 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     df = df.sort_values(by=["period", "seconds"]).reset_index(drop=True)
 
     return df
-    
+
+def calculate_velocity_and_max_timestamp(data):
+    """
+    Calculate the velocity for each time interval and find the timestamp with the highest velocity.
+
+    Parameters:
+    data (list): List of lists, where each sublist contains [timestamp, x, y, z].
+
+    Returns:
+    tuple: (max_velocity_timestamp, max_velocity)
+        - max_velocity_timestamp: The timestamp with the highest velocity.
+        - max_velocity: The highest velocity value.
+    """
+    # Extract timestamps, x, y, z coordinates
+    timestamps = [entry[0] for entry in data]
+    x = np.array([entry[1] for entry in data])
+    y = np.array([entry[2] for entry in data])
+    z = np.array([entry[3] for entry in data])
+
+    # Convert timestamps to seconds
+    time_seconds = np.array([
+        (datetime.strptime(ts, "%H:%M:%S.%f") - datetime.strptime(timestamps[0], "%H:%M:%S.%f")).total_seconds()
+        for ts in timestamps
+    ])
+
+    # Calculate differences
+    delta_x = np.diff(x)
+    delta_y = np.diff(y)
+    delta_z = np.diff(z)
+    delta_t = np.diff(time_seconds)
+
+    # Calculate velocity components and magnitude
+    vx = delta_x / delta_t
+    vy = delta_y / delta_t
+    vz = delta_z / delta_t
+    velocity_magnitude = np.sqrt(vx**2 + vy**2 + vz**2)
+
+    # Find the index of the maximum velocity
+    max_velocity_index = np.argmax(velocity_magnitude)
+    max_velocity = velocity_magnitude[max_velocity_index]
+    max_velocity_timestamp = timestamps[max_velocity_index + 1]  # Use +1 to get the ending timestamp of the interval
+
+    return max_velocity_timestamp, max_velocity
+
 def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
     """
     Load and process Wyscout event data from a JSON file and optionally match data from another JSON file.
@@ -1421,9 +1517,9 @@ if __name__ == "__main__":
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
-    # statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
-    #                                                     statsbomb_skillcorner_match_path,3894907,1553748)
-    # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
+    statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
+                                                        statsbomb_skillcorner_match_path,3894821,1463749)
+    statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
     # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
@@ -1434,11 +1530,12 @@ if __name__ == "__main__":
     # event=load_datastadium(datastadium_event_path,datastadium_home_tracking_path,datastadium_away_tracking_path)
     # event.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv",index=False)
 
-    soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
-    soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
-    soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
-    df_soccertrack=load_soccertrack(soccer_track_event_path,soccer_track_tracking_path,soccer_track_meta_path,True)
-    df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_function.csv",index=False)
+    #test load_soccertrack
+    # soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
+    # soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
+    # soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
+    # df_soccertrack=load_soccertrack(soccer_track_event_path,soccer_track_tracking_path,soccer_track_meta_path,True)
+    # df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_function.csv",index=False)
 
     print("----------------done-----------------")
     # pdb.set_trace()
