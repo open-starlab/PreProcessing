@@ -24,7 +24,7 @@ pip install -e .
 - [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/soccer/README.md)
 
 ## RoadMap
-- [x] 2024/11 Release the package
+- [x] Release the package
 - [ ] Incorporate more functions
 
 
