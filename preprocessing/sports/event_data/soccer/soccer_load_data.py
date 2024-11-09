@@ -748,15 +748,29 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
                 if obj['trackable_object']==ball_id:
                     ball_velocity_period_2.append([time, obj['x'], obj['y'],obj['z']])
             
+    if not ball_velocity_period_1 == [] or not ball_velocity_period_2 == []:
+        try:
+            max_velocity_timestamp1, max_velocity1 = calculate_velocity_and_max_timestamp(ball_velocity_period_1)
+            max_velocity_seconds1 = max_velocity_timestamp1.split(':')
+            max_velocity_seconds1 = float(max_velocity_seconds1[0]) * 3600 + float(max_velocity_seconds1[1]) * 60 + float(max_velocity_seconds1[2])
+        except:
+            max_velocity_seconds1 = -1
+        
+        try:
+            max_velocity_timestamp2, max_velocity2 = calculate_velocity_and_max_timestamp(ball_velocity_period_2)
+            max_velocity_seconds2 = max_velocity_timestamp2.split(':')
+            max_velocity_seconds2 = float(max_velocity_seconds2[0]) * 3600 + float(max_velocity_seconds2[1]) * 60 + float(max_velocity_seconds2[2])
+            max_velocity_seconds2 = max_velocity_seconds2 - 45*60
+        except:
+            max_velocity_seconds2 = -1
+        
+        if max_velocity_seconds1 == -1 and max_velocity_seconds2 != -1:
+            max_velocity_seconds1 = max_velocity_seconds2
+        elif max_velocity_seconds1 != -1 and max_velocity_seconds2 == -1:
+            max_velocity_seconds2 = max_velocity_seconds1
+        elif max_velocity_seconds1 == -1 and max_velocity_seconds2 == -1:
+            max_velocity_seconds1 = max_velocity_seconds2 = 0
     
-    max_velocity_timestamp1, max_velocity1 = calculate_velocity_and_max_timestamp(ball_velocity_period_1)
-    max_velocity_timestamp2, max_velocity2 = calculate_velocity_and_max_timestamp(ball_velocity_period_2)
-    max_velocity_seconds1 = max_velocity_timestamp1.split(':')
-    max_velocity_seconds1 = float(max_velocity_seconds1[0]) * 3600 + float(max_velocity_seconds1[1]) * 60 + float(max_velocity_seconds1[2])
-    max_velocity_seconds2 = max_velocity_timestamp2.split(':')
-    max_velocity_seconds2 = float(max_velocity_seconds2[0]) * 3600 + float(max_velocity_seconds2[1]) * 60 + float(max_velocity_seconds2[2])
-    max_velocity_seconds2 = max_velocity_seconds2 - 45*60
-
     # Process tracking data
     tracking_dict = {}
     for frame in tracking:
@@ -1518,7 +1532,7 @@ if __name__ == "__main__":
 
     #test load_statsbomb_skillcorner
     statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
-                                                        statsbomb_skillcorner_match_path,3894821,1463749)
+                                                        statsbomb_skillcorner_match_path,3894907,1553748)
     statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout

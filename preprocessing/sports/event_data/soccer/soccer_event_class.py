@@ -291,7 +291,8 @@ class Soccer_event_data:
                 statsbomb_match_id, 
                 skillcorner_match_id
             )
-        except:
+        except: #Exception as e: 
+            # print("An error occurred:", e)
             print(f"Skipped match statsbomb match_id: {statsbomb_match_id}")
             statsbomb_skillcorner_df=None
         return statsbomb_skillcorner_df
