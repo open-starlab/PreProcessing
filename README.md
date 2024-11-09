@@ -40,6 +40,7 @@ pip install -e .
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/calvinyeungck"><img src="https://github.com/calvinyeungck.png" width="100px;" alt="Calvin Yeung"/><br /><sub><b>Calvin Yeung</b></sub></a><br /><a href="#Developer-CalvinYeung" title="Lead Developer">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/czzzzz129"><img src="https://github.com/czzzzz129.png" width="100px;" alt="Calvin Yeung"/><br /><sub><b>Zheng Chen</b></sub></a><br /><a href="#Developer-ZhengChen" title="Developer">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/keisuke198619"><img src="https://github.com/keisuke198619.png" width="100px;" alt="Keisuke Fujii"/><br /><sub><b>Keisuke Fujii</b></sub></a><br /><a href="#lead-KeisukeFujii" title="Team Leader">🧑‍💻</a></td>
     </tr>
   </tbody>
