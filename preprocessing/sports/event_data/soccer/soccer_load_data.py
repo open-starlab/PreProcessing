@@ -1360,6 +1360,49 @@ def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbos
         event_df["y_unscaled"] = event_df["x"]*int(meta_data["pitch_info"]["height"])
         return event_df
     
+    def calculate_sync_bias(event_df, tracking_data, period=1, verbose=False):
+        # 'FIRST_HALF' "SECOND_HALF"
+        # Calculate the bias between event time and tracking time
+        limit = 5.0 #seconds
+        time_list = [key for key in tracking_data.keys()]
+        #split the time_list into two halves
+        if period == 1:
+            time_list = [time for time in time_list if tracking_data[time]['eventPeriod'] == 'FIRST_HALF']
+            first_event_time = event_df[event_df["event_period"]=="FIRST_HALF"].iloc[0].event_time if "FIRST_HALF" in event_df["event_period"].values else 0
+        elif period == 2:
+            time_list = [time for time in time_list if tracking_data[time]['eventPeriod'] == 'SECOND_HALF']
+            first_event_time = event_df[event_df["event_period"]=="SECOND_HALF"].iloc[0].event_time if "SECOND_HALF" in event_df["event_period"].values else 0
+        elif period == 3:
+            time_list = [time for time in time_list if tracking_data[time]['eventPeriod'] == 'EXTRA_FIRST_HALF']
+            first_event_time = event_df[event_df["event_period"]=="EXTRA_FIRST_HALF"].iloc[0].event_time if "EXTRA_FIRST_HALF" in event_df["event_period"].values else 0
+        
+        if time_list == []:
+            return 0
+
+        time_list.sort()
+        start_time = max(time_list[0],0)
+        #round to the nearest 1000
+        start_time = round(start_time/1000)*1000
+        print("start_time:",start_time) if verbose else None
+        #drop the time that exceeds the limit of the event time
+        time_list = [time for time in time_list if time <= start_time+limit*1000]
+        #order the time_list in ascending order
+        time_list.sort()
+        
+        ball_coordinates = []
+        for time_i in time_list:
+            tracking_data_i = tracking_data[time_i]
+            ball_data_i = tracking_data_i['ball']['loc']
+            ball_coordinates.append(ball_data_i)
+        #find the time with the highest acceleration
+        ball_coordinates = np.array(ball_coordinates)
+        ball_speed = np.linalg.norm(np.diff(ball_coordinates,axis=0),axis=1)
+        max_speed_index = np.argmax(ball_speed)
+        max_speed_time = time_list[max_speed_index]
+        bias = max_speed_time - first_event_time
+
+        return bias
+
     def get_tracking_features(event_df, tracking_data, meta_data, verbose=True):
         # combine the event data with the tracking data via event_time and matchTime
         #get the player info
@@ -1397,7 +1440,15 @@ def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbos
         for j in range(len(ball_features)):
             additional_featurs_dict[ball_features[j]] = []
         
+        additional_featurs_dict["tracking_time"] = []
         additaional_features_dict_key_list = [key for key in additional_featurs_dict.keys()]
+
+        #get the sync bias for the event and tracking data
+        bias_1 = calculate_sync_bias(event_df, tracking_data, period=1, verbose=verbose) #FIRST_HALF
+        bias_2 = calculate_sync_bias(event_df, tracking_data, period=2, verbose=verbose) #SECOND_HALF
+        bias_3 = calculate_sync_bias(event_df, tracking_data, period=3, verbose=verbose) #EXTRA_FIRST_HALF
+
+        print("bias_1:",bias_1,"bias_2:",bias_2,"bias_3:",bias_3) if verbose else None
 
         if verbose:
             iterable = tqdm(range(len(event_df)))
@@ -1406,8 +1457,22 @@ def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbos
         for i in iterable:
             updated_features = []
             event_time = event_df.iloc[i].event_time
+            period = event_df.iloc[i].event_period
+            if period == 'FIRST_HALF':
+                event_time += bias_1
+            elif period == 'SECOND_HALF':
+                event_time += bias_2
+            elif period == 'EXTRA_FIRST_HALF':
+                event_time += bias_3
+            else:
+                print("period not included")
             #find the nearest time in the tracking data
             nearest_time = min(time_list, key=lambda x:abs(x-event_time))
+            try:
+                additional_featurs_dict["tracking_time"].append(nearest_time)
+                updated_features+=["tracking_time"]
+            except:
+                pass
             time_diff_list.append(nearest_time-event_time)
             #get the tracking data
             tracking_data_i = tracking_data[nearest_time]
@@ -1531,9 +1596,9 @@ if __name__ == "__main__":
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
-    statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
-                                                        statsbomb_skillcorner_match_path,3894907,1553748)
-    statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
+    # statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
+    #                                                     statsbomb_skillcorner_match_path,3894907,1553748)
+    # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
     # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
@@ -1545,11 +1610,11 @@ if __name__ == "__main__":
     # event.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv",index=False)
 
     #test load_soccertrack
-    # soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
-    # soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
-    # soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
-    # df_soccertrack=load_soccertrack(soccer_track_event_path,soccer_track_tracking_path,soccer_track_meta_path,True)
-    # df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_function.csv",index=False)
+    soccer_track_event_path="/data_pool_1/soccertrackv2/2023-11-18/Event/event.csv"
+    soccer_track_tracking_path="/data_pool_1/soccertrackv2/2023-11-18/Tracking/tracking.xml"
+    soccer_track_meta_path="/data_pool_1/soccertrackv2/2023-11-18/Tracking/meta.xml"
+    df_soccertrack=load_soccertrack(soccer_track_event_path,soccer_track_tracking_path,soccer_track_meta_path,True)
+    df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_function_sync.csv",index=False)
 
     print("----------------done-----------------")
     # pdb.set_trace()
