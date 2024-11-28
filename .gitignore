@@ -2,11 +2,10 @@ test/
 test/sports/event_data/data/statsbomb_skillcorner
 test/sports/event_data/data/statsbomb/api.json
 preprocessing/example/statsbomb_skillcorner_data_test.py
-/preprocessing/sports/event_data/__pycache__
 .pypirc
 /preprocessing/example_testing/
 openstarlab_preprocessing.egg-info/
 preprocessing/__pycache__
 preprocessing/event_data/__pycache__
-preprocessing/sports/event_data/__pycache__
 dist/
+**/__pycache__/
