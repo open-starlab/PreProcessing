@@ -78,37 +78,34 @@ def get_window_of_frames_around(action_second, tracking_frames, ta):
                 continue
     return window
 
-# # Process windows
-# ta = 5
-# windows = []
-# for action_second in tqdm(pass_events_seconds, desc="Processing windows"):
-#     window = get_window_of_frames_around(action_second, tracking, ta)
-#     if not window:
-#         print(f"No frames found around action_second={action_second}")
-#     windows.append(window)
+# Process windows
+ta = 5
+windows = []
+for action_second in tqdm(pass_events_seconds, desc="Processing windows"):
+    window = get_window_of_frames_around(action_second, tracking, ta)
+    if not window:
+        print(f"No frames found around action_second={action_second}")
+    windows.append(window)
 
-test_save_path = "/home/z_chen/workspace3/test/windows_test.json"
+# save documents
 
-# # 保存到文件
+# test_save_path = "/home/z_chen/workspace3/test/windows_test.json"
 # with open(test_save_path, 'w', encoding='utf-8') as f:
 #     json.dump(windows, f, ensure_ascii=False, indent=4)  # 使用 indent=4 格式化 JSON 输出
-
 # print(f"Windows saved to {test_save_path}")
 
-try:
-    with open(test_save_path,"r",encoding="utf-8") as f:
-        datas = json.load(f)
+# try:
+#     with open(test_save_path,"r",encoding="utf-8") as f:
+#         datas = json.load(f)
 
-except FileNotFoundError:
-    print(f"文件 {test_save_path} 不存在，请检查路径！")
-except json.JSONDecodeError as e:
-    print(f"JSON 文件解码失败: {e}")
+# except FileNotFoundError:
+#     print(f"文件 {test_save_path} 不存在，请检查路径！")
+# except json.JSONDecodeError as e:
+#     print(f"JSON 文件解码失败: {e}")
 
-
-
-windows = []
-for data in datas:
-    windows.append(data)
+# windows = []
+# for data in datas:
+#     windows.append(data)
 
 
 # Sync the tracking data with the events based on the highest ball acceleration and the kick-off player
@@ -128,20 +125,16 @@ for player in tqdm(match["players"], desc="Processing players"):
 
     if full_name in pass_player:
         for index, window in enumerate(windows):
-            # key = f"player_period_{index + 1}"
             key = index + 1
             if key not in player_periods:
                 player_periods[key] = []
 
             for frame in window:
-                # 获取时间戳和比赛阶段
                 time = frame.get('timestamp')
                 period = frame.get('period')
                 data = frame.get('data', [])
-                possession = frame.get("possession", {})  # 获取控球信息，默认空字典
-                team_group = possession.get("group")  # 获取控球方
-
-            # 仅处理 possession 不为空的帧
+                possession = frame.get("possession", {})  
+                team_group = possession.get("group")  
                 if not team_group:
                     continue
 
@@ -270,24 +263,21 @@ def distance_score(pass_event, player_period, ball_velocity_period):
     ball_distances_frame.append((tracking_second, ball_distance, tracking_player_id))
 
 
-    # 计算每个球员的综合得分
+    # calculate weighted scores
     scores = []
     weight_event = 0.5
     weight_ball = 0.5
 
     for i in range(len(tracking_event_frame)):
-        # 获取对应的时间和ID
         tracking_time_event, event_distance, player_id_event = tracking_event_frame[i]
         tracking_time_ball, ball_distance, player_id_ball = ball_distances_frame[i]
 
         if tracking_time_event != tracking_time_ball or player_id_event != player_id_ball:
              continue
 
-        # 计算综合得分
         combined_score = weight_event * (1 / (event_distance + 1e-6)) + weight_ball * (1 / (ball_distance + 1e-6))
         scores.append((tracking_time_event, player_id_event, combined_score))
 
-        # 找出最高分
         if scores:
             best_score = max(scores, key=lambda x: x[2])
             return best_score
@@ -299,10 +289,9 @@ for index, (pass_period, ball_velocity_period) in enumerate(zip(pass_events_peri
     pass_event_second = pass_period[0]
     pass_event_team = pass_period[3]
     ta = 5
-    max_score = float('-inf')  # 初始化最大分数为负无穷
-    max_score_info = []  # 用于存储最大分数对应的信息
+    max_score = float('-inf') 
+    max_score_info = [] 
 
-    # 确保 player_periods 有效，并检查索引范围
     if index + 1 < len(player_periods):
         for i, player_period in enumerate(player_periods[index+1]):
             player_second = player_period[0]
@@ -403,36 +392,3 @@ def acceleration(data, data2):
 
 
 
-        # for index, window in enumerate(windows):
-        #     key = f"player_period_{index + 1}"
-        #     if key not in player_periods:
-        #         player_periods[key] = []
-
-        #     for frame in window:
-        #         time = frame.get('timestamp')
-        #         period = frame.get('period')
-        #         data = frame.get('data', [])
-        #         possession = frame.get("possession", {})
-        #         team_group = possession.get("group")  # Example: 'home team' or 'away team'
-
-        #         if not team_group:
-        #             print(f"Frame {frame.get('frame')}: possession group is empty.")
-
-
-        #         # Determine player's team role
-        #         player_team_role = team_dict.get(player['team_id'], {}).get('role')  # 'home' or 'away'
-
-        #         # Match possession team with player's team
-        #         if team_group == player_team_role:
-        #             if time:
-        #                 try:
-        #                     time_components = time.split(':')
-        #                     seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2])
-        #                 except (ValueError, IndexError):
-        #                     continue
-
-        #                 for obj in data:
-        #                     if obj.get('trackable_object') == ball_id:
-        #                         ball_velocity_periods.append([seconds, obj['x'], obj['y'], obj['z']])
-        #                     elif obj.get('trackable_object') == obj_id:
-        #                         player_periods[key].append([seconds, obj['x'], obj['y']], obj["trackable_object"])
