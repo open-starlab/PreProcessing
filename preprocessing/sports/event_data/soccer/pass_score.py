@@ -154,17 +154,14 @@ for player in tqdm(match["players"], desc="Processing players"):
     else:
 
         for index, window in enumerate(windows):
-            # key = f"player_period_{index + 1}"
             key = index + 1
             if key not in player_periods:
-                player_periods[key] = []  # 初始化 player_periods 的键
+                player_periods[key] = [] 
 
             for frame in window:
-                # 获取控球信息
-                possession = frame.get("possession", {})  # 控球信息
-                team_group = possession.get("group")  # 控球方，可能为空
-
-                # 仅处理 possession 不为空的帧
+                possession = frame.get("possession", {})  
+                team_group = possession.get("group")  # may be empty
+           
                 if not team_group:
                     continue
 
@@ -179,14 +176,14 @@ for player in tqdm(match["players"], desc="Processing players"):
                 period = frame.get('period')
                 data = frame.get('data', [])
 
-                # 遍历当前帧中的跟踪对象数据
+       
                 for obj in data:
                     trackable_object = obj.get('trackable_object')
 
-                    # 如果是球的 trackable_object
+  
                     if trackable_object == ball_id:
                         ball_velocity_periods.append([seconds, obj['x'], obj['y'], obj.get('z', 0)])
-                    # 如果是目标球员的 trackable_object
+            
                     elif trackable_object == obj_id:
                         player_periods[key].append([seconds, obj['x'], obj['y'], trackable_object,team_group])
 
@@ -206,15 +203,15 @@ def find_min_distance(results):
             print(f"Unexpected item in results: {item}")
     return min_distance, min_distance_second
 
-# 确保 pass_events 是一个 DataFrame
+
 if not isinstance(pass_events, pd.DataFrame):
     raise ValueError("pass_events is not a Pandas DataFrame. Check data loading or filtering.")
 
-# 检查是否有 'seconds' 列
+
 if "seconds" not in pass_events.columns:
     raise KeyError("'seconds' column is missing in pass_events DataFrame.")
 
-# 处理 pass_events_seconds
+
 pass_events_periods = []
 for _, row in pass_events.iterrows():
     pass_second = row["seconds"]
@@ -225,13 +222,6 @@ for _, row in pass_events.iterrows():
         pass_events_periods.append([pass_second,pass_x,pass_y,'home team'])
     else:
         pass_events_periods.append([pass_second,pass_x,pass_y,'away team'])
-
-
-# for pass_event in pass_events_periods:
-#     get_windows of  tracking
-#     windows[tracking[seconds]]
-#     for window in windows 得到每一个 player_periods[key：second]                                          
-#   算该pass—_event和该palyer_period[]的最高分得到所有时间的最高分
 
 
 
@@ -248,8 +238,8 @@ def distance_score(pass_event, player_period, ball_velocity_period):
         "y": ball_velocity_period[2]   
     }
 
-    tracking_event_frame = [] # 存了该second下 pass和所有tracking球员的距离与时间
-    ball_distances_frame = [] #该second下所有球员和ball的距离
+    tracking_event_frame = [] # save the distances and time of all tracking players in this second
+    ball_distances_frame = [] # all distances between tracking players and ball in this second
 
     tracking_second = player_period[0]    
     tracking_player_x = player_period[1]
