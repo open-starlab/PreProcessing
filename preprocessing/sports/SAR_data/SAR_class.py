@@ -1,4 +1,4 @@
-from .soccer.soccer_sar_class import Soccer_SAR_data
+from .soccer.soccer_SAR_class import Soccer_SAR_data
 
 class SAR_data:
     sports = ['soccer']
