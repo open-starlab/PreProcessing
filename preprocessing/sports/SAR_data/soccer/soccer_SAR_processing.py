@@ -12,7 +12,7 @@ from multiprocessing import Pool
 import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from football_markov.utils.file_utils import load_json
+from soccer.utils.file_utils import load_json
 from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
@@ -518,6 +518,7 @@ class ProcessEventData:
                 player_name = player['name']
                 if player_name == row["player"]:
                     return player['jersey_number']
+            import pdb; pdb.set_trace()
             return None
 
     def position_id(self, row):
@@ -660,7 +661,7 @@ class ProcessEventData:
         )
         df_play['チーム名'] = self.df['team']
         df_play['選手ID'] = self.df.apply(lambda row: self.match_player_id(row), axis=1)
-        df_play['選手名'] = self.df['player']
+        df_play['選手名'] = np.replace(self.df['player'], "  ", " ") if "  " in self.df['player'] else self.df['player']
         df_play['選手背番号'] = self.df.apply(lambda row: self.match_jursey_number(row), axis=1)
         df_play['ポジションID'] = self.df.apply(lambda row: self.position_id(row), axis=1)
         df_play['ボールX'] = (self.df['ball_x']-60)*315/120 

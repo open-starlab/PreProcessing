@@ -11,15 +11,15 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from football_markov.constant import HOME_AWAY_MAP, PLAYER_ROLE_MAP
-from football_markov.data.cleaning.clean_event_data import (
+from soccer.constant import HOME_AWAY_MAP, PLAYER_ROLE_MAP
+from soccer.cleaning.clean_event_data import (
     clean_event_data,
     get_changed_player_list_LaLiga,
     get_timestamp_LaLiga,
     preprocess_coordinates_in_event_data_laliga,
 )
-from football_markov.data.cleaning.clean_jleague_data import clean_player_data, merge_tracking_and_event_data_laliga
-from football_markov.data.cleaning.clean_tracking_data import (
+from soccer.cleaning.clean_data import clean_player_data, merge_tracking_and_event_data
+from soccer.cleaning.clean_tracking_data import (
     calculate_speed,
     calculate_acceleration,
     clean_tracking_data,
@@ -33,344 +33,16 @@ from football_markov.data.cleaning.clean_tracking_data import (
     preprocess_coordinates_in_tracking_data,
     resample_tracking_data,
 )
-from football_markov.data.cleaning.map_column_names import (
+from soccer.cleaning.map_column_names import (
     check_and_rename_event_columns_laliga,
     check_and_rename_player_columns_laliga,
     check_and_rename_tracking_columns,
 )
-from football_markov.env import DATA_DIR
-from football_markov.utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines, save_formatted_json
+from soccer.env import DATA_DIR
+from soccer.utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines, save_formatted_json
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-warnings.filterwarnings('ignore')
-
-
-def clean_player_data(player_data: pd.DataFrame) -> pd.DataFrame:
-    """
-    This function cleans the player data by filtering out players who did not participate in the game.
-    It also maps the home and away teams to their respective identifiers.
-
-    Parameters:
-    player_data (pd.DataFrame): DataFrame containing player data
-
-    Returns:
-    pd.DataFrame: Cleaned player data
-    """
-
-    player_data = player_data.query("on_pitch == 1")
-    player_data.loc[:, 'home_away'] = player_data['home_away'].apply(lambda x: HOME_AWAY_MAP[x])
-    player_data.loc[:, 'player_role'] = player_data['player_role'].apply(lambda x: PLAYER_ROLE_MAP[x])
-    player_data = player_data[
-        ['team_id', 'home_away', 'player_id', 'player_name', 'player_role', 'jersey_number', 'height', 'starting_member']
-    ]
-    return player_data
-
-
-def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.DataFrame, state_def) -> List[Dict[str, Any]]:
-    """
-    This function merges the tracking data and event data.
-    Merge operation is done on the half and time_from_half_start columns.
-
-    Parameters:
-    tracking_data (pd.DataFrame): DataFrame containing tracking data
-    event_data (pd.DataFrame): DataFrame containing event data
-
-    Returns:
-    List[Dict[str, Any]]: List of dictionaries containing the merged tracking and event data
-    """
-
-    event_columns_CDS = [
-        'game_id',
-        'frame_id',
-        'half',
-        'time_from_half_start',
-        'event_id',
-        'event_name',
-        'event_x',
-        'event_y',
-        'team_id',
-        'team_name',
-        'home_away',
-        'player_id',
-        'player_name',
-        'jersey_number',
-        'player_role',
-        'attack_history_num',
-        'attack_direction',
-        'series_num',
-        'ball_touch',
-        'success',
-        'history_num',
-        'attack_start_history_num',
-        'attack_end_history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_cross',
-        'is_through_pass',
-        'is_dribble',
-        'ball',
-        'players',
-    ]
-    
-    event_columns_LDS = [
-        'game_id',
-        'frame_id',
-        'half',
-        'time_from_half_start',
-        'event_id',
-        'event_name',
-        'event_x',
-        'event_y',
-        'team_id',
-        'team_name',
-        'home_away',
-        'player_id',
-        'player_name',
-        'jersey_number',
-        'player_role',
-        'attack_history_num',
-        'attack_direction',
-        'series_num',
-        'ball_touch',
-        'success',
-        'history_num',
-        'attack_start_history_num',
-        'attack_end_history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_dribble',
-        "is_ball_recovery",
-        "is_block",
-        "is_interception",
-        "is_clearance",
-        'is_cross',
-        'is_through_pass',
-        'ball',
-        'players',
-    ]
-    
-    frame_df_columns_CDS = [
-        'frame_id',
-        'event_id',
-        'team_id',
-        'player_id',
-        'jersey_number',
-        'ball_touch',
-        'success',
-        'history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_cross',
-        'is_through_pass',
-        'is_dribble',
-    ]
-    
-    frame_df_columns_LDS = [
-        'frame_id',
-        'event_id',
-        'team_id',
-        'player_id',
-        'jersey_number',
-        'ball_touch',
-        'success',
-        'history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_dribble',
-        "is_ball_recovery",
-        "is_block",
-        "is_interception",
-        "is_clearance",
-        'is_cross',
-        'is_through_pass',
-    ]
-    
-    if state_def == 'CDS':
-        frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
-            event_columns_CDS
-        ].reset_index(drop=True)
-    
-        frame_df[
-            frame_df_columns_CDS
-        ] = (
-            frame_df[
-                frame_df_columns_CDS
-            ]
-            .fillna(-1)
-            .astype(int)
-        )
-    elif state_def == "LDS":
-        frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
-            event_columns_LDS
-        ].reset_index(drop=True)
-    
-        frame_df[
-            frame_df_columns_LDS
-        ] = (
-            frame_df[
-                frame_df_columns_LDS
-            ]
-            .fillna(-1)
-            .astype(int)
-        )
-
-
-    frame_df['half'] = frame_df['half'].fillna(method='ffill').fillna(method='bfill')
-    frame_df['state'] = frame_df.apply(lambda x: {"ball": x['ball'], "players": x['players']}, axis=1)
-    frame_df[
-        [
-            'game_id',
-            'attack_history_num',
-            'series_num',
-            'attack_start_history_num',
-            'attack_end_history_num',
-            'attack_direction',
-        ]
-    ] = (
-        frame_df[
-            [
-                'game_id',
-                'attack_history_num',
-                'series_num',
-                'attack_start_history_num',
-                'attack_end_history_num',
-                'attack_direction',
-            ]
-        ]
-        .fillna(method='ffill')
-        .fillna(method='bfill')
-        .astype(int)
-    )
-    frame_df.loc[:, 'attack_direction'] = frame_df.groupby(['half', 'attack_start_history_num'])[
-        'attack_direction'
-    ].transform(lambda x: x.value_counts().index[0])
-    frame_df[['event_name', 'player_role']] = frame_df[['event_name', 'player_role']].astype(str).replace('nan', None)
-    frame_df = frame_df.fillna(np.nan).replace(np.nan, None)
-    frame_df = frame_df.drop(['ball', 'players'], axis=1)
-    frame_df = frame_df.sort_values(by=["half", "time_from_half_start"]).reset_index(drop=True)
-    return frame_df.to_dict(orient='records')
-
-
-def merge_tracking_and_event_data_laliga(tracking_data: pd.DataFrame, event_data: pd.DataFrame) -> List[Dict[str, Any]]:
-    """
-    This function merges the tracking data and event data.
-    Merge operation is done on the half and time_from_half_start columns.
-
-    Parameters:
-    tracking_data (pd.DataFrame): DataFrame containing tracking data
-    event_data (pd.DataFrame): DataFrame containing event data
-
-    Returns:
-    List[Dict[str, Any]]: List of dictionaries containing the merged tracking and event data
-    """
-    frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
-        [
-            'game_id',
-            'frame_id',
-            'half',
-            'time_from_half_start',
-            'event_id',
-            'event_name',
-            'event_x',
-            'event_y',
-            'team_id',
-            'team_name',
-            'home_away',
-            'player_id',
-            'player_name',
-            'jersey_number',
-            'player_role',
-            'attack_history_num',
-            'attack_direction',
-            'series_num',
-            'ball_touch',
-            'success',
-            'history_num',
-            'attack_start_history_num',
-            'attack_end_history_num',
-            'formation',
-            'is_goal',
-            'is_shot',
-            'is_pass',
-            'is_dribble',
-            "is_pressure",
-            "is_ball_recovery",
-            "is_block",
-            "is_interception",
-            "is_clearance",
-            'ball',
-            'players',
-        ]
-    ].reset_index(drop=True)
-
-    # Replace infinite values with NaN
-    frame_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-
-    # Fill NaN values with -1 for columns that should be integers
-    int_columns = [
-        'frame_id',
-        'event_id',
-        'team_id',
-        'player_id',
-        'jersey_number',
-        'ball_touch',
-        'success',
-        'history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_dribble',
-        "is_pressure",
-        "is_ball_recovery",
-        "is_block",
-        "is_interception",
-        "is_clearance",
-    ]
-    frame_df[int_columns] = frame_df[int_columns].fillna(-1).astype(int)
-
-    # Handle other columns
-    frame_df['half'] = frame_df['half'].fillna(method='ffill').fillna(method='bfill')
-    frame_df['state'] = frame_df.apply(lambda x: {"ball": x['ball'], "players": x['players']}, axis=1)
-    
-    # Handle columns that should be filled and converted to int
-    fill_and_convert_columns = [
-        'game_id',
-        'attack_history_num',
-        'series_num',
-        'attack_start_history_num',
-        'attack_end_history_num',
-        'formation',
-        'attack_direction',
-    ]
-    frame_df[fill_and_convert_columns] = (
-        frame_df[fill_and_convert_columns]
-        .fillna(method='ffill')
-        .fillna(method='bfill')
-        .fillna(-1)  # Fill any remaining NaNs with -1
-        .astype(int)
-    )
-
-    # Handle attack_direction
-    frame_df.loc[:, 'attack_direction'] = frame_df.groupby(['half', 'attack_start_history_num'])[
-        'attack_direction'
-    ].transform(lambda x: x.value_counts().index[0])
-
-    # Handle string columns
-    frame_df[['event_name', 'player_role']] = frame_df[['event_name', 'player_role']].astype(str).replace('nan', None)
-
-    # Final cleanup
-    frame_df = frame_df.fillna(np.nan).replace(np.nan, None)
-    frame_df = frame_df.drop(['ball', 'players'], axis=1)
-    frame_df = frame_df.sort_values(by=["half", "time_from_half_start"]).reset_index(drop=True)
-
-    return frame_df.to_dict(orient='records')
-
 
 def process_game(game_dir, args, config):
     # output_dir = args.cleaned_data_dir / game_dir.name
@@ -447,7 +119,7 @@ def process_game(game_dir, args, config):
     tracking_data = format_tracking_data_laliga(tracking_data, home_team_name, away_team_name, player_dict)
     tracking_data = calculate_speed(tracking_data, sampling_rate=config['target_sampling_rate'])
     tracking_data = calculate_acceleration(tracking_data, sampling_rate=config['target_sampling_rate'])
-    merged_data = merge_tracking_and_event_data_laliga(tracking_data, event_data)
+    merged_data = merge_tracking_and_event_data(tracking_data, event_data)
 
     # save
     output_dir = args.cleaned_data_dir / game_dir.name

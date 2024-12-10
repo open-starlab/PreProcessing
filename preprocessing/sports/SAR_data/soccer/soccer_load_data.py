@@ -8,6 +8,7 @@ from statsbombpy import sb
 from tqdm import tqdm
 from datetime import datetime
 import os
+import ast
 import pdb
 
 

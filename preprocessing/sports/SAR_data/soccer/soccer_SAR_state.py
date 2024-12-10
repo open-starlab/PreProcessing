@@ -12,9 +12,9 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from football_markov.data.preprocessing.preprocess_frames_laliga import frames2events
-from football_markov.data.preprocessing.reward_model_laliga import RewardModelBase
-from football_markov.utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
+from soccer.state_preprocess.preprocess_frame import frames2events
+from soccer.state_preprocess.reward_model import RewardModelBase
+from soccer.utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

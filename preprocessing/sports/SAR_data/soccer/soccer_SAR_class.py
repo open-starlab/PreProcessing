@@ -20,12 +20,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 if __name__ == '__main__':
     import soccer_load_data
-    import soccer_processing
-    import soccer_tracking_data
+    import soccer_SAR_processing
+    import soccer_SAR_cleaning
+    import soccer_SAR_state
 else:
     from . import soccer_load_data
-    from . import soccer_processing
-    from . import soccer_tracking_data
+    from . import soccer_SAR_processing
+    from . import soccer_SAR_cleaning
+    from . import soccer_SAR_state
 import pdb
 
 #create a class to wrap the data source
@@ -159,13 +161,15 @@ if __name__ == '__main__':
     # test load_statsbomb_skillcorner
     statsbomb_skillcorner_event_path="/data_pool_1/laliga_23/statsbomb/events"
     statsbomb_skillcorner_tracking_path="/data_pool_1/laliga_23/skillcorner/tracking"
+    statsbomb_skillcorner_match_path=os.getcwd()+"/scripts/match_id_dict.json"
+
     datastadium_event_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/play.csv"
     datastadium_tracking_home_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/home_tracking.csv"
     datastadium_tracking_away_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/away_tracking.csv"
     datastadium_dir="/work2/fujii/JLeagueData/Data_2019FM"
 
 
-    statsbomb_skillcorner_df=Event_data(data_provider='statsbomb_skillcorner',
+    statsbomb_skillcorner_df=Soccer_SAR_data(data_provider='statsbomb_skillcorner',
                                         statsbomb_event_dir=statsbomb_skillcorner_event_path,
                                         skillcorner_tracking_dir=statsbomb_skillcorner_tracking_path,
                                         skillcorner_match_dir=statsbomb_skillcorner_match_path,
@@ -175,8 +179,8 @@ if __name__ == '__main__':
 
     
     #test load_datastadium multiple files
-    datastadium_df=Event_data(data_provider='datastadium',event_path=datastadium_dir,max_workers=10).load_data()
-    datastadium_df.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load_class_multi.csv",index=False)
+    # datastadium_df=Soccer_SAR_data(data_provider='datastadium',event_path=datastadium_dir,max_workers=10).load_data()
+    # datastadium_df.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load_class_multi.csv",index=False)
 
     print("-----------done-----------")
 
