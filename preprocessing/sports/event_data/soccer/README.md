@@ -17,6 +17,8 @@ You can find detailed documentation on supported data providers [here](https://o
 - Statsbomb with Skillcorner Tracking Data
 - Wyscout
 
+For data format examples, visit [Kloppy](https://github.com/PySport/kloppy/tree/master/kloppy/tests/files)
+
 ## Supported Preprocessing Methods
 For information on supported preprocessing methods, visit [this documentation](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Data_Format/index.html). The available preprocessing methods are:
 
