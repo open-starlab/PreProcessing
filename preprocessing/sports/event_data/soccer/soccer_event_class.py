@@ -382,7 +382,6 @@ if __name__ == '__main__':
     datastadium_event_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/play.csv"
     datastadium_tracking_home_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/home_tracking.csv"
     datastadium_tracking_away_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/away_tracking.csv"
-    datastadium_dir="/work2/fujii/JLeagueData/Data_2019FM"
 
     #test single file
 
