@@ -175,6 +175,7 @@ if __name__ == '__main__':
                                         skillcorner_match_dir=statsbomb_skillcorner_match_path,
                                         match_id_df=os.getcwd()+'/preprocessing/example/id_matching.csv',
                                         max_workers=10).load_data()
+    pdb.set_trace()
     statsbomb_skillcorner_df.head(10000).to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data_main_multi.csv",index=False)
 
     

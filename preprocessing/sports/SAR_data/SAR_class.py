@@ -19,5 +19,5 @@ if __name__ == '__main__':
     #check if the Soccer_event_data class is correctly implemented
     import os
     datafactory_path=os.getcwd()+"/test/sports/event_data/data/datafactory/datafactory_events.json"
-    datafactory_df=SAR_data(data_provider='datafactory',event_path=datafactory_path).load_data()
+    datafactory_df=SAR_data(data_provider='soccer',event_path=datafactory_path).load_data()
     datafactory_df.to_csv(os.getcwd()+"/test/sports/event_data/data/datafactory/test_data_main.csv",index=False)

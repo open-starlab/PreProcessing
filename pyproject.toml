@@ -24,6 +24,8 @@ dependencies = [
     "statsbombpy>=0.0.1",
     "matplotlib>=3.7.5", 
     "tqdm",
+    "jsonlines",    
+    "chardet",
 ]
 
 license = { text = "Apache License 2.0" }

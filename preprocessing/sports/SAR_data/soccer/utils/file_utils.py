@@ -1,14 +1,13 @@
 import json
 import pickle
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union, Optional
 
 import chardet
 import jsonlines
 import pandas as pd
 
-
-def safe_pd_read_csv(path: str | Path, **kwargs: Dict[str, Any]) -> pd.DataFrame:
+def safe_pd_read_csv(path: Union[str, Path], **kwargs: Dict[str, Any]) -> pd.DataFrame:
     """
     Reads a CSV file with `pd.read_csv` and automatically detects the encoding of the file.
     Parameters:
@@ -25,13 +24,13 @@ def safe_pd_read_csv(path: str | Path, **kwargs: Dict[str, Any]) -> pd.DataFrame
         return pd.read_csv(path, encoding=encoding, **kwargs)
 
 
-def get_file_encoding(file_path: str | Path) -> str | None:
+def get_file_encoding(file_path: Union[str, Path]) -> Optional[str]:
     with open(file_path, 'rb') as f:
         result = chardet.detect(f.read())
     return result['encoding']
 
 
-def load_jsonlines(path: str | Path) -> List[Dict]:
+def load_jsonlines(path: Union[str, Path]) -> List[Dict]:
     data_list = []
     with jsonlines.open(str(path)) as reader:
         for data in reader:
@@ -41,7 +40,7 @@ def load_jsonlines(path: str | Path) -> List[Dict]:
 
 def save_as_jsonlines(
     data: List[Dict],
-    path: str | Path,
+    path: Union[str, Path],
     parents: bool = True,
     exist_ok: bool = True,
 ) -> None:
@@ -53,15 +52,15 @@ def save_as_jsonlines(
     return
 
 
-def load_json(path: str | Path) -> Dict:
+def load_json(path: Union[str, Path]) -> Dict:
     with open(str(path)) as f:
         data = json.load(f)
     return data  # type: ignore
 
 
 def save_formatted_json(
-    data: Dict | List | str,
-    path: str | Path,
+    data: Union[Dict, List, str],
+    path: Union[str, Path],
     parents: bool = True,
     exist_ok: bool = True,
 ) -> None:
@@ -87,8 +86,8 @@ def save_formatted_json(
 
 
 def save_pickle(
-    data: Dict | List | str,
-    path: str | Path,
+    data: Union[Dict, List, str],
+    path: Union[str, Path],
     parents: bool = True,
     exist_ok: bool = True,
 ) -> None:
@@ -100,8 +99,8 @@ def save_pickle(
 
 
 def load_pickle(
-    path: str | Path,
-) -> Dict | List | str:
+    path: Union[str, Path],
+) -> Union[Dict, List, str]:
     path = Path(path)
     with path.open(mode="rb") as fin:
         data = pickle.load(fin)

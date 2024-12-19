@@ -10,7 +10,7 @@ import pandas as pd
 from tqdm import tqdm
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from soccer.state_preprocess.preprocess_frame import frames2events
 from soccer.state_preprocess.reward_model import RewardModelBase
