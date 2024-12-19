@@ -1,4 +1,3 @@
-print("----------------------------soccer_SAR_cleaning.py----------------------------")
 import argparse
 import logging
 import re
