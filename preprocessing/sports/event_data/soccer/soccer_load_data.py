@@ -5,11 +5,10 @@ import pandas as pd
 import numpy as np
 import xml.etree.ElementTree as ET
 from statsbombpy import sb
+from tqdm import tqdm
+from datetime import datetime
 import os
 import pdb
-# import logging
-
-# logger = logging.getLogger('preprocessing.sports.event_data.load_data')
 
 def load_datafactory(event_path: str) -> pd.DataFrame:
     """
@@ -63,7 +62,7 @@ def load_datafactory(event_path: str) -> pd.DataFrame:
 
     # Reorder columns and sort the DataFrame by 'seconds'
     df = df[["match_id", "period",  "minute", "second", "seconds", "event_type", "event_type_2", "team", "player", "start_x", "start_y", "start_z", "end_x", "end_y", "end_z"]]
-    df = df.sort_values(by="seconds").reset_index(drop=True)
+    df = df.sort_values(by=["period","seconds"]).reset_index(drop=True)
 
     return df
 
@@ -174,7 +173,7 @@ def load_metrica(event_path: str, match_id: str = None, tracking_home_path: str 
 
     # Convert the event list to a DataFrame and sort by 'seconds'
     df = pd.DataFrame(event_list, columns=columns)
-    df = df.sort_values(by="seconds").reset_index(drop=True)
+    df = df.sort_values(by=["period", "seconds"]).reset_index(drop=True)
 
     return df
 
@@ -220,11 +219,11 @@ def load_opta(f24_path: str, match_id: str = None) -> pd.DataFrame:
     # Convert minute and second to total seconds for sorting
     df["total_seconds"] = df["minute"] * 60 + df["second"]
 
-    # Sort the DataFrame by 'total_seconds'
-    df = df.sort_values(by="total_seconds").reset_index(drop=True)
-
     # Reorder columns
     df = df[["match_id", "period", "minute", "second", "total_seconds", "event_type", "event_type_2", "outcome", "team", "start_x", "start_y"]]
+
+    #sort the DataFrame by 'period' and 'total_seconds'
+    df = df.sort_values(by=["period", "total_seconds"]).reset_index(drop=True)
 
     return df
 
@@ -705,12 +704,14 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     
     for player in match['players']:
         role = team_dict[player['team_id']]['role']
+        position = player['player_role']['name']
         if role == 'home':
             trackable_objects[player['trackable_object']] = {
                 'name': f"{player['first_name']} {player['last_name']}",
                 'team': team_dict[player['team_id']]['name'],
                 'role': role,
-                'id': home_count
+                'id': home_count,
+                'position': position
             }
             home_count += 1
         elif role == 'away':
@@ -718,12 +719,58 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
                 'name': f"{player['first_name']} {player['last_name']}",
                 'team': team_dict[player['team_id']]['name'],
                 'role': role,
-                'id': away_count
+                'id': away_count,
+                'position': position
             }
             away_count += 1
 
-    trackable_objects[match['ball']['trackable_object']] = {'name': 'ball', 'team': 'ball', 'role': 'ball'}
+    trackable_objects[match['ball']['trackable_object']] = {'name': 'ball', 'team': 'ball', 'role': 'ball', 'position': 'ball'}
+    ball_id = match['ball']['trackable_object']
 
+    ##sync the tracking data with the events based on the ball velocity
+    #get the first 5s of the match
+    ball_velocity_period_1 = []
+    ball_velocity_period_2 = []
+
+    for frame in tracking:
+        time = frame['timestamp']
+        period = frame['period']
+        data = frame['data']
+        time_components = time.split(':') if time else None
+        seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2]) if time else 0
+        if time and period==1 and seconds<=5:
+            for obj in data:
+                if obj['trackable_object']==ball_id:
+                    ball_velocity_period_1.append([time, obj['x'], obj['y'],obj['z']])
+
+        if time and period==2 and seconds <= 45*60+5:
+            for obj in data:
+                if obj['trackable_object']==ball_id:
+                    ball_velocity_period_2.append([time, obj['x'], obj['y'],obj['z']])
+            
+    if not ball_velocity_period_1 == [] or not ball_velocity_period_2 == []:
+        try:
+            max_velocity_timestamp1, max_velocity1 = calculate_velocity_and_max_timestamp(ball_velocity_period_1)
+            max_velocity_seconds1 = max_velocity_timestamp1.split(':')
+            max_velocity_seconds1 = float(max_velocity_seconds1[0]) * 3600 + float(max_velocity_seconds1[1]) * 60 + float(max_velocity_seconds1[2])
+        except:
+            max_velocity_seconds1 = -1
+        
+        try:
+            max_velocity_timestamp2, max_velocity2 = calculate_velocity_and_max_timestamp(ball_velocity_period_2)
+            max_velocity_seconds2 = max_velocity_timestamp2.split(':')
+            max_velocity_seconds2 = float(max_velocity_seconds2[0]) * 3600 + float(max_velocity_seconds2[1]) * 60 + float(max_velocity_seconds2[2])
+            max_velocity_seconds2 = max_velocity_seconds2 - 45*60
+        except:
+            max_velocity_seconds2 = -1
+        
+        if max_velocity_seconds1 == -1 and max_velocity_seconds2 != -1:
+            max_velocity_seconds1 = max_velocity_seconds2
+        elif max_velocity_seconds1 != -1 and max_velocity_seconds2 == -1:
+            max_velocity_seconds2 = max_velocity_seconds1
+        elif max_velocity_seconds1 == -1 and max_velocity_seconds2 == -1:
+            max_velocity_seconds1 = max_velocity_seconds2 = 0
+    
     # Process tracking data
     tracking_dict = {}
     for frame in tracking:
@@ -732,9 +779,14 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
             time_components = time.split(':')
             seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2])
             period = frame['period']
+            if period == 1:
+                seconds = seconds - max_velocity_seconds1
+            elif period == 2:
+                seconds = seconds - max_velocity_seconds2
+            seconds = round(seconds, 1)
             uid = f"{period}_{seconds}"
             tracking_dict[uid] = frame['data']
-
+    
     # Prepare data for DataFrame
     df_list = []
     for _, event in events.iterrows():
@@ -791,6 +843,7 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
         tracking_data = tracking_dict.get(uid)
         home_tracking = [None] * 2 * 23
         away_tracking = [None] * 2 * 23
+        home_side = [None]
         
         if tracking_data:
             for obj in tracking_data:
@@ -802,7 +855,22 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
                     away_tracking[2 * track_obj['id']] = obj['x']
                     away_tracking[2 * track_obj['id'] + 1] = obj['y']
 
-        df_list.append([match_id, period, time, minute, second, seconds, event_type, event_type_2, team, home_team, player, start_x, start_y, end_x, end_y, *home_tracking, *away_tracking])
+                if track_obj['position'] == "Goalkeeper":
+                    if track_obj['role'] == 'home':
+                        home_gk_x = obj['x']
+                    elif track_obj['role'] == 'away':
+                        away_gk_x = obj['x']
+
+                
+            # Determine the side of the home team based on the goalkeeper's position
+            if home_gk_x < away_gk_x:
+                home_side = 'left'
+            else:
+                home_side = 'right'
+            
+            home_side = [home_side]
+
+        df_list.append([match_id, period, time, minute, second, seconds, event_type, event_type_2, team, home_team, player, start_x, start_y, end_x, end_y, *home_tracking, *away_tracking, *home_side])
     
     # Define DataFrame columns
     home_tracking_columns = []
@@ -810,16 +878,59 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     for i in range(1, 24):
         home_tracking_columns.extend([f"h{i}_x", f"h{i}_y"])
         away_tracking_columns.extend([f"a{i}_x", f"a{i}_y"])
-    columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y"] + home_tracking_columns + away_tracking_columns
-
-    # Sort the DataFrame by 'seconds'
-    df_list = sorted(df_list, key=lambda x: x[5])
+    columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y"] + home_tracking_columns + away_tracking_columns + ["home_side"]
 
     # Convert the event list to a DataFrame
     df = pd.DataFrame(df_list, columns=columns)
 
+    #Sort the DataFrame by 'period' then 'seconds'
+    df = df.sort_values(by=["period", "seconds"]).reset_index(drop=True)
+
     return df
-    
+
+def calculate_velocity_and_max_timestamp(data):
+    """
+    Calculate the velocity for each time interval and find the timestamp with the highest velocity.
+
+    Parameters:
+    data (list): List of lists, where each sublist contains [timestamp, x, y, z].
+
+    Returns:
+    tuple: (max_velocity_timestamp, max_velocity)
+        - max_velocity_timestamp: The timestamp with the highest velocity.
+        - max_velocity: The highest velocity value.
+    """
+    # Extract timestamps, x, y, z coordinates
+    timestamps = [entry[0] for entry in data]
+    x = np.array([entry[1] for entry in data])
+    y = np.array([entry[2] for entry in data])
+    z = np.array([entry[3] for entry in data])
+
+    # Convert timestamps to seconds
+    time_seconds = np.array([
+        (datetime.strptime(ts, "%H:%M:%S.%f") - datetime.strptime(timestamps[0], "%H:%M:%S.%f")).total_seconds()
+        for ts in timestamps
+    ])
+
+    # Calculate differences
+    delta_x = np.diff(x)
+    delta_y = np.diff(y)
+    delta_z = np.diff(z)
+    delta_t = np.diff(time_seconds)
+
+    # Calculate velocity components and magnitude
+    vx = delta_x / delta_t
+    vy = delta_y / delta_t
+    vz = delta_z / delta_t
+    velocity_magnitude = np.sqrt(vx**2 + vy**2 + vz**2)
+
+    # Find the index of the maximum velocity
+    max_velocity_index = np.argmax(velocity_magnitude)
+    max_velocity = velocity_magnitude[max_velocity_index]
+    max_velocity_timestamp = timestamps[max_velocity_index + 1]  # Use +1 to get the ending timestamp of the interval
+
+    return max_velocity_timestamp, max_velocity
+
 def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
     """
     Load and process Wyscout event data from a JSON file and optionally match data from another JSON file.
@@ -947,7 +1058,7 @@ def load_datastadium(
     datastadium_event_path: str,
     datastadium_home_tracking_path: str,
     datastadium_away_tracking_path: str
-) -> pd.DataFrame:
+    ) -> pd.DataFrame:
     """
     Loads and processes event and tracking data from stadium event recordings.
     
@@ -1113,6 +1224,319 @@ def load_datastadium(
 
     return final_df
 
+def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbose: bool = False) -> pd.DataFrame:
+    """
+    Loads and processes event and tracking data from soccer match recordings.
+
+    This function combines event data with tracking data by merging based on event time. It also adds 
+    additional features extracted from metadata, such as player information, and converts position 
+    coordinates to the correct scale for analysis.
+
+    Args:
+        event_path (str): Path to the CSV file containing event data.
+        tracking_path (str): Path to the XML file containing tracking data.
+        meta_path (str): Path to the XML file containing match metadata (pitch, teams, players, etc.).
+        verbose (bool, optional): If True, prints additional information about the merging process and 
+                                  feature extraction. Default is False.
+
+    Returns:
+        pd.DataFrame: A DataFrame containing the merged and processed event and tracking data, 
+                      with additional features including player positions, speeds, ball position, 
+                      and metadata (e.g., player names, shirt numbers, positions).
+    """
+    def read_meta_data(file_path):
+        # Parse the XML file
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        # Extract match information
+        # match = root.find('.//match')
+        # match_info = {attr: match.get(attr) for attr in match.attrib}
+
+        # Extract period information
+        # periods = root.findall('.//period')
+        # period_info = [{attr: period.get(attr) for attr in period.attrib} for period in periods]
+
+        # Extract pitch information
+        pitch = root.find('.//pitch')
+        pitch_info = {attr: pitch.get(attr) for attr in pitch.attrib}
+
+        # Extract team information
+        teams = root.findall('.//team')
+        team_info = [{attr: team.get(attr) for attr in team.attrib} for team in teams]
+
+        # Extract player information
+        players = root.findall('.//players//player')
+        player_info = [{attr: player.get(attr) for attr in player.attrib} for player in players]
+
+        # Extract active players information
+        # chunks = root.findall('.//chunk')
+        # active_players_info = []
+        # for chunk in chunks:
+        #     chunk_info = {attr: chunk.get(attr) for attr in chunk.attrib}
+        #     chunk_info['players'] = [
+        #         {attr: player.get(attr) for attr in player.attrib}
+        #         for player in chunk.findall('player')
+        #     ]
+        #     active_players_info.append(chunk_info)
+
+        return {
+            # 'match_info': match_info,
+            # 'period_info': period_info,
+            'pitch_info': pitch_info,
+            'team_info': team_info,
+            'player_info': player_info,
+            # 'active_players_info': active_players_info
+        }
+
+    def read_tracking_data(file_path):
+        # Parse the XML file
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+
+        # List to store all frame data
+        frames = {}
+
+        # Iterate through each frame
+        for frame in root.findall('frame'):
+            frame_data = {
+                'matchTime': int(frame.get('matchTime')),
+                'frameNumber': int(frame.get('frameNumber')),
+                'eventPeriod': frame.get('eventPeriod'),
+                'ballStatus': frame.get('ballStatus'),
+                'players': [],
+                'ball': None
+            }
+
+            # Process player data
+            for player in frame.findall('player'):
+                player_data = {
+                    'playerId': player.get('playerId'),
+                    'loc': eval(player.get('loc')),  # Convert string to list
+                    'speed': float(player.get('speed'))
+                }
+                frame_data['players'].append(player_data)
+
+            # Process ball data
+            ball = frame.find('ball')
+            if ball is not None:
+                frame_data['ball'] = {
+                    'playerId': ball.get('playerId'),
+                    'loc': eval(ball.get('loc')),  # Convert string to list
+                    'speed': ball.get('speed')
+                }
+
+            frames[frame_data['matchTime']] = frame_data
+
+        return frames
+
+        #load the event data
+    
+    def get_additional_features(event_df, meta_data):
+        #player info: id name nameEN shirtNumber position
+        # create features period, seconds, event_type, event_type_2, outcome, home_team, x_unscaled, y_unscaled,
+        period_dict = {"FIRST_HALF": 1, "SECOND_HALF": 2, "EXTRA_FIRST_HALF": 3, "EXTRA_SECOND_HALF": 4}
+        event_df["period"] = event_df["event_period"].map(period_dict)
+        event_df["seconds"] = event_df["event_time"]/1000
+
+        event_type_list = []
+        for i in range(len(event_df)):
+            event_i = event_df.iloc[i].event_types
+            # print(event_i)
+            if not isinstance(event_i, str):
+                event_type_list.append(None)
+            else:
+                event_i = event_i.split(" ")[0]
+                event_type_list.append(event_i)
+        event_df["event_type"] = event_type_list
+
+        home_team_dict = {int(team_info["id"]):team_info["side"] for team_info in meta_data["team_info"]}
+        event_df["home_team"] = event_df["team_id"].map(home_team_dict)
+        #convert "home" to 1 and "away" to 0 for home_team
+        event_df["home_team"] = event_df["home_team"].map({"home":1,"away":0})
+
+        #x and y coordinates of the field (height,width) for the event data (inverse of the tracking data)
+        event_df["x_unscaled"] = event_df["y"]*int(meta_data["pitch_info"]["width"])
+        event_df["y_unscaled"] = event_df["x"]*int(meta_data["pitch_info"]["height"])
+        return event_df
+    
+    def calculate_sync_bias(event_df, tracking_data, period=1, verbose=False):
+        # 'FIRST_HALF' "SECOND_HALF"
+        # Calculate the bias between event time and tracking time
+        limit = 5.0 #seconds
+        time_list = [key for key in tracking_data.keys()]
+        #split the time_list into two halves
+        if period == 1:
+            time_list = [time for time in time_list if tracking_data[time]['eventPeriod'] == 'FIRST_HALF']
+            first_event_time = event_df[event_df["event_period"]=="FIRST_HALF"].iloc[0].event_time if "FIRST_HALF" in event_df["event_period"].values else 0
+        elif period == 2:
+            time_list = [time for time in time_list if tracking_data[time]['eventPeriod'] == 'SECOND_HALF']
+            first_event_time = event_df[event_df["event_period"]=="SECOND_HALF"].iloc[0].event_time if "SECOND_HALF" in event_df["event_period"].values else 0
+        elif period == 3:
+            time_list = [time for time in time_list if tracking_data[time]['eventPeriod'] == 'EXTRA_FIRST_HALF']
+            first_event_time = event_df[event_df["event_period"]=="EXTRA_FIRST_HALF"].iloc[0].event_time if "EXTRA_FIRST_HALF" in event_df["event_period"].values else 0
+        
+        if time_list == []:
+            return 0
+
+        time_list.sort()
+        start_time = max(time_list[0],0)
+        #round to the nearest 1000
+        start_time = round(start_time/1000)*1000
+        print("start_time:",start_time) if verbose else None
+        #drop the time that exceeds the limit of the event time
+        time_list = [time for time in time_list if time <= start_time+limit*1000]
+        #order the time_list in ascending order
+        time_list.sort()
+        
+        ball_coordinates = []
+        for time_i in time_list:
+            tracking_data_i = tracking_data[time_i]
+            ball_data_i = tracking_data_i['ball']['loc']
+            ball_coordinates.append(ball_data_i)
+        #find the time with the highest acceleration
+        ball_coordinates = np.array(ball_coordinates)
+        ball_speed = np.linalg.norm(np.diff(ball_coordinates,axis=0),axis=1)
+        max_speed_index = np.argmax(ball_speed)
+        max_speed_time = time_list[max_speed_index]
+        bias = max_speed_time - first_event_time
+
+        return bias
+
+    def get_tracking_features(event_df, tracking_data, meta_data, verbose=True):
+        # combine the event data with the tracking data via event_time and matchTime
+        #get the player info
+        time_list = [key for key in tracking_data.keys()]
+        time_diff_list = []
+        player_dict = {}
+        home_team_player_count = 0
+        away_team_player_count = 0
+        home_team_dict = {int(team_info["id"]):team_info["side"] for team_info in meta_data["team_info"]}
+        for player_i in meta_data["player_info"]:
+            player_dict[player_i["id"]] = player_i
+            team_id = int(player_dict[player_i["id"]]['teamId'])
+            if home_team_dict[team_id] == 'home':
+                player_dict[player_i["id"]]["player_num"] = home_team_player_count+1
+                home_team_player_count += 1
+            elif home_team_dict[team_id] == 'away':
+                player_dict[player_i["id"]]["player_num"] = away_team_player_count+1
+                away_team_player_count += 1
+            else:
+                print("team_id not found")
+                pdb.set_trace()
+        
+        #create the additional features
+        tracking_features=["player_id","x","y","speed"]
+        meta_features=["name","nameEn","shirtNumber","position"]
+        ball_features = ["ball_x","ball_y","ball_speed"]
+        additional_features = tracking_features+meta_features
+        additional_featurs_dict = {}
+        for i in range(home_team_player_count):
+            for j in range(len(additional_features)):
+                additional_featurs_dict[f"home_{additional_features[j]}_{i+1}"] = []
+        for i in range(away_team_player_count):
+            for j in range(len(additional_features)):
+                additional_featurs_dict[f"away_{additional_features[j]}_{i+1}"] = []
+        for j in range(len(ball_features)):
+            additional_featurs_dict[ball_features[j]] = []
+        
+        additional_featurs_dict["tracking_time"] = []
+        additaional_features_dict_key_list = [key for key in additional_featurs_dict.keys()]
+
+        #get the sync bias for the event and tracking data
+        bias_1 = calculate_sync_bias(event_df, tracking_data, period=1, verbose=verbose) #FIRST_HALF
+        bias_2 = calculate_sync_bias(event_df, tracking_data, period=2, verbose=verbose) #SECOND_HALF
+        bias_3 = calculate_sync_bias(event_df, tracking_data, period=3, verbose=verbose) #EXTRA_FIRST_HALF
+
+        print("bias_1:",bias_1,"bias_2:",bias_2,"bias_3:",bias_3) if verbose else None
+
+        if verbose:
+            iterable = tqdm(range(len(event_df)))
+        else:
+            iterable = range(len(event_df))
+        for i in iterable:
+            updated_features = []
+            event_time = event_df.iloc[i].event_time
+            period = event_df.iloc[i].event_period
+            if period == 'FIRST_HALF':
+                event_time += bias_1
+            elif period == 'SECOND_HALF':
+                event_time += bias_2
+            elif period == 'EXTRA_FIRST_HALF':
+                event_time += bias_3
+            else:
+                print("period not included")
+            #find the nearest time in the tracking data
+            nearest_time = min(time_list, key=lambda x:abs(x-event_time))
+            try:
+                additional_featurs_dict["tracking_time"].append(nearest_time)
+                updated_features+=["tracking_time"]
+            except:
+                pass
+            time_diff_list.append(nearest_time-event_time)
+            #get the tracking data
+            tracking_data_i = tracking_data[nearest_time]
+            for player_track_j in tracking_data_i['players']:
+                player_j_id = player_track_j['playerId']
+                player_j_num = player_dict[player_j_id]["player_num"]
+                player_j_team = player_dict[player_j_id]["teamId"]
+                player_j_home = home_team_dict[int(player_j_team)]
+                # append the tracking data and meta data to the additional features
+                additional_featurs_dict[f"{player_j_home}_player_id_{player_j_num}"].append(player_track_j['playerId'])
+                additional_featurs_dict[f"{player_j_home}_x_{player_j_num}"].append(round(player_track_j['loc'][0]*int(meta_data["pitch_info"]["width"]),2))
+                additional_featurs_dict[f"{player_j_home}_y_{player_j_num}"].append(round(player_track_j['loc'][1]*int(meta_data["pitch_info"]["height"]),2))
+                additional_featurs_dict[f"{player_j_home}_speed_{player_j_num}"].append(player_track_j['speed'])
+                additional_featurs_dict[f"{player_j_home}_name_{player_j_num}"].append(player_dict[player_j_id]["name"])
+                additional_featurs_dict[f"{player_j_home}_nameEn_{player_j_num}"].append(player_dict[player_j_id]["nameEn"])
+                additional_featurs_dict[f"{player_j_home}_shirtNumber_{player_j_num}"].append(player_dict[player_j_id]["shirtNumber"])
+                additional_featurs_dict[f"{player_j_home}_position_{player_j_num}"].append(player_dict[player_j_id]["position"])
+                updated_features+=[f"{player_j_home}_player_id_{player_j_num}",f"{player_j_home}_x_{player_j_num}",f"{player_j_home}_y_{player_j_num}",f"{player_j_home}_speed_{player_j_num}",f"{player_j_home}_name_{player_j_num}",f"{player_j_home}_nameEn_{player_j_num}",f"{player_j_home}_shirtNumber_{player_j_num}",f"{player_j_home}_position_{player_j_num}"]
+            ball_track = tracking_data_i['ball']
+            additional_featurs_dict[f"ball_x"].append(round(ball_track['loc'][0]*int(meta_data["pitch_info"]["width"]),2))
+            additional_featurs_dict[f"ball_y"].append(round(ball_track['loc'][1]*int(meta_data["pitch_info"]["height"]),2))
+            if ball_track['speed'] == 'NA':
+                additional_featurs_dict[f"ball_speed"].append(None)
+            else:
+                additional_featurs_dict[f"ball_speed"].append(ball_track['speed'])
+            updated_features+=["ball_x","ball_y","ball_speed"]
+            # for features in additaional_features_dict_key_list but not in updated_features, append None
+            for key in additaional_features_dict_key_list:
+                if key not in updated_features:
+                    additional_featurs_dict[key].append(None)
+        
+        #add the additional features to the event_df
+        out_event_df = event_df.copy()
+        if verbose:
+            for key in additional_featurs_dict.keys():
+                print(key,len(additional_featurs_dict[key]))
+
+        # Create a DataFrame from the additional features dictionary
+        additional_features_df = pd.DataFrame(additional_featurs_dict)
+
+        # Concatenate the original event_df with the additional features DataFrame
+        out_event_df = pd.concat([event_df, additional_features_df], axis=1)
+
+        #print the mean and std of the time_diff_list
+        if verbose:
+            print("mean time difference:",round(np.mean(time_diff_list),4))
+            print("std time difference:",round(np.std(time_diff_list),4))
+            print("max time difference:",round(np.max(time_diff_list),4))
+            print("min time difference:",round(np.min(time_diff_list),4))
+        return out_event_df
+    
+    # Load the event data
+    event_df = pd.read_csv(event_path)
+    # Load the tracking data
+    tracking_data = read_tracking_data(tracking_path)
+    # Load the meta data
+    meta_data = read_meta_data(meta_path)
+    # Get additional features
+    event_df = get_additional_features(event_df, meta_data)
+    # Get tracking features
+    event_df = get_tracking_features(event_df, tracking_data, meta_data, verbose=verbose)
+
+    return event_df
+
 if __name__ == "__main__":
     import pdb
     import os
@@ -1172,20 +1596,26 @@ if __name__ == "__main__":
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
-    statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
-                                                        statsbomb_skillcorner_match_path,3894907,1553748)
-    statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
+    # statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
+    #                                                     statsbomb_skillcorner_match_path,3894907,1553748)
+    # statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
 
     #test load_wyscout
     # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)
     # wyscout_df.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/wyscout/test_data.csv",index=False)
 
-    # print("----------------done-----------------")
-    # pdb.set_trace()
-    
+
     #test load_datastadium
     # event=load_datastadium(datastadium_event_path,datastadium_home_tracking_path,datastadium_away_tracking_path)
     # event.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv",index=False)
 
+    #test load_soccertrack
+    soccer_track_event_path="/data_pool_1/soccertrackv2/2023-11-18/Event/event.csv"
+    soccer_track_tracking_path="/data_pool_1/soccertrackv2/2023-11-18/Tracking/tracking.xml"
+    soccer_track_meta_path="/data_pool_1/soccertrackv2/2023-11-18/Tracking/meta.xml"
+    df_soccertrack=load_soccertrack(soccer_track_event_path,soccer_track_tracking_path,soccer_track_meta_path,True)
+    df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_function_sync.csv",index=False)
+
+    print("----------------done-----------------")
     # pdb.set_trace()
 

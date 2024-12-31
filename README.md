@@ -1,5 +1,6 @@
 # OpenSTARLab PreProcessing package
 [![Documentation Status](https://readthedocs.org/projects/openstarlab/badge/?version=latest)](https://openstarlab.readthedocs.io/en/latest/?badge=latest)
+[![dm](https://img.shields.io/pypi/dm/openstarlab-preprocessing)](https://pypi.org/project/openstarlab-preprocessing/)
 
 ## Introduction
 The OpenSTARLab PreProcessing package is a core component for the OpenSTARLab suite, providing essential data preprocessing functions. It is designed with minimal dependencies and aims to avoid those that are heavily version-dependent.
@@ -20,7 +21,13 @@ pip install -e .
 
 ## Current Features
 ### Sports
-- [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/README.md)
+#### Event Data
+- [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/soccer/README.md)
+- [Event data in Rocket League 🚀](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/rocket_league/README.md)
+
+#### SAR Data
+- [SAR data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/SAR_data/soccer/README.md)
+
 
 ## RoadMap
 - [x] Release the package
@@ -39,6 +46,8 @@ pip install -e .
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/calvinyeungck"><img src="https://github.com/calvinyeungck.png" width="100px;" alt="Calvin Yeung"/><br /><sub><b>Calvin Yeung</b></sub></a><br /><a href="#Developer-CalvinYeung" title="Lead Developer">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/kenjiro-mk"><img src="https://github.com/kenjiro-mk.png" width="100px;" alt="Kenjiro Ide"/><br /><sub><b>Kenjiro Ide</b></sub></a><br /><a href="#Developer-KenjiroIde" title="Developer">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/czzzzz129"><img src="https://github.com/czzzzz129.png" width="100px;" alt="Zheng Chen"/><br /><sub><b>Zheng Chen</b></sub></a><br /><a href="#Developer-ZhengChen" title="Developer">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/keisuke198619"><img src="https://github.com/keisuke198619.png" width="100px;" alt="Keisuke Fujii"/><br /><sub><b>Keisuke Fujii</b></sub></a><br /><a href="#lead-KeisukeFujii" title="Team Leader">🧑‍💻</a></td>
     </tr>
   </tbody>
