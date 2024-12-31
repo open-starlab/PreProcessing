@@ -21,7 +21,13 @@ pip install -e .
 
 ## Current Features
 ### Sports
+#### Event Data
 - [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/soccer/README.md)
+- [Event data in Rocket League 🚀](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/rocket_league/README.md)
+
+#### SAR Data
+- [SAR data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/SAR_data/soccer/README.md)
+
 
 ## RoadMap
 - [x] Release the package
