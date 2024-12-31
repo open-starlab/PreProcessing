@@ -10,3 +10,4 @@ preprocessing/__pycache__
 preprocessing/event_data/__pycache__
 preprocessing/sports/event_data/__pycache__
 dist/
+venv/
