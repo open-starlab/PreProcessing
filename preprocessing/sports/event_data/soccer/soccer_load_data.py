@@ -664,9 +664,10 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     # Load SkillCorner tracking and match data
     with open(skillcorner_tracking_path) as f:
         tracking = json.load(f)
-    
-    with open(skillcorner_match_path) as f:
+        
+    with open(skillcorner_match_path, encoding='utf-8') as f:
         match = json.load(f)
+
 
     #check if the file exists
     if not os.path.exists(statsbomb_event_path):
@@ -698,16 +699,73 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
         match['away_team']['id']: {'role': 'away', 'name': away_team_name}
     }
 
+    # events data
+    df_list = []
+    for _, event in events.iterrows():
+        event_id = event['id']
+        match_id = statsbomb_match_id
+        period = event['period']
+        time = event['timestamp']
+        minute = event['minute']
+        second = event['second']
+        event_type = event['type']
+        event_type_2 = None
+        end_x = end_y = None
+        pass_type = None
+        pass_height = None
+
+        if event_type == "Pass":
+            end_location=event.get('pass_end_location')
+            #check if end_location is a string
+            if isinstance(end_location, (str)):
+                end_location = [float(x) for x in end_location[1:-1].split(",")]
+                end_x = end_location[0]
+                end_y = end_location[1]
+            cross=event.get('pass_cross')
+            pass_height=event.get('pass_height')
+            pass_type=event.get('pass_type')
+            if pass_type=="Corner":
+                event_type_2="Corner"
+            elif cross and not np.isnan(cross):
+                event_type_2="Cross"
+            elif pass_height:
+                event_type_2=pass_height
+        elif event_type=="Shot":
+            event_type_2=event.get('shot_outcome')
+
+        team = event['team']
+        home_team = 1 if team == home_team_name else 0
+        player = event['player']
+        location = event['location']
+
+        if isinstance(location, str):
+            location = [float(x) for x in location[1:-1].split(",")]
+            start_x, start_y = location[0], location[1]
+        else:
+            start_x = start_y = None
+
+        time_components = time.split(':')
+        seconds = round(float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2]), 4)
+        if period == 2:
+            seconds += 45 * 60
+        elif period == 3:
+            seconds += 90 * 60
+        elif period == 4:
+            seconds += (90 + 15) * 60     
+        df_list.append([match_id, period, time, minute, second, seconds, event_type, event_type_2, team, home_team, player, start_x, start_y, end_x, end_y, pass_type, pass_height])
+   
+    columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y","pass_type","pass_height"]
+    df_list = pd.DataFrame(df_list, columns=columns)
+
     # Convert the trackable object dict
     trackable_objects = {}
     home_count = away_count = 0
-    
     for player in match['players']:
         role = team_dict[player['team_id']]['role']
         position = player['player_role']['name']
         if role == 'home':
             trackable_objects[player['trackable_object']] = {
-                'name': f"{player['first_name']} {player['last_name']}",
+                'name': f"{player['first_name']} {player['last_name']}".strip(),
                 'team': team_dict[player['team_id']]['name'],
                 'role': role,
                 'id': home_count,
@@ -716,7 +774,7 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
             home_count += 1
         elif role == 'away':
             trackable_objects[player['trackable_object']] = {
-                'name': f"{player['first_name']} {player['last_name']}",
+                'name': f"{player['first_name']} {player['last_name']}".strip(),
                 'team': team_dict[player['team_id']]['name'],
                 'role': role,
                 'id': away_count,
@@ -727,10 +785,15 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
     trackable_objects[match['ball']['trackable_object']] = {'name': 'ball', 'team': 'ball', 'role': 'ball', 'position': 'ball'}
     ball_id = match['ball']['trackable_object']
 
-    ##sync the tracking data with the events based on the ball velocity
-    #get the first 5s of the match
+    # Process tracking data
+    # Kick Off 对齐
+
     ball_velocity_period_1 = []
     ball_velocity_period_2 = []
+    tracking_dict = {}
+    kick_off_events = df_list[df_list['pass_type'] == 'Kick Off']
+    kick_off_player1 = kick_off_events[kick_off_events['period'] == 1]
+    kick_off_player2 = kick_off_events[kick_off_events['period'] == 2]
 
     for frame in tracking:
         time = frame['timestamp']
@@ -747,17 +810,17 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
             for obj in data:
                 if obj['trackable_object']==ball_id:
                     ball_velocity_period_2.append([time, obj['x'], obj['y'],obj['z']])
-            
+
     if not ball_velocity_period_1 == [] or not ball_velocity_period_2 == []:
         try:
-            max_velocity_timestamp1, max_velocity1 = calculate_velocity_and_max_timestamp(ball_velocity_period_1)
+            max_velocity_timestamp1, max_velocity1 = calculate_acceleration_and_max_timestamp(ball_velocity_period_1,kick_off_player1)
             max_velocity_seconds1 = max_velocity_timestamp1.split(':')
             max_velocity_seconds1 = float(max_velocity_seconds1[0]) * 3600 + float(max_velocity_seconds1[1]) * 60 + float(max_velocity_seconds1[2])
         except:
             max_velocity_seconds1 = -1
         
         try:
-            max_velocity_timestamp2, max_velocity2 = calculate_velocity_and_max_timestamp(ball_velocity_period_2)
+            max_velocity_timestamp2, max_velocity2 = calculate_acceleration_and_max_timestamp(ball_velocity_period_2,kick_off_player2)
             max_velocity_seconds2 = max_velocity_timestamp2.split(':')
             max_velocity_seconds2 = float(max_velocity_seconds2[0]) * 3600 + float(max_velocity_seconds2[1]) * 60 + float(max_velocity_seconds2[2])
             max_velocity_seconds2 = max_velocity_seconds2 - 45*60
@@ -770,26 +833,230 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
             max_velocity_seconds2 = max_velocity_seconds1
         elif max_velocity_seconds1 == -1 and max_velocity_seconds2 == -1:
             max_velocity_seconds1 = max_velocity_seconds2 = 0
-    
-    # Process tracking data
-    tracking_dict = {}
+
     for frame in tracking:
         time = frame['timestamp']
         if time:
             time_components = time.split(':')
             seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2])
             period = frame['period']
+            frame['original_seconds'] = seconds  # 保存原始秒数
             if period == 1:
                 seconds = seconds - max_velocity_seconds1
             elif period == 2:
                 seconds = seconds - max_velocity_seconds2
             seconds = round(seconds, 1)
             uid = f"{period}_{seconds}"
-            tracking_dict[uid] = frame['data']
+            tracking_dict[uid] = frame['data']                    #存了Kick off矫正过的data。形式是 tracking_dict[1_123.4]={data里23个trackable_object的坐标}
+            frame['adjusted_seconds'] = seconds  # 保存调整后的秒数
+
+        else:
+            frame["adjusted_seconds"] = None
+
+
+    # Filter pass events
+    pass_events = df_list[(df_list['event_type'] == 'Pass') | (df_list['event_type'] == 'Ball Receipt*')]
+    pass_events_seconds = pass_events["seconds"].tolist()
+    for i, value in enumerate(pass_events_seconds):
+        if np.isnan(value):
+            print(f"NaN found at index {i}")
+
+    def get_window_of_frames_around(action_second, tracking, ta):
+        """
+        Gets a window of frames around the given action_second.
+        """
+        window = []
+        for frame in tracking:
+            if frame["adjusted_seconds"] is not None:
+                frame_seconds = frame['adjusted_seconds']
+                if frame_seconds:
+                    try:
+                        if action_second - ta <= frame_seconds <= action_second + ta:
+                            window.append(frame)
+                    except (ValueError, IndexError):
+                        print(f"Invalid timestamp format: {frame_seconds}")
+                        continue
+        return window
     
+    # windows for all pass events
+    ta = 5
+    windows = []
+    for action_second in tqdm(pass_events_seconds, desc="Processing windows"):
+    
+        window = get_window_of_frames_around(action_second, tracking, ta)
+        if not window:
+            print(f"No frames found around action_second={action_second}")
+        windows.append(window)
+
+    
+    # 1）ball_velocity_periods
+    # 2）根据window[index]得到player_periods[key]
+    pass_player = pass_events["player"]
+    pass_player = pass_player.str.strip()
+    player_periods = {}
+    ball_velocity_periods = []
+    ball_id = match['ball']['trackable_object']
+
+
+    for player in tqdm(match["players"], desc="Processing players"):
+        full_name = f"{player['first_name']} {player['last_name']}".strip()
+        obj_id = player["trackable_object"]
+
+        if full_name in pass_player:
+            for index, window in enumerate(windows):
+                # key = f"player_period_{index + 1}"
+                key = index + 1
+                if key not in player_periods:
+                    player_periods[key] = []
+
+                for frame in window:
+                    # 获取时间戳和比赛阶段
+                    time = frame.get('timestamp')
+                    period = frame.get('period')
+                    data = frame.get('data', [])
+                    possession = frame.get("possession", {})  # 获取控球信息，默认空字典
+                    team_group = possession.get("group")  # 获取控球方
+
+                # 仅处理 possession 不为空的帧
+                    if not team_group:
+                        continue
+
+                    if time:
+                        try:
+                            time_components = time.split(':')
+                            seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2])
+                        except (ValueError, IndexError):
+                            continue
+
+                        for obj in data:
+                            if obj.get('trackable_object') == ball_id:
+                                ball_velocity_periods.append([seconds, obj['x'], obj['y'], obj['z']])
+                            elif obj.get('trackable_object') == obj_id:
+                                player_periods[key].append([seconds, obj['x'], obj['y'], obj["trackable_object"],team_group, period])
+
+        else:
+
+            for index, window in enumerate(windows):
+                # key = f"player_period_{index + 1}"
+                key = index + 1
+                if key not in player_periods:
+                    player_periods[key] = []  # 初始化 player_periods 的键
+
+                for frame in window:
+                    # 获取控球信息
+                    possession = frame.get("possession", {})  # 控球信息
+                    team_group = possession.get("group")  # 控球方，可能为空
+
+                    # 仅处理 possession 不为空的帧
+                    if not team_group:
+                        continue
+
+                    time = frame.get('timestamp')
+                    if time:
+                        try:
+                            time_components = time.split(':')
+                            seconds = float(time_components[0]) * 3600 + float(time_components[1]) * 60 + float(time_components[2])
+                        except (ValueError, IndexError):
+                            print(f"Invalid timestamp format: {time}. Skipping frame.")
+                            continue
+                    period = frame.get('period')
+                    data = frame.get('data', [])
+
+                    # 遍历当前帧中的跟踪对象数据
+                    for obj in data:
+                        trackable_object = obj.get('trackable_object')
+
+                        # 如果是球的 trackable_object
+                        if trackable_object == ball_id:
+                            ball_velocity_periods.append([seconds, obj['x'], obj['y'], obj.get('z', 0)])
+                        # 如果是目标球员的 trackable_object
+                        elif trackable_object == obj_id:
+                            player_periods[key].append([seconds, obj['x'], obj['y'], trackable_object,team_group, period])
+
+
+
+    # 确保 pass_events 是一个 DataFrame
+    if not isinstance(pass_events, pd.DataFrame):
+        raise ValueError("pass_events is not a Pandas DataFrame. Check data loading or filtering.")
+
+    # 检查是否有 'seconds' 列
+    if "seconds" not in pass_events.columns:
+        raise KeyError("'seconds' column is missing in pass_events DataFrame.")
+
+    # pass_events_periods
+    pass_events_periods = []
+    for _, row in pass_events.iterrows():
+        pass_second = row["seconds"]
+        pass_x = row["start_x"]
+        pass_y = row["start_y"]
+        pass_event_team = row["home_team"]
+        if pass_event_team == 1:
+            pass_events_periods.append([pass_second,pass_x,pass_y,'home team'])
+        else:
+            pass_events_periods.append([pass_second,pass_x,pass_y,'away team'])
+
+
+    
+    # synchronize the data by score
+    all_max_scores = []
+
+    for index, (pass_period, ball_velocity_period) in enumerate(zip(pass_events_periods, ball_velocity_periods)):
+        pass_event_second = pass_period[0]
+        pass_event_team = pass_period[3]
+        ball_velocity_seconds = ball_velocity_period[0]
+        ta = 5
+        max_score = float('-inf')  # 初始化最大分数为负无穷
+        max_score_info = []  # 用于存储最大分数对应的信息
+
+        # 确保 player_periods 有效，并检查索引范围
+        if index + 1 < len(player_periods):
+            for i, player_period in enumerate(player_periods[index+1]):
+                player_second = player_period[0]
+                player_team = player_period[4]
+                period_half = player_period[5]
+
+                if player_second == ball_velocity_seconds:
+                    score = distance_score(pass_period, player_period, ball_velocity_period)[2]
+
+                    # 只保留当前最大分数的对应信息
+                    if score > max_score and pass_event_team == player_team:
+                        max_score = score
+                        max_score_info = [pass_event_second, player_second, max_score, period_half]
+                else:
+                    score = [0,0,0,0]
+            # 在遍历完所有的 player_period 之后，再添加最大分数信息
+            if max_score_info:
+                all_max_scores.append(max_score_info)
+        else:
+            all_max_scores.append([0, 0, 0, 0])
+    # for index, (pass_period, ball_velocity_period) in enumerate(zip(pass_events_periods, ball_velocity_periods)):
+    #     pass_event_second = pass_period[0]
+    #     pass_event_team = pass_period[3]
+    #     ta = 5
+    #     max_score = float('-inf')  # 初始化最大分数为负无穷
+    #     max_score_info = []  # 用于存储最大分数对应的信息
+
+    #     # 确保 player_periods 有效，并检查索引范围
+    #     if index + 1 < len(player_periods):
+    #         for i, player_period in enumerate(player_periods[index+1]):
+    #             player_second = player_period[0]
+    #             player_team = player_period[4]
+    #             period_half = player_period[5]
+
+    #             score = distance_score(pass_period, player_period, ball_velocity_period)[2]
+    #             if score > max_score and pass_event_team == player_team:
+    #                 max_score = score
+    #                 max_score_info = [pass_event_second, player_second, max_score, period_half]
+
+    #             if max_score_info:
+    #                 all_max_scores.append(max_score_info)
+
+    #     else:
+    #         all_max_scores.append([0,0,0,0])
+
     # Prepare data for DataFrame
-    df_list = []
-    for _, event in events.iterrows():
+    df_list1 = []
+    for index, event in events.iterrows():
         event_id = event['id']
         match_id = statsbomb_match_id
         period = event['period']
@@ -838,14 +1105,24 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
         elif period == 4:
             seconds += (90 + 15) * 60
 
-        seconds_rounded = round(seconds, 1)
-        uid = f"{period}_{seconds_rounded}"
-        tracking_data = tracking_dict.get(uid)
-        home_tracking = [None] * 2 * 23
-        away_tracking = [None] * 2 * 23
-        home_side = [None]
-        
-        if tracking_data:
+
+    # 根据分数找到相应event最匹配的tracking的时间并写入trackable_objects
+    # 可能要改。 明天看一下max_score的结构
+        for max_score_period in all_max_scores:
+            
+            if seconds == max_score_period[0]:
+                secondsround = max_score_period[1]
+                uid = f"{period}_{secondsround}"
+                tracking_data = tracking_dict.get(uid)
+
+
+            home_tracking = [None] * 2 * 23
+            away_tracking = [None] * 2 * 23
+            home_side = [None]
+            ball_x = None
+            ball_y = None
+
+        if tracking_data:                
             for obj in tracking_data:
                 track_obj = trackable_objects[obj['trackable_object']]
                 if track_obj['role'] == 'home':
@@ -861,7 +1138,9 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
                     elif track_obj['role'] == 'away':
                         away_gk_x = obj['x']
 
-                
+                if track_obj["role"] == "ball":
+                    ball_x = obj["x"]
+                    ball_y = obj["y"]
             # Determine the side of the home team based on the goalkeeper's position
             if home_gk_x < away_gk_x:
                 home_side = 'left'
@@ -870,35 +1149,87 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, skillcorner_tracking_di
             
             home_side = [home_side]
 
-        df_list.append([match_id, period, time, minute, second, seconds, event_type, event_type_2, team, home_team, player, start_x, start_y, end_x, end_y, *home_tracking, *away_tracking, *home_side])
-    
+        df_list1.append([*home_tracking, *away_tracking, *home_side, ball_x, ball_y])
+
+
     # Define DataFrame columns
     home_tracking_columns = []
     away_tracking_columns = []
     for i in range(1, 24):
         home_tracking_columns.extend([f"h{i}_x", f"h{i}_y"])
         away_tracking_columns.extend([f"a{i}_x", f"a{i}_y"])
-    columns = ["match_id", "period", "time", "minute", "second", 'seconds', "event_type", "event_type_2", "team", "home_team", "player", "start_x", "start_y","end_x","end_y"] + home_tracking_columns + away_tracking_columns + ["home_side"]
+    columns1 = home_tracking_columns + away_tracking_columns + ["home_side", "ball_x", "ball_y"]
+    df_list1 = pd.DataFrame(df_list1, columns=columns1)
 
-    # Convert the event list to a DataFrame
-    df = pd.DataFrame(df_list, columns=columns)
-
+    df = pd.concat([df_list,df_list1],axis=1)
     #Sort the DataFrame by 'period' then 'seconds'
     df = df.sort_values(by=["period", "seconds"]).reset_index(drop=True)
 
     return df
 
-def calculate_velocity_and_max_timestamp(data):
+def distance_score(pass_event, player_period, ball_velocity_period):
+
+    event_second = pass_event[0]    
+    event_player_x = pass_event[1]
+    event_player_y = pass_event[2]
+    event_player_side = pass_event[3]
+
+    ball_data_dict = {
+        "second": ball_velocity_period[0], 
+        "x": ball_velocity_period[1], 
+        "y": ball_velocity_period[2]   
+    }
+
+    tracking_event_frame = [] # 存了该second下 pass和所有tracking球员的距离与时间
+    ball_distances_frame = [] #该second下所有球员和ball的距离
+
+    tracking_second = player_period[0]    
+    tracking_player_x = player_period[1]        
+    tracking_player_y = player_period[2]                                                                                    
+    tracking_player_id = player_period[3]
+
+    tracking_event_distance = ((event_player_x - tracking_player_x) ** 2 + (event_player_y - tracking_player_y) ** 2) ** 0.5
+    tracking_event_frame.append((tracking_second, tracking_event_distance, tracking_player_id))
+
+    ball_distance = ((ball_data_dict["x"] - event_player_x) ** 2 + (ball_data_dict["y"] - event_player_y) ** 2) ** 0.5
+    ball_distances_frame.append((tracking_second, ball_distance, tracking_player_id))
+
+
+    # 计算每个球员的综合得分
+    scores = []
+    weight_event = 0.5
+    weight_ball = 0.5
+
+    for i in range(len(tracking_event_frame)):
+        # 获取对应的时间和ID
+        tracking_time_event, event_distance, player_id_event = tracking_event_frame[i]
+        tracking_time_ball, ball_distance, player_id_ball = ball_distances_frame[i]
+
+        if tracking_time_event != tracking_time_ball or player_id_event != player_id_ball:
+            continue
+
+        # 计算综合得分
+        combined_score = weight_event * (1 / (event_distance + 1e-6)) + weight_ball * (1 / (ball_distance + 1e-6))
+        scores.append((tracking_time_event, player_id_event, combined_score))
+
+        # 找出最高分
+        if scores:
+            best_score = max(scores, key=lambda x: x[2])
+            return best_score
+
+def calculate_acceleration_and_max_timestamp(data, player_position):
     """
-    Calculate the velocity for each time interval and find the timestamp with the highest velocity.
+    Calculate the acceleration for each time interval and find the timestamp with the highest acceleration,
+    under the condition that the ball is within 2 meters of the player position.
 
     Parameters:
     data (list): List of lists, where each sublist contains [timestamp, x, y, z].
+    player_position (tuple): Tuple of player's x, y, z coordinates.
 
     Returns:
-    tuple: (max_velocity_timestamp, max_velocity)
-        - max_velocity_timestamp: The timestamp with the highest velocity.
-        - max_velocity: The highest velocity value.
+    tuple: (max_acceleration_timestamp, max_acceleration)
+        - max_acceleration_timestamp: The timestamp with the highest acceleration while meeting the distance condition.
+        - max_acceleration: The highest acceleration value.
     """
     # Extract timestamps, x, y, z coordinates
     timestamps = [entry[0] for entry in data]
@@ -924,12 +1255,31 @@ def calculate_velocity_and_max_timestamp(data):
     vz = delta_z / delta_t
     velocity_magnitude = np.sqrt(vx**2 + vy**2 + vz**2)
 
-    # Find the index of the maximum velocity
-    max_velocity_index = np.argmax(velocity_magnitude)
-    max_velocity = velocity_magnitude[max_velocity_index]
-    max_velocity_timestamp = timestamps[max_velocity_index + 1]  # Use +1 to get the ending timestamp of the interval
+    # Calculate acceleration
+    delta_vx = np.diff(vx) / delta_t[1:]  # Acceleration in x direction
+    delta_vy = np.diff(vy) / delta_t[1:]  # Acceleration in y direction
+    delta_vz = np.diff(vz) / delta_t[1:]  # Acceleration in z direction
+    acceleration_magnitude = np.sqrt(delta_vx**2 + delta_vy**2 + delta_vz**2)
 
-    return max_velocity_timestamp, max_velocity
+    # Calculate distances between ball and player
+    distances=[]
+
+    for (kickoff_x,kickoff_y) in player_position:
+        distance = np.sqrt((x[:-2] - kickoff_x)**2 + (y[:-2] - kickoff_y)**2)
+        distances.append(distance)
+
+    # Find indices where the ball is within 2 meters of the player
+    valid_indices = np.where(np.array(distances) <= 2.0)
+
+    if len(valid_indices) == 0:
+        return None, 0  # No valid timestamp found
+
+    # Find the index of the maximum acceleration among valid indices
+    max_acceleration_index = valid_indices[np.argmax(acceleration_magnitude[valid_indices])]
+    max_acceleration = acceleration_magnitude[max_acceleration_index]
+    max_acceleration_timestamp = timestamps[max_acceleration_index + 2]  # +2 due to second order difference
+
+    return max_acceleration_timestamp, max_acceleration
 
 def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
     """
@@ -1491,9 +1841,11 @@ if __name__ == "__main__":
     statsbomb_event_path=os.getcwd()+"/test/sports/event_data/data/statsbomb/events/3805010.json"
     statsbomb_360_path=os.getcwd()+"/test/sports/event_data/data/statsbomb/three-sixty/3805010.json"
     statsbomb_api_path=os.getcwd()+"/test/sports/event_data/data/statsbomb/api.json"
-    statsbomb_skillcorner_event_path="/data_pool_1/laliga_23/statsbomb/events"
-    statsbomb_skillcorner_tracking_path="/data_pool_1/laliga_23/skillcorner/tracking"
-    statsbomb_skillcorner_match_path="/data_pool_1/laliga_23/skillcorner/match"
+    statsbomb_skillcorner_event_path="/home/z_chen/workspace3/laliga/laliga_23/statsbomb/events"
+
+    statsbomb_skillcorner_tracking_path="/home/z_chen/workspace3/laliga/laliga_23/skillcorner_v2/tracking"
+    statsbomb_skillcorner_match_path="/home/z_chen/workspace3/laliga/laliga_23/skillcorner_v2/match"
+
     wyscout_event_path=os.getcwd()+"/test/sports/event_data/data/wyscout/events_England.json"
     wyscout_matches_path=os.getcwd()+"/test/sports/event_data/data/wyscout/matches_England.json"
     datastadium_event_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/play.csv"
@@ -1531,9 +1883,10 @@ if __name__ == "__main__":
     # statsbomb_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb/test_api_data.csv",index=False)
 
     #test load_statsbomb_skillcorner
+
     statsbomb_skillcorner_df=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_tracking_path,
                                                         statsbomb_skillcorner_match_path,3894907,1553748)
-    statsbomb_skillcorner_df.to_csv(os.getcwd()+"/test/sports/event_data/data/statsbomb_skillcorner/test_data.csv",index=False)
+    statsbomb_skillcorner_df.to_csv("/home/z_chen/workspace3/test/pass_test_event.csv",index=False)
 
     #test load_wyscout
     # wyscout_df=load_wyscout(wyscout_event_path,wyscout_matches_path)

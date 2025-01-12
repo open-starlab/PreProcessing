@@ -119,6 +119,46 @@ def plot_row_soccer(df, row, save_path):
                     continue
                 ax.plot(x, y, 'o', color='blue')
 
+
+    def plot_player_ball(row_df, ax, switch=False):
+        if not switch:
+            for i in range(1, 24):
+                x = row_df[f"h{i}_x"]+FIELD_LENGTH/2
+                y = -(row_df[f"h{i}_y"])+FIELD_WIDTH/2         
+                if x == 0 and y == 0:
+                    continue
+                ax.plot(x, y, 'o', color='red')
+
+            for i in range(1, 24):           
+                x = row_df[f"a{i}_x"]+FIELD_LENGTH/2
+                y = -(row_df[f"a{i}_y"])+FIELD_WIDTH/2
+                if x == 0 and y == 0:
+                    continue
+                ax.plot(x, y, 'o', color='blue')
+            
+            ball_x = row_df["ball_x"]+FIELD_LENGTH/2
+            ball_y = -(row_df["ball_y"])+FIELD_WIDTH/2     
+            ax.plot(ball_x,ball_y,'.', color='green')
+
+        else:
+            for i in range(1, 24):
+                x = -(row_df[f"h{i}_x"])+FIELD_LENGTH/2
+                y = (row_df[f"h{i}_y"])+FIELD_WIDTH/2
+                if x == 0 and y == 0:
+                    continue
+                ax.plot(x, y, 'o', color='red')
+            for i in range(1, 24):
+                x = -(row_df[f"a{i}_x"])+FIELD_LENGTH/2
+                y = (row_df[f"a{i}_y"])+FIELD_WIDTH/2
+                if x == 0 and y == 0:
+                    continue
+                ax.plot(x, y, 'o', color='blue')
+            
+            ball_x = -(row_df["ball_x"])+FIELD_LENGTH/2
+            ball_y = (row_df["ball_y"])+FIELD_WIDTH/2     
+            ax.plot(ball_x,ball_y,'.', color='green')
+
+
     #check if col 'action' exists
     switch_flag = False
     if 'action' in df.columns:
@@ -127,13 +167,13 @@ def plot_row_soccer(df, row, save_path):
         home_team = row_df['home_team']
         home_side = row_df['home_side']
         if home_team == 1 and home_side == 'right':
-            plot_player(row_df, ax, switch=True)
+            plot_player_ball(row_df, ax, switch=True)
             switch_flag = True
         elif home_team == 0 and home_side == 'left':
-            plot_player(row_df, ax, switch=True)
+            plot_player_ball(row_df, ax, switch=True)
             switch_flag = True
         else:
-            plot_player(row_df, ax, switch=False)
+            plot_player_ball(row_df, ax, switch=False)
             switch_flag = False
     elif 'event_type' in df.columns:
         x = row_df["start_x"]*(1.05/1.2)
@@ -144,25 +184,25 @@ def plot_row_soccer(df, row, save_path):
         poss_team_action = True if action in team_actions else False
         if poss_team_action:
             if home_team == 1 and home_side == 'right':
-                plot_player(row_df, ax, switch=True)
+                plot_player_ball(row_df, ax, switch=True)
                 switch_flag = True
             elif home_team == 0 and home_side == 'left':
-                plot_player(row_df, ax, switch=True)
+                plot_player_ball(row_df, ax, switch=True)
                 switch_flag = True
             else:
-                plot_player(row_df, ax, switch=False)
+                plot_player_ball(row_df, ax, switch=False)
                 switch_flag = False
         else:
             if home_team == 1 and home_side == 'right':
-                plot_player(row_df, ax, switch=False)
+                plot_player_ball(row_df, ax, switch=False)
                 switch_flag = False
             elif home_team == 0 and home_side == 'left':
-                plot_player(row_df, ax, switch=False)
+                plot_player_ball(row_df, ax, switch=False)
                 switch_flag = False
             else:
-                plot_player(row_df, ax, switch=True)
+                plot_player_ball(row_df, ax, switch=True)
                 switch_flag = True
-            
+     
 
     #plot the event location
     ax.plot(x, y, 'o', color='black', markersize=3)

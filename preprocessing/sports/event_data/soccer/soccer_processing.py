@@ -132,6 +132,8 @@ def seq2event(data):
     df["score_diff"] = score_diff_list
 
     # Set possession id
+
+    # Every change of possession will add 1 to the possession id, so the id indicates which possession it is.
     poss_id_list = []
     poss_id = 0
     for i in range(len(df)):
@@ -146,7 +148,7 @@ def seq2event(data):
     df["poss_id"] = poss_id_list
 
 
-    # Add a row in between the first and last row of each possession
+    # Add a row in between the first and last row of each possession, to indicate the end
     new_df = []
     for poss_id in df.poss_id.unique():
         temp_df = df[df["poss_id"] == poss_id].reset_index(drop=True)
