@@ -17,6 +17,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import pdb
 
 if __name__ == '__main__':
     import soccer_load_data
@@ -28,11 +29,10 @@ else:
     from . import soccer_SAR_processing
     from . import soccer_SAR_cleaning
     from . import soccer_SAR_state
-import pdb
 
 #create a class to wrap the data source
 class Soccer_SAR_data:
-    def __init__(self,data_provider,event_path=None,match_id=None,tracking_home_path=None,tracking_away_path=None,
+    def __init__(self,data_provider,data_path=None,match_id=None,config_path=None,tracking_home_path=None,tracking_away_path=None,
                  tracking_path=None,meta_data=None,statsbomb_api_args=[],
                  statsbomb_match_id=None,skillcorner_match_id=None,max_workers=1,match_id_df=None,
                  statsbomb_event_dir=None, skillcorner_tracking_dir=None, skillcorner_match_dir=None,
@@ -40,8 +40,9 @@ class Soccer_SAR_data:
                  st_track_path=None, st_meta_path=None,verbose=False,
                  preprocess_tracking=False):
         self.data_provider = data_provider
-        self.event_path = event_path
+        self.data_path = data_path
         self.match_id = match_id
+        self.config_path = config_path
         self.tracking_home_path = tracking_home_path
         self.tracking_away_path = tracking_away_path
         self.tracking_path = tracking_path  
@@ -63,17 +64,15 @@ class Soccer_SAR_data:
     def load_data_single_file(self):
         #based on the data provider, load the dataloading function from load_data.py (single file)
         if self.data_provider == 'datafactory':
-            df=soccer_load_data.load_datafactory(self.event_path)
+            df=soccer_load_data.load_datafactory(self.data_path)
         elif self.data_provider == 'statsbomb':
-            df=soccer_load_data.load_statsbomb(self.event_path,sb360_path=self.sb360_path,match_id=self.statsbomb_match_id,*self.statsbomb_api_args)
+            df=soccer_load_data.load_statsbomb(self.data_path,sb360_path=self.sb360_path,match_id=self.statsbomb_match_id,*self.statsbomb_api_args)
         elif self.data_provider == 'statsbomb_skillcorner':
-            df=soccer_load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
-            if self.preprocess_tracking and not self.call_preprocess:
-                df=soccer_tracking_data.statsbomb_skillcorner_tracking_data_preprocessing(df)
-            if self.preprocess_method is not None and not self.call_preprocess:
-                df=soccer_tracking_data.statsbomb_skillcorner_event_data_preprocessing(df,process_event_coord=False)
+            df, df_players, df_metadata=soccer_load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
+            soccer_SAR_processing.process_statsbomb_skillcorner(df, df_players, df_metadata, self.config_path, self.match_id, save_dir=os.getcwd()+"/data/preprocess_data/stb_skc")
+            soccer_SAR_cleaning.clean_single_data(df, self.match_id, self.config_path, 'laliga', save_dir=os.getcwd()+"/data/clean_data/stb_skc")
         elif self.data_provider == 'datastadium':
-            df=soccer_load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
+            soccer_SAR_cleaning.clean_single_data(self.data_path, self.match_id, self.config_path, 'jleague', save_dir=os.getcwd()+"/data/clean_data/dss")
         else:
             raise ValueError('Data provider not supported or not found')
         return 
@@ -81,12 +80,12 @@ class Soccer_SAR_data:
     def load_data(self):
         print(f'Loading data from {self.data_provider}')
         #check if the event path is a single file or a directory
-        if ((self.event_path is not None and os.path.isfile(self.event_path)) and self.data_provider != 'statsbomb') or \
-           (self.data_provider == 'statsbomb' and self.statsbomb_match_id is None and os.path.isfile(self.event_path)) or \
+        if (self.data_provider == 'datastadium' and self.match_id is not None) or \
+           (self.data_provider == 'statsbomb' and self.statsbomb_match_id is None and os.path.isfile(self.data_path)) or \
             (self.data_provider == 'statsbomb_skillcorner' and self.statsbomb_match_id is not None):
-            df = self.load_data_single_file()
+            self.load_data_single_file()
         #load data from multiple files
-        elif (self.event_path is not None and os.path.isdir(self.event_path)) or self.data_provider == 'statsbomb' or \
+        elif (self.data_path is not None and os.path.isdir(self.data_path)) or self.data_provider == 'statsbomb' or \
             (self.data_provider == 'statsbomb_skillcorner' and self.statsbomb_match_id is None and self.skillcorner_match_id is None):
             #statsbomb_skillcorner
             if self.data_provider == 'statsbomb_skillcorner':
@@ -104,11 +103,11 @@ class Soccer_SAR_data:
             elif self.data_provider == "datastadium":
                 out_df_list = []
 
-                event_dir = self.event_path
+                event_dir = self.data_path
 
                 def process_event_folder(f):
                     # Define file paths for the current event folder
-                    self.event_path = os.path.join(event_dir, f, 'play.csv')
+                    self.data_path = os.path.join(event_dir, f, 'play.csv')
                     self.tracking_home_path = os.path.join(event_dir, f, 'home_tracking.csv')
                     self.tracking_away_path = os.path.join(event_dir, f, 'away_tracking.csv')
 
@@ -119,7 +118,7 @@ class Soccer_SAR_data:
                 # Initialize ThreadPoolExecutor
                 with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                     # Get list of event folders
-                    event_folders = sorted(f for f in os.listdir(self.event_path) if not (f.startswith('.') or f.startswith('@')))
+                    event_folders = sorted(f for f in os.listdir(self.data_path) if not (f.startswith('.') or f.startswith('@')))
                     # Submit tasks to the executor
                     future_to_event = {executor.submit(process_event_folder, folder): folder for folder in event_folders}
                     # Collect results
@@ -130,7 +129,7 @@ class Soccer_SAR_data:
                             out_df_list.append(df)
                         except Exception as e:
                             print(f'Error processing folder {future_to_event[future]}: {e}')
-                self.event_path = event_dir
+                self.data_path = event_dir
                 df = pd.concat(out_df_list)
 
         else:

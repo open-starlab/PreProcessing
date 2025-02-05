@@ -8,14 +8,12 @@ from torch.distributions import Normal
 import pdb
 import matplotlib.path as mpath
 
-from football_markov.constant import FIELD_LENGTH, FIELD_WIDTH, STOP_THRESHOLD
-from football_markov.data.dataclass_LDS import Ball, Player, Position, OnBall, OffBall, AbsoluteState
+
+from ..constant import FIELD_LENGTH, FIELD_WIDTH, STOP_THRESHOLD
+from ..dataclass import Ball, Player, Position, OnBall, OffBall, AbsoluteState
 
 import sys
 import os
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-current_dir = os.getcwd()
-sys.path.append(os.path.abspath(os.path.join(current_dir, '..')))
 
 from scipy.spatial import Voronoi
 from scipy.stats import norm

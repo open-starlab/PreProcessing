@@ -3,13 +3,15 @@
 import json
 import pandas as pd
 import numpy as np
-import xml.etree.ElementTree as ET
-from statsbombpy import sb
-from tqdm import tqdm
 from datetime import datetime
 import os
 import ast
 import pdb
+
+if __name__ == '__main__':
+    from utils.file_utils import load_json
+else:
+    from .utils.file_utils import load_json
 
 
 def load_statsbomb_skillcorner(statsbomb_event_dir: str, statsbomb_lineup_dir, skillcorner_tracking_dir: str, skillcorner_match_dir: str, statsbomb_match_id: str, skillcorner_match_id: str) -> pd.DataFrame:
@@ -37,15 +39,12 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, statsbomb_lineup_dir, s
     events = pd.read_csv(statsbomb_event_path)
 
     # Load StatsBomb lineup data
-    with open(statsbomb_lineup_path) as f:
-        lineup = json.load(f)
+    lineup = load_json(statsbomb_lineup_path)
     
     # Load SkillCorner tracking and match data
-    with open(skillcorner_tracking_path) as f:
-        tracking = json.load(f)
+    tracking = load_json(skillcorner_tracking_path)
         
-    with open(skillcorner_match_path) as f:
-        match = json.load(f)
+    match = load_json(skillcorner_match_path)
 
     #check if the file exists
     if not os.path.exists(statsbomb_event_path):

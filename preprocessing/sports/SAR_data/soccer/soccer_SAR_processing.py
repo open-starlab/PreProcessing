@@ -10,10 +10,12 @@ import time
 from functools import partial
 from multiprocessing import Pool
 import json
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from soccer.utils.file_utils import load_json
 from tqdm import tqdm
+
+if __name__ == '__main__':
+    from utils.file_utils import load_json
+else:
+    from .utils.file_utils import load_json
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

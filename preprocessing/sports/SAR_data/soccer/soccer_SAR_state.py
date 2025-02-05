@@ -10,11 +10,15 @@ import pandas as pd
 from tqdm import tqdm
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from soccer.state_preprocess.preprocess_frame import frames2events
-from soccer.state_preprocess.reward_model import RewardModelBase
-from soccer.utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
+if __name__ == '__main__':
+    from state_preprocess.preprocess_frame import frames2events
+    from state_preprocess.reward_model import RewardModelBase
+    from utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
+else:
+    from .state_preprocess.preprocess_frame import frames2events
+    from .state_preprocess.reward_model import RewardModelBase
+    from .utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

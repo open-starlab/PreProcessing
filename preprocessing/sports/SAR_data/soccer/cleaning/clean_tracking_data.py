@@ -7,13 +7,13 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-from football_markov.constant import FIELD_LENGTH, FIELD_WIDTH, HOME_AWAY_MAP
+from ..constant import FIELD_LENGTH, FIELD_WIDTH, HOME_AWAY_MAP
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def complement_tracking_ball_with_event_data(tracking_ball: pd.DataFrame, event_data: pd.DataFrame) -> pd.DataFrame:
+def complement_tracking_ball_with_event_data(tracking_ball: pd.DataFrame, event_data: pd.DataFrame, first_end_frame: int, league: str) -> pd.DataFrame:
     """
     This function complements the tracking ball data with event data.
     It merges the two dataframes on the 'frame_id' column.
@@ -31,7 +31,12 @@ def complement_tracking_ball_with_event_data(tracking_ball: pd.DataFrame, event_
         .reset_index(drop=True)
     )
     complemented_data['game_id'] = event_data['game_id'].iloc[0]
-    complemented_data['half'] = complemented_data['half'].fillna(method='ffill').fillna(method='bfill').astype(str)
+
+    if league == 'jleague':
+        complemented_data['half'] = complemented_data['half'].fillna(method='ffill').fillna(method='bfill').astype(str)
+    elif league == 'laliga':
+        complemented_data['half'] = complemented_data['frame_id'].apply(lambda x: "first" if x <= first_end_frame else "second")
+
     complemented_data['home_away'] = 'BALL'
     complemented_data['jersey_number'] = 0
     complemented_data['x'] = complemented_data['x'].fillna(complemented_data['ball_x'])
@@ -255,11 +260,11 @@ def preprocess_coordinates_in_tracking_data(
     pd.DataFrame: DataFrame with preprocessed coordinates
     """
 
-    def _convert_coordinate(tracking_data: pd.DataFrame, origin_pos: str, absolute_coordinates: bool, data_type: str) -> pd.DataFrame:
-        if data_type == "jleague":
+    def _convert_coordinate(tracking_data: pd.DataFrame, origin_pos: str, absolute_coordinates: bool, league: str) -> pd.DataFrame:
+        if league == "jleague":
             tracking_data.loc[:, 'x'] = tracking_data['x'].map(lambda x: x / 100)
             tracking_data.loc[:, 'y'] = tracking_data['y'].map(lambda x: -x / 100)
-        elif data_type == "laliga":
+        elif league == "laliga":
             tracking_data.loc[:, 'x'] = tracking_data['x'].map(lambda x: x)
             tracking_data.loc[:, 'y'] = tracking_data['y'].map(lambda x: -x)
 
@@ -763,7 +768,6 @@ def format_tracking_data(
     home_team_name: str,
     away_team_name: str,
     player_dict: Dict[Tuple[str, str], Dict],
-    state_def: str
 ) -> pd.DataFrame:
     """
     This function formats the tracking data.
@@ -785,68 +789,29 @@ def format_tracking_data(
             "ball": None,
             "players": [],
         }
-        if state_def == "CDS":
-            for _, d in group.iterrows():
-                if d['jersey_number'] == 0:
-                    frame_dict['ball'] = {"position": {"x": d['x'], "y": d['y']}}
-                else:
-                    home_away_str = d['home_away']
-                    jersey_number = d['jersey_number']
-                    frame_dict['players'].append(
-                        {
-                            "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
-                            "player_name": player_dict[home_away_str, jersey_number]['player_name']
-                            if jersey_number > 0
-                            else None,
-                            "player_id": player_dict[home_away_str, jersey_number]['player_id']
-                            if jersey_number > 0
-                            else jersey_number,
-                            "player_role": player_dict[home_away_str, jersey_number]['player_role']
-                            if jersey_number > 0
-                            else None,
-                            "jersey_number": jersey_number,
-                            "position": {"x": d['x'], "y": d['y']},
-                        }
-                    )
-        elif state_def == "LDS":
-            for _, d in group.iterrows():
-                if d['jersey_number'] == 0:
-                    frame_dict['ball'] = {"position": {"x": d['x'], "y": d['y']}}
-                elif d['jersey_number'] < 0:
-                    home_away_str = d['home_away']
-                    frame_dict['players'].append(
-                        {
-                            "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
-                            "player_name": None,
-                            "player_id": None,
-                            "player_role": None,
-                            "jersey_number": d['jersey_number'],
-                            "height": None,
-                            "position": {"x": d['x'], "y": d['y']},
-                        }
-                    )
-                else:
-                    home_away_str = d['home_away']
-                    jersey_number = d['jersey_number']
-                    frame_dict['players'].append(
-                        {
-                            "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
-                            "player_name": player_dict[home_away_str, jersey_number]['player_name']
-                            if jersey_number > 0
-                            else None,
-                            "player_id": player_dict[home_away_str, jersey_number]['player_id']
-                            if jersey_number > 0
-                            else jersey_number,
-                            "player_role": player_dict[home_away_str, jersey_number]['player_role']
-                            if jersey_number > 0
-                            else None,
-                            "jersey_number": jersey_number
-                            if jersey_number > 0
-                            else None,
-                            "height": player_dict[home_away_str, jersey_number]['height'],
-                            "position": {"x": d['x'], "y": d['y']},
-                        }
-                    )
+        for _, d in group.iterrows():
+            if d['jersey_number'] == 0:
+                frame_dict['ball'] = {"position": {"x": d['x'], "y": d['y']}}
+            else:
+                home_away_str = d['home_away']
+                jersey_number = d['jersey_number']
+                frame_dict['players'].append(
+                    {
+                        "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
+                        "player_name": player_dict[home_away_str, jersey_number]['player_name']
+                        if jersey_number > 0
+                        else None,
+                        "player_id": player_dict[home_away_str, jersey_number]['player_id']
+                        if jersey_number > 0
+                        else jersey_number,
+                        "player_role": player_dict[home_away_str, jersey_number]['player_role']
+                        if jersey_number > 0
+                        else None,
+                        "jersey_number": jersey_number,
+                        "position": {"x": d['x'], "y": d['y']},
+                    }
+                )
+                
         tracking_list.append(frame_dict)
 
     return pd.DataFrame(tracking_list)
