@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 import pandas as pd
 
-from ..constant import FIELD_LENGTH, FIELD_WIDTH, PLAYER_ROLE_MAP
+from constant import FIELD_LENGTH, FIELD_WIDTH, PLAYER_ROLE_MAP
 
 warnings.filterwarnings('ignore')
 

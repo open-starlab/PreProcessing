@@ -4,7 +4,7 @@ from typing import List
 import pandas as pd
 from tango.common import Registrable
 
-from .epv import EPV
+from state_preprocess.epv import EPV
 
 class RewardModelBase(Registrable):
     def __init__(self) -> None:

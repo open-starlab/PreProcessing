@@ -10,76 +10,76 @@ from pathlib import Path
 import sys
 import os
 
-if __name__ == "__main__":
-    from constant import HOME_AWAY_MAP
-    from cleaning.clean_event_data import (
-        clean_event_data,
-        get_changed_player_list,
-        get_timestamp,
-        preprocess_coordinates_in_event_data,
-    )
-    from cleaning.clean_data import (
-        clean_player_data, 
-        merge_tracking_and_event_data,
-        split_tracking_data,
-        adjust_player_roles
-    )
-    from cleaning.clean_tracking_data import (
-        calculate_speed,
-        calculate_acceleration,
-        clean_tracking_data,
-        complement_tracking_ball_with_event_data,
-        cut_frames_out_of_game,
-        format_tracking_data,
-        get_player_change_log,
-        interpolate_ball_tracking_data,
-        merge_tracking_data,
-        pad_players_and_interpolate_tracking_data,
-        preprocess_coordinates_in_tracking_data,
-        resample_tracking_data,
-    )
-    from cleaning.map_column_names import (
-        check_and_rename_event_columns,
-        check_and_rename_player_columns,
-        check_and_rename_tracking_columns,
-    )
-    from env import DATA_DIR
-    from utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines, save_formatted_json
-else:
-    from .constant import HOME_AWAY_MAP
-    from .cleaning.clean_event_data import (
-        clean_event_data,
-        get_changed_player_list,
-        get_timestamp,
-        preprocess_coordinates_in_event_data,
-    )
-    from .cleaning.clean_data import (
-        clean_player_data, 
-        merge_tracking_and_event_data,
-        split_tracking_data,
-        adjust_player_roles
-    )
-    from .cleaning.clean_tracking_data import (
-        calculate_speed,
-        calculate_acceleration,
-        clean_tracking_data,
-        complement_tracking_ball_with_event_data,
-        cut_frames_out_of_game,
-        format_tracking_data,
-        get_player_change_log,
-        interpolate_ball_tracking_data,
-        merge_tracking_data,
-        pad_players_and_interpolate_tracking_data,
-        preprocess_coordinates_in_tracking_data,
-        resample_tracking_data,
-    )
-    from .cleaning.map_column_names import (
-        check_and_rename_event_columns,
-        check_and_rename_player_columns,
-        check_and_rename_tracking_columns,
-    )
-    from .env import DATA_DIR
-    from .utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines, save_formatted_json
+# if __name__ == "__main__":
+from constant import HOME_AWAY_MAP
+from cleaning.clean_event_data import (
+    clean_event_data,
+    get_changed_player_list,
+    get_timestamp,
+    preprocess_coordinates_in_event_data,
+)
+from cleaning.clean_data import (
+    clean_player_data, 
+    merge_tracking_and_event_data,
+    split_tracking_data,
+    adjust_player_roles
+)
+from cleaning.clean_tracking_data import (
+    calculate_speed,
+    calculate_acceleration,
+    clean_tracking_data,
+    complement_tracking_ball_with_event_data,
+    cut_frames_out_of_game,
+    format_tracking_data,
+    get_player_change_log,
+    interpolate_ball_tracking_data,
+    merge_tracking_data,
+    pad_players_and_interpolate_tracking_data,
+    preprocess_coordinates_in_tracking_data,
+    resample_tracking_data,
+)
+from cleaning.map_column_names import (
+    check_and_rename_event_columns,
+    check_and_rename_player_columns,
+    check_and_rename_tracking_columns,
+)
+from env import DATA_DIR
+from utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines, save_formatted_json
+# else:
+#     from .constant import HOME_AWAY_MAP
+#     from .cleaning.clean_event_data import (
+#         clean_event_data,
+#         get_changed_player_list,
+#         get_timestamp,
+#         preprocess_coordinates_in_event_data,
+#     )
+#     from .cleaning.clean_data import (
+#         clean_player_data, 
+#         merge_tracking_and_event_data,
+#         split_tracking_data,
+#         adjust_player_roles
+#     )
+#     from .cleaning.clean_tracking_data import (
+#         calculate_speed,
+#         calculate_acceleration,
+#         clean_tracking_data,
+#         complement_tracking_ball_with_event_data,
+#         cut_frames_out_of_game,
+#         format_tracking_data,
+#         get_player_change_log,
+#         interpolate_ball_tracking_data,
+#         merge_tracking_data,
+#         pad_players_and_interpolate_tracking_data,
+#         preprocess_coordinates_in_tracking_data,
+#         resample_tracking_data,
+#     )
+#     from .cleaning.map_column_names import (
+#         check_and_rename_event_columns,
+#         check_and_rename_player_columns,
+#         check_and_rename_tracking_columns,
+#     )
+#     from .env import DATA_DIR
+#     from .utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines, save_formatted_json
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -195,7 +195,7 @@ def clean_data(game_dir, config, args):
         )
 
 def clean_single_data(data_path, match_id, config_path, league, save_dir):
-    data_path = Path(data_path/match_id)
+    data_path = Path(data_path + match_id)
     save_dir = Path(save_dir)
     config = load_json(config_path)
     logger.info(f"cleaning started... {data_path.name}")
@@ -283,7 +283,7 @@ def clean_single_data(data_path, match_id, config_path, league, save_dir):
         target_sampling_rate=config['target_sampling_rate'],
     )
     tracking_data = preprocess_coordinates_in_tracking_data(
-        tracking_data, event_data, config['origin_pos'], config['absolute_coordinates']
+        tracking_data, event_data, config['origin_pos'], config['absolute_coordinates'], league=league
     )
     tracking_data = format_tracking_data(tracking_data, home_team_name, away_team_name, player_dict)
     tracking_data = calculate_speed(tracking_data, sampling_rate=config['target_sampling_rate'])

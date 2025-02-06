@@ -2,7 +2,7 @@ from typing import Dict
 
 import pandas as pd
 
-from ..constant import (
+from constant import (
     INPUT_EVENT_COLUMNS, 
     INPUT_PLAYER_COLUMNS, 
     INPUT_TRACKING_COLUMNS, 

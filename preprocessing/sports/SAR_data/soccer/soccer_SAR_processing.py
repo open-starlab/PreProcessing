@@ -12,10 +12,10 @@ from multiprocessing import Pool
 import json
 from tqdm import tqdm
 
-if __name__ == '__main__':
-    from utils.file_utils import load_json
-else:
-    from .utils.file_utils import load_json
+# if __name__ == '__main__':
+from utils.file_utils import load_json
+# else:
+#     from .utils.file_utils import load_json
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)

@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 import numpy as np
 import pandas as pd
 
-from ..constant import HOME_AWAY_MAP, PLAYER_ROLE_MAP
+from constant import HOME_AWAY_MAP, PLAYER_ROLE_MAP
 
 warnings.filterwarnings('ignore')
 

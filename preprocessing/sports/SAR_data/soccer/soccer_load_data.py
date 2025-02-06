@@ -8,13 +8,14 @@ import os
 import ast
 import pdb
 
-if __name__ == '__main__':
-    from utils.file_utils import load_json
-else:
-    from .utils.file_utils import load_json
+from utils.file_utils import load_json
+# if __name__ == '__main__':
+#     from utils.file_utils import load_json
+# else:
+#     from .utils.file_utils import load_json
 
 
-def load_statsbomb_skillcorner(statsbomb_event_dir: str, statsbomb_lineup_dir, skillcorner_tracking_dir: str, skillcorner_match_dir: str, statsbomb_match_id: str, skillcorner_match_id: str) -> pd.DataFrame:
+def load_single_statsbomb_skillcorner(data_path: str, match_id_dict: str, skillcorner_match_id: str) -> pd.DataFrame:
     """
     Load and merge StatsBomb event data with SkillCorner tracking data.
 
@@ -28,6 +29,13 @@ def load_statsbomb_skillcorner(statsbomb_event_dir: str, statsbomb_lineup_dir, s
     Returns:
         pd.DataFrame: Combined DataFrame with event and tracking data.
     """
+
+    statsbomb_event_dir = f"{data_path}/statsbomb/events"
+    statsbomb_lineup_dir = f"{data_path}/statsbomb/lineups"
+    skillcorner_tracking_dir = f"{data_path}/skillcorner/tracking"
+    skillcorner_match_dir = f"{data_path}/skillcorner/match"
+
+    statsbomb_match_id = match_id_dict[skillcorner_match_id]
     
     # File paths
     statsbomb_event_path = f"{statsbomb_event_dir}/{statsbomb_match_id}.csv"

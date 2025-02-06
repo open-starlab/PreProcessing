@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
-from soccer.constant import FIELD_LENGTH, FIELD_WIDTH
+from constant import FIELD_LENGTH, FIELD_WIDTH
 
 
 class EPV:

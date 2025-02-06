@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-from ..constant import FIELD_LENGTH, FIELD_WIDTH, HOME_AWAY_MAP
+from constant import FIELD_LENGTH, FIELD_WIDTH, HOME_AWAY_MAP
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -242,7 +242,7 @@ def preprocess_coordinates_in_tracking_data(
     event_data: pd.DataFrame,
     origin_pos: str = 'center',
     absolute_coordinates: bool = True,
-    data_type: str = "jleague",
+    league: str = "jleague",
 ) -> pd.DataFrame:
     """
     This function preprocesses the coordinates in the tracking data.
@@ -337,7 +337,7 @@ def preprocess_coordinates_in_tracking_data(
     tracking_data.loc[:, 'attack_direction'] = tracking_data.groupby(['half', 'attack_start_history_num'])[
         'attack_direction'
     ].transform(lambda x: x.value_counts().index[0])
-    tracking_data = _convert_coordinate(tracking_data, origin_pos, absolute_coordinates, data_type="jleague")
+    tracking_data = _convert_coordinate(tracking_data, origin_pos, absolute_coordinates, league="jleague")
     return tracking_data.sort_values(by=['half', 'time_from_half_start', 'home_away', 'jersey_number'])[
         [
             'game_id',

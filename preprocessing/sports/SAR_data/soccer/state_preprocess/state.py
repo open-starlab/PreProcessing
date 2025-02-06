@@ -9,8 +9,8 @@ import pdb
 import matplotlib.path as mpath
 
 
-from ..constant import FIELD_LENGTH, FIELD_WIDTH, STOP_THRESHOLD
-from ..dataclass import Ball, Player, Position, OnBall, OffBall, AbsoluteState
+from constant import FIELD_LENGTH, FIELD_WIDTH, STOP_THRESHOLD
+from dataclass import Ball, Player, Position, OnBall, OffBall, AbsoluteState
 
 import sys
 import os
@@ -730,46 +730,52 @@ def calc_dist_offside_line(attack_players: List[Player], defense_players: List[P
 
 
 # onball function
-def calc_onball(
+def calc_offball(
         players: List[Player],
         attack_players: List[Player],
         defense_players: List[Player],
         player_onball: Player,
         ball: Ball,
-        goal_position: Position,
-        team_name_attack: str,
-        onball_team: str
-    ) -> OnBall:
+        weighted_areas: Dict[str, float],
+        weighted_areas_vel: Dict[str, float],
+        team_name_attack: str
+    ) -> OffBall:
 
-    # someone is on the ball
-    dist_ball_opponent, nearest_players = calc_dist_each_opponents(ball, attack_players, defense_players)
-    dist_goal, goal_positions = calc_dist_each_goals(nearest_players, goal_position)
-    angle_goal = calc_angle_each_goals(nearest_players, goal_positions)
-    ball_speed = np.sqrt(ball.position.x**2 + ball.position.y**2)
-    dribble_score, weighted_area = calc_dribble_score(players, ball, team_name_attack, player_onball, "position")
-    dribble_score_vel, weighted_area_vel = calc_dribble_score(players, ball, team_name_attack, player_onball, "velocity")
-    shot_score = np.NaN
-    long_ball_score = [np.NaN]*3
-    transition = [np.NaN]*len(players)
+    # convert weighted area: dict to weighted area: List[float]
+    # weighted_areas_list: List[float] = list(weighted_areas.values())
     if player_onball is not None:
-        if player_onball.player_role == "GK":
-            long_ball_score = calc_long_ball_score(attack_players)
-        if player_onball.position.x >= 75.0:
-            shot_score = calc_shot_score(player_onball, goal_position, defense_players)
-    else:
-        transition = calc_transition(players, onball_team)
-        
-    return OnBall(
-        dist_ball_opponent=dist_ball_opponent,
-        dribble_score=dribble_score,
-        dribble_score_vel=dribble_score_vel,
+        attack_players = [player for player in attack_players if player.player_name != player_onball.player_name]
+    fast_space = [weighted_areas[player.player_name] for player in attack_players]
+    fast_space_vel = [weighted_areas_vel[player.player_name] for player in attack_players]
+    variation_space = calc_variation_space(players, ball, team_name_attack, weighted_areas, "position")
+    variation_space_vel = calc_variation_space(players, ball, team_name_attack, weighted_areas_vel, "velocity")
+    dist_ball = calc_dist_ball(ball, attack_players)
+    angle_ball = calc_angle_ball(ball, attack_players)
+    goal_position = Position(x=FIELD_LENGTH, y=34)
+    dist_goal = calc_dist_goal(attack_players, goal_position)
+    angle_goal = calc_angle_goal(attack_players, goal_position)
+    defense_space = [weighted_areas[player.player_name] for player in defense_players]
+    defense_space_vel = [weighted_areas_vel[player.player_name] for player in defense_players]
+    defense_dist_ball = calc_dist_ball(ball, defense_players)
+    time_to_player = calc_time_to_player(attack_players, defense_players)
+    time_to_passline = calc_time_to_passline(ball, attack_players, defense_players)
+    
+    # This is a placeholder. You should implement the actual calculations here.
+    return OffBall(
+        fast_space=fast_space,
+        fast_space_vel=fast_space_vel,
+        dist_ball=dist_ball,
+        angle_ball=angle_ball,
         dist_goal=dist_goal,
         angle_goal=angle_goal,
-        ball_speed=ball_speed,
-        transition = transition,
-        shot_score=shot_score,
-        long_ball_score=long_ball_score,
-    ), weighted_area, weighted_area_vel
+        time_to_player=time_to_player,
+        time_to_passline=time_to_passline,
+        variation_space=variation_space,
+        variation_space_vel=variation_space_vel,
+        defense_space=defense_space,
+        defense_space_vel=defense_space_vel,
+        defense_dist_ball=defense_dist_ball
+    )
 
 
 # offball function

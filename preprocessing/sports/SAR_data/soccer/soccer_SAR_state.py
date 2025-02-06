@@ -11,29 +11,34 @@ from tqdm import tqdm
 import sys
 import os
 
-if __name__ == '__main__':
-    from state_preprocess.preprocess_frame import frames2events
-    from state_preprocess.reward_model import RewardModelBase
-    from utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
-else:
-    from .state_preprocess.preprocess_frame import frames2events
-    from .state_preprocess.reward_model import RewardModelBase
-    from .utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
+# if __name__ == '__main__':
+#     from state_preprocess.preprocess_frame import frames2events
+#     from state_preprocess.reward_model import RewardModelBase
+#     from utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
+# else:
+#     from .state_preprocess.preprocess_frame import frames2events
+#     from .state_preprocess.reward_model import RewardModelBase
+#     from .utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
+
+from state_preprocess.preprocess_frame import frames2events
+from state_preprocess.reward_model import RewardModelBase
+from utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def preprocess_game(game_dir: Path, args: argparse.Namespace, config: dict) -> None:
-    # save_dir = args.preprocessed_data_dir / game_dir.name
-    # if not save_dir.exists():
+def preprocess_single_game(game_dir: str, league: str, save_dir: str, config: dict) -> None:
+    save_dir = Path(save_dir)
+    game_dir = Path(game_dir)
+    config = load_json(config)
     logger.info(f"preprocessing started... {game_dir.name}")
     start = time.time()
     frames = pd.read_json(game_dir / 'frames.jsonl', lines=True, orient='records')
     reward_model = RewardModelBase.from_params(config['reward_model'])
     events = frames2events(
         frames,
-        data_type = args.data,
+        league = league,
         origin_pos=config['origin_pos'],
         reward_model=reward_model,
         absolute_coordinates=config['absolute_coordinates'],
@@ -41,7 +46,29 @@ def preprocess_game(game_dir: Path, args: argparse.Namespace, config: dict) -> N
         max_frame_len_threshold=config['max_frame_len_threshold'],
     )
     save_as_jsonlines(
-        [event.to_dict() for event in events], args.preprocessed_data_dir / game_dir.name / 'events.jsonl'
+        [event.to_dict() for event in events], save_dir / game_dir.name / 'events.jsonl'
+    )
+    logger.info(f"preprocessing finished... game_id: {game_dir.name} ({time.time() - start:.2f} sec)")
+
+
+def preprocess_game(game_dir: str, league: str, save_dir: str, config: dict) -> None:
+    save_dir = Path(save_dir)
+    game_dir = Path(game_dir)
+    logger.info(f"preprocessing started... {game_dir.name}")
+    start = time.time()
+    frames = pd.read_json(game_dir / 'frames.jsonl', lines=True, orient='records')
+    reward_model = RewardModelBase.from_params(config['reward_model'])
+    events = frames2events(
+        frames,
+        data_type = league,
+        origin_pos=config['origin_pos'],
+        reward_model=reward_model,
+        absolute_coordinates=config['absolute_coordinates'],
+        min_frame_len_threshold=config['min_frame_len_threshold'],
+        max_frame_len_threshold=config['max_frame_len_threshold'],
+    )
+    save_as_jsonlines(
+        [event.to_dict() for event in events], save_dir / game_dir.name / 'events.jsonl'
     )
     logger.info(f"preprocessing finished... game_id: {game_dir.name} ({time.time() - start:.2f} sec)")
 
