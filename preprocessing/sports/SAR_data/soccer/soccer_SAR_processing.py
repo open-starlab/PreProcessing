@@ -10,10 +10,11 @@ import time
 from functools import partial
 from multiprocessing import Pool
 import json
+import unicodedata
 from tqdm import tqdm
 
 # if __name__ == '__main__':
-from utils.file_utils import load_json
+from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json
 # else:
 #     from .utils.file_utils import load_json
 
@@ -30,27 +31,22 @@ class PorocessTrackingData:
 
     params:
     ----------
-    event_game_dirs: Path
-        event game directory
-    df_tracking: pd.DataFrame
-        tracking data
-    data_match: pd.DataFrame
-        match data
-    df_lineup: pd.DataFrame
-        lineup data
-    args: argparse.ArgumentParser
+    df: pd.DataFrame
+    tracking_df : pd.DataFrame
+    players_df: pd.DataFrame
+    metadata: dict
     config: dict
+    save_dir: Path
     ----------
     """
-    def __init__(self, df, players_df, tracking_df, metadata, args, config, fps: int = 10,):
+    def __init__(self, df, players_df, tracking_df, metadata, config, save_dir, fps: int = 10,):
         self.df = df
         self.players_df = players_df
         self.tracking_df = tracking_df
         self.metadata = metadata
-        self.args = args
         self.config = config
         self.fps = fps
-        self.save_data_dir = args.save_data_dir
+        self.save_data_dir = save_dir
 
         self.game_name = self.df['match_id'].loc[0]
 
@@ -169,13 +165,18 @@ class PorocessTrackingData:
                 if trackable_object not in tracking_id_set:
                     tracking_id_set.add(trackable_object)
                     for match_player in data_match_players:
-                        if int(match_player['trackable_object']) == trackable_object:
+                        if pd.isna(match_player['trackable_object']):
+                            continue
+                        elif match_player['trackable_object'] == trackable_object:
                             ha_value = 1 if match_player['team_id'] == home_team_id else 2
                             no_value = match_player['jersey_number']
                             tracking_id_info[trackable_object] = (ha_value, no_value)
                             break
                 else:
-                    ha_value, no_value = tracking_id_info[trackable_object]
+                    try:
+                        ha_value, no_value = tracking_id_info[trackable_object]
+                    except KeyError:
+                        import pdb; pdb.set_trace()
                 
                 # Collect data for the new row
                 all_new_rows.append({
@@ -244,6 +245,24 @@ class PorocessTrackingData:
         df_ball['Acceralation'] = df_ball.ball_data.apply(lambda row: self.extract_value(row, 'acceralation'))
         df_ball.drop('ball_data', axis=1, inplace=True)
         return df_ball
+
+
+    def convert_player_name(self, player):
+        """
+        Convert player name to the format used in the database
+        """
+        player_name = player['name'] if player['name'] is not None else ''
+        if isinstance(player_name, str):
+            if '  ' in player_name:
+                player_name = player_name.replace('  ', ' ')
+
+            # convert large letters to small letters
+            player_name = player_name.lower()
+
+            # remove accents
+            player_name = unicodedata.normalize('NFKD', player_name).encode('ascii', 'ignore').decode('utf-8')
+
+        return player_name
     
 
     def player_data(self):
@@ -281,10 +300,10 @@ class PorocessTrackingData:
             df_players.loc[i, 'チーム名'] = player['team'] if player['team'] is not None else ''
             if player['position'] == 'Goalkeeper':
                 player['position_group'] = 'GK'
-            df_players.loc[i, '試合ポジションID'] = config['position_role_id'].get(player['position_group'], 0) if player['position_group'] is np.nan else 0
+            df_players.loc[i, '試合ポジションID'] = self.config['position_role_id'].get(player['position_group'], 0) if not player['position_group'] is np.nan else 0
             df_players.loc[i, '背番号'] = player['jersey_number'] if player['jersey_number'] is not None else 0
-            df_players.loc[i, '選手ID'] = player['player_id'] if player['player_id'] is not None else 0
-            df_players.loc[i, '選手名'] = player['name'] if player['name'] is not None else ''
+            df_players.loc[i, '選手ID'] = player['player_id'] if player['player_id'] is not None else 0 
+            df_players.loc[i, '選手名'] = self.convert_player_name(player)
             df_players.loc[i, '出場'] = 1 if player['start_time'] is not None else 0
             df_players.loc[i, 'スタメン'] = 1 if player['start_time'] == '00:00:00' else 0
             df_players.loc[i, '出場時間'] = self.calculate_play_time(player)
@@ -365,10 +384,11 @@ class PorocessTrackingData:
                 hy = self.df[f'h{j}_y'].iloc[0]
                 ax = self.df[f'a{j}_x'].iloc[0]
                 ay = self.df[f'a{j}_y'].iloc[0]
-                if not np.isnan(hx) and not np.isnan(hy):
-                    coordinates.append((hx, hy))
-                if not np.isnan(ax) and not np.isnan(ay):
-                    coordinates.append((ax, ay))
+                if ax is not None and ay is not None and hx is not None and hy is not None:
+                    if not np.isnan(hx) and not np.isnan(hy):
+                        coordinates.append((hx, hy))
+                    if not np.isnan(ax) and not np.isnan(ay):
+                        coordinates.append((ax, ay))
 
             for coord in coordinates:
                 x, y = coord
@@ -415,7 +435,7 @@ class PorocessTrackingData:
         df_player = self.match_player_tracking(df_player)
 
         # save
-        output_dir = self.args.save_data_dir / str(self.game_name)
+        output_dir = Path(self.save_data_dir) / str(self.game_name)
         output_dir.mkdir(exist_ok=True, parents=True)
         df_ball.to_csv(output_dir / 'ball.csv', index=False)
         df_player.to_csv(output_dir / 'player.csv', index=False)
@@ -450,13 +470,13 @@ class ProcessEventData:
     ----------
     """
 
-    def __init__(self, df, players_df, metadata, args, config, fps: int = 10):
+    def __init__(self, df, players_df, metadata, config, save_dir, fps: int = 10):
         self.df = df
         self.players_df = players_df
         self.metadata = metadata
         self.game_name = self.df['match_id'].loc[0]
-        self.args = args
         self.config = config
+        self.save_data_dir = save_dir
 
         self.fps = fps
     
@@ -520,7 +540,6 @@ class ProcessEventData:
                 player_name = player['name']
                 if player_name == row["player"]:
                     return player['jersey_number']
-            import pdb; pdb.set_trace()
             return None
 
     def position_id(self, row):
@@ -724,7 +743,7 @@ class ProcessEventData:
         ]]
 
         # save
-        output_dir = self.args.save_data_dir / str(self.game_name)
+        output_dir = Path(self.save_data_dir) / str(self.game_name)
         output_dir.mkdir(exist_ok=True, parents=True)
         df_play.to_csv(output_dir / 'play.csv', index=False)
 
@@ -735,107 +754,17 @@ class ProcessEventData:
         )
 
 
-def process_event(
-        dir,
-        args, 
-        config
-    ):
+def process_single_file(data_df, player_df, tracking_path, metadata, config, match_id, save_dir):
     """
-    Preprocess event data
+    Preprocess single file
     """
-    
-    data_path = dir / 'event_360_data.csv'
-    with open(data_path, 'rb') as file:
-        data_df = pd.read_csv(file)
+    config = load_json(config)
+    tracking_path = Path(tracking_path) / f"{match_id}.json"
+    tracking_data = json.load(open(tracking_path))
+    tracking_df = pd.DataFrame(tracking_data)
 
-    players_path = dir / 'players_info.csv'
-    with open(players_path, 'rb') as file:
-        player_df = pd.read_csv(file)
+    PorocessTrackingData(data_df, player_df, tracking_df, metadata, config, save_dir).skillcorner_to_datastadium()
+    ProcessEventData(data_df, player_df, metadata, config, save_dir).statsbomb_to_datastadium()
 
-    metadata_path = dir / 'metadata.csv'
-    with open(metadata_path, 'rb') as file:
-        metadata = pd.read_csv(file)     
-    
-    event = ProcessEventData(
-        data_df,
-        player_df,
-        metadata,
-        args, 
-        config
-    )
-    event.statsbomb_to_datastadium()
+    print(f"Processing {match_id} finished")
 
-
-def process_tracking(tracking_dir, event_dir, args, config, match_id):
-    """
-    Preprocess tracking data
-    """
-    
-    data_path = event_dir / 'event_360_data.csv'
-    with open(data_path, 'rb') as file:
-        data_df = pd.read_csv(file)
-
-    players_path = event_dir / 'players_info.csv'
-    with open(players_path, 'rb') as file:
-        player_df = pd.read_csv(file)
-
-    metadata_path = event_dir / 'metadata.csv'
-    with open(metadata_path, 'rb') as file:
-        metadata = pd.read_csv(file)
-
-    tracking_path = tracking_dir / f"{match_id}.json"
-    # Load SkillCorner tracking and match data
-    with open(tracking_path) as f:
-        tracking_data = json.load(f)
-        tracking_df = pd.DataFrame(tracking_data)
-    
-    tracking = PorocessTrackingData(data_df, player_df, tracking_df, metadata, args, config)
-    tracking.skillcorner_to_datastadium()
-
-
-def process_directory(event_dir, tracking_dir, args, config, match_id):
-    """
-    Preprocess data
-    """
-    print(f"Processing {event_dir.name} start")
-
-    process_tracking(tracking_dir, event_dir, args, config, match_id)
-    process_event(event_dir, args=args, config=config)
-    print(f"Processing {event_dir.name} finished")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--preprocessing_config", type=lambda p: Path(p).resolve())
-    parser.add_argument("--event_data_dir", type=lambda p: Path(p).resolve(), default="test")
-    parser.add_argument("--tracking_data_dir", type=lambda p: Path(p).resolve(), default="test")
-    parser.add_argument("--save_data_dir", type=lambda p: Path(p).resolve(), default="cleaned")
-    parser.add_argument("--num_process", type=int, default=1)
-    args = parser.parse_args()
-
-    config = load_json(args.preprocessing_config)
-
-    for key in config.keys():
-        if hasattr(args, key) and getattr(args, key) is not None:
-            config[key] = getattr(args, key)
-    logging.info(f"preprocessing config: {config}")
-    assert config['target_sampling_rate'] in [5, 10, 25]
-
-    lack_match_ids = ["1340640", "1341946", "1355616", "1272681", "1241421"]
-
-    
-
-    # select single process or multi process
-    if args.num_process == 1:
-        for event_game_dir in args.event_data_dir.iterdir():
-            if event_game_dir.name not in lack_match_ids and event_game_dir.name == '1018887':
-                process_directory(event_game_dir, args.tracking_data_dir, args, config, event_game_dir.name)
-    else:
-        dirs = [
-            d for d in args.event_data_dir.iterdir() if d.is_dir() and d.name not in lack_match_ids
-        ]
-        print(f"Total number of matches: {len(dirs)}")
-        with Pool(processes=args.num_process) as pool:
-            pool.map(partial(process_directory, args=args, config=config), dirs)
-
-    print("Finished")

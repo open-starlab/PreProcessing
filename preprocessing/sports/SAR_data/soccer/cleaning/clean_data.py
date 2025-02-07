@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 import numpy as np
 import pandas as pd
 
-from constant import HOME_AWAY_MAP, PLAYER_ROLE_MAP
+from preprocessing.sports.SAR_data.soccer.constant import HOME_AWAY_MAP, PLAYER_ROLE_MAP
 
 warnings.filterwarnings('ignore')
 
@@ -65,7 +65,7 @@ def clean_player_data(player_data: pd.DataFrame) -> pd.DataFrame:
     return player_data
 
 
-def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.DataFrame) -> List[Dict[str, Any]]:
+def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.DataFrame, league:str) -> List[Dict[str, Any]]:
     """
     This function merges the tracking data and event data.
     Merge operation is done on the half and time_from_half_start columns.
@@ -77,61 +77,112 @@ def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.Da
     Returns:
     List[Dict[str, Any]]: List of dictionaries containing the merged tracking and event data
     """
-
-    event_columns = [
-        'game_id',
-        'frame_id',
-        'half',
-        'time_from_half_start',
-        'event_id',
-        'event_name',
-        'event_x',
-        'event_y',
-        'team_id',
-        'team_name',
-        'home_away',
-        'player_id',
-        'player_name',
-        'jersey_number',
-        'player_role',
-        'attack_history_num',
-        'attack_direction',
-        'series_num',
-        'ball_touch',
-        'success',
-        'history_num',
-        'attack_start_history_num',
-        'attack_end_history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_cross',
-        'is_through_pass',
-        'is_dribble',
-        'ball',
-        'players',
-    ]
     
-    frame_df_columns = [
-        'frame_id',
-        'event_id',
-        'team_id',
-        'player_id',
-        'jersey_number',
-        'ball_touch',
-        'success',
-        'history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_cross',
-        'is_through_pass',
-        'is_dribble',
-    ]
+    if league == 'jleague':
+        event_columns = [
+            'game_id',
+            'frame_id',
+            'half',
+            'time_from_half_start',
+            'event_id',
+            'event_name',
+            'event_x',
+            'event_y',
+            'team_id',
+            'team_name',
+            'home_away',
+            'player_id',
+            'player_name',
+            'jersey_number',
+            'player_role',
+            'attack_history_num',
+            'attack_direction',
+            'series_num',
+            'ball_touch',
+            'success',
+            'history_num',
+            'attack_start_history_num',
+            'attack_end_history_num',
+            'is_goal',
+            'is_shot',
+            'is_pass',
+            'is_cross',
+            'is_through_pass',
+            'is_dribble',
+            'ball',
+            'players',
+        ]
+        
+        frame_df_columns = [
+            'frame_id',
+            'event_id',
+            'team_id',
+            'player_id',
+            'jersey_number',
+            'ball_touch',
+            'success',
+            'history_num',
+            'is_goal',
+            'is_shot',
+            'is_pass',
+            'is_cross',
+            'is_through_pass',
+            'is_dribble',
+        ]
+    elif league == 'laliga':
+        event_columns = [
+            'game_id',
+            'frame_id',
+            'half',
+            'time_from_half_start',
+            'event_id',
+            'event_name',
+            'event_x',
+            'event_y',
+            'team_id',
+            'team_name',
+            'home_away',
+            'player_id',
+            'player_name',
+            'jersey_number',
+            'player_role',
+            'attack_history_num',
+            'attack_direction',
+            'series_num',
+            'ball_touch',
+            'success',
+            'history_num',
+            'attack_start_history_num',
+            'attack_end_history_num',
+            'is_goal',
+            'is_shot',
+            'is_pass',
+            'is_dribble',
+            'ball',
+            'players',
+        ]
+        
+        frame_df_columns = [
+            'frame_id',
+            'event_id',
+            'team_id',
+            'player_id',
+            'jersey_number',
+            'ball_touch',
+            'success',
+            'history_num',
+            'is_goal',
+            'is_shot',
+            'is_pass',
+            'is_dribble',
+        ]
     
-    frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
-        event_columns
-    ].reset_index(drop=True)
+    try:
+        frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
+            event_columns
+        ].reset_index(drop=True)
+    except KeyError:
+        import pdb; pdb.set_trace()
 
     frame_df[
         frame_df_columns

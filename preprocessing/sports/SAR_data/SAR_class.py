@@ -14,10 +14,8 @@ class SAR_data:
 
 if __name__ == '__main__':
     #check if the Soccer_event_data class is correctly implemented
-    import os
-    # datafactory_path=os.getcwd()+"/test/sports/event_data/data/datafactory/datafactory_events.json"
-    datafactory_path = "/work5/fujii/work/JLeagueData/2019022307"
-    match_id = "2019022307"
+
+    datastadium_path = "/work5/fujii/work/JLeagueData/Data_20200508/"
+    match_id = "2019091416"
     config_path = "data/dss/config/preprocessing_dssports2020.json"
-    datafactory_df=SAR_data(data_provider='datastadium', data_path=datafactory_path, match_id=match_id, config_path=config_path).load_data()
-    # datafactory_df.to_csv(os.getcwd()+"/test/sports/event_data/data/datafactory/test_data_main.csv",index=False)
+    SAR_data(data_provider='datastadium', data_path=datastadium_path, match_id=match_id, config_path=config_path).load_data()

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-from constant import FIELD_LENGTH, FIELD_WIDTH, HOME_AWAY_MAP
+from preprocessing.sports.SAR_data.soccer.constant import FIELD_LENGTH, FIELD_WIDTH, HOME_AWAY_MAP
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -386,28 +386,40 @@ def get_player_change_log(
 
         player_change_info = []
         if len(new_players_home := players_in_frame_home - player_ever_on_pitch_home) > 0:
-            player_change_info.extend(
-                [
-                    {
-                        "home_away": "HOME",
-                        "player_in": player,
-                        "player_out": changed_player_list_in_home.pop(0),
-                    }
-                    for player in new_players_home
-                ]
-            )
+            try:
+                player_change_info.extend(
+                    [
+                        {
+                            "home_away": "HOME",
+                            "player_in": player,
+                            "player_out": changed_player_list_in_home.pop(0),
+                        }
+                        for player in new_players_home
+                    ]
+                )
+            except:
+                print("new_players_home:", new_players_home)
+                print("changed_player_list_in_home:", changed_player_list_in_home)
+                print("player_ever_on_pitch_home:", player_ever_on_pitch_home)
+                import pdb; pdb.set_trace()
 
         if len(new_players_away := players_in_frame_away - player_ever_on_pitch_away) > 0:
-            player_change_info.extend(
-                [
-                    {
-                        "home_away": "AWAY",
-                        "player_in": player,
-                        "player_out": changed_player_list_in_away.pop(0),
-                    }
-                    for player in new_players_away
-                ]
-            )
+            try:
+                player_change_info.extend(
+                    [
+                        {
+                            "home_away": "AWAY",
+                            "player_in": player,
+                            "player_out": changed_player_list_in_away.pop(0),
+                        }
+                        for player in new_players_away
+                    ]
+                )
+            except:
+                print("new_players_home:", new_players_home)
+                print("changed_player_list_in_home:", changed_player_list_in_home)
+                print("player_ever_on_pitch_home:", player_ever_on_pitch_home)
+                import pdb; pdb.set_trace()
         if len(player_change_info) > 0:
             player_change_list.append(
                 {"frame_id": group["frame_id"].values[0], "player_change_info": player_change_info}
@@ -607,16 +619,37 @@ def pad_players_and_interpolate_tracking_data(
             player_change_info_list = player_change_list[idx]['player_change_info']
             for player_change_info in player_change_info_list:
                 if player_change_info['home_away'] == 'HOME':
-                    player_on_pitch_home.remove(player_change_info['player_out'])
-                    player_on_pitch_home.add(player_change_info['player_in'])
+                    try:
+                        player_on_pitch_home.remove(player_change_info['player_out'])
+                        player_on_pitch_home.add(player_change_info['player_in'])
+                    except:
+                        print(f"game_id: {tracking_data['game_id'].iloc[0]}")
+                        print(f"player_change_info: {player_change_info}")
+                        print(f"player_on_pitch_home: {player_on_pitch_home}")
+                        continue
                 else:
-                    player_on_pitch_away.remove(player_change_info['player_out'])
-                    player_on_pitch_away.add(player_change_info['player_in'])
+                    try:
+                        player_on_pitch_away.remove(player_change_info['player_out'])
+                        player_on_pitch_away.add(player_change_info['player_in'])
+                    except:
+                        print(f"game_id: {tracking_data['game_id'].iloc[0]}")
+                        print(f"player_change_info: {player_change_info}")
+                        print(f"player_on_pitch_away: {player_on_pitch_away}")
+                        continue
 
     new_tracking_data = pd.concat(new_data_list)
     new_tracking_data = new_tracking_data.sort_values(
         by=['half', 'frame_id', 'home_away', 'jersey_number']
     ).reset_index(drop=True)
+
+    first_half_end_series_num = new_tracking_data.query("half == 'first'")['series_num'].max()
+    second_half_start_series_num = new_tracking_data.query("half == 'second'")['series_num'].min()
+
+    if first_half_end_series_num == second_half_start_series_num:
+        new_tracking_data.loc[
+            new_tracking_data['half'] == 'second', 'series_num'
+        ] += 1
+
 
     assert (
         new_tracking_data.query("home_away != 'BALL'")
@@ -626,19 +659,22 @@ def pad_players_and_interpolate_tracking_data(
     ).sum() == 0
     assert (new_tracking_data.query("home_away == 'BALL'").groupby('frame_id').value_counts() != 1).sum() == 0
     assert new_tracking_data[['x', 'y']].isna().sum().sum() == 0
-    for _, series in new_tracking_data.groupby("series_num"):
+    for series_num, series in new_tracking_data.groupby("series_num"):
         min_frame = series['frame_id'].min()
         max_frame = series['frame_id'].max()
         
         invalid_frame_ids = series.groupby('frame_id').filter(lambda x: len(x) != 23)['frame_id'].unique()
         
-        # ハーフタイムを挟んでシリーズが連続している。
+        # delete invalid series num
         if len(series) != (max_frame - min_frame + 1) * 23:
-            import pdb; pdb.set_trace()
-        assert (
-            len(series) == (max_frame - min_frame + 1) * 23
-        ), f"{len(series)} != {(max_frame - min_frame + 1) * 23} in series {series['series_num'].iloc[0]}, game_id {series['game_id'].iloc[0]}, min_frame {min_frame}, max_frame {max_frame}"
-       
+            new_tracking_data = new_tracking_data[new_tracking_data['series_num'] != series_num]
+
+
+        # assert (
+        #     len(series) == (max_frame - min_frame + 1) * 23
+        # ), f"{len(series)} != {(max_frame - min_frame + 1) * 23} in series {series['series_num'].iloc[0]}, game_id {series['game_id'].iloc[0]}, min_frame {min_frame}, max_frame {max_frame}"
+    
+    new_tracking_data = new_tracking_data.reset_index(drop=True)
     return new_tracking_data
 
 

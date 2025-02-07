@@ -2,7 +2,7 @@ from typing import Dict
 
 import pandas as pd
 
-from constant import (
+from preprocessing.sports.SAR_data.soccer.constant import (
     INPUT_EVENT_COLUMNS, 
     INPUT_PLAYER_COLUMNS, 
     INPUT_TRACKING_COLUMNS, 
@@ -48,7 +48,6 @@ def check_and_rename_tracking_columns(
 def check_and_rename_player_columns(player_data: pd.DataFrame, player_columns_mapping: Dict[str, str]) -> pd.DataFrame:    
     if str(player_data['試合ID'].iloc[0])[:4] == "2019" or str(player_data['試合ID'].iloc[0])[:4] == "2020":
         player_data['試合ポジションID'] = -1
-    
     assert set(player_columns_mapping.keys()) == set(
         INPUT_PLAYER_COLUMNS
     ), f"{set(player_columns_mapping.keys()).symmetric_difference(set(INPUT_PLAYER_COLUMNS))}"

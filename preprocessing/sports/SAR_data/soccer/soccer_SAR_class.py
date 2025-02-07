@@ -19,21 +19,15 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pdb
 
-if __name__ == '__main__':
-    import soccer_load_data
-    import soccer_SAR_processing
-    import soccer_SAR_cleaning
-    import soccer_SAR_state
-else:
-    from . import soccer_load_data
-    from . import soccer_SAR_processing
-    from . import soccer_SAR_cleaning
-    from . import soccer_SAR_state
+from . import soccer_load_data
+from . import soccer_SAR_processing
+from . import soccer_SAR_cleaning
+from . import soccer_SAR_state
 
 #create a class to wrap the data source
 class Soccer_SAR_data:
     def __init__(self,data_provider,data_path=None,match_id=None,config_path=None,
-                 statsbomb_skillcorner_match_id_dict=None,max_workers=1,
+                 statsbomb_skillcorner_match_id=None,max_workers=1,
                  preprocess_method=None
                  ):
         self.data_provider = data_provider
@@ -41,31 +35,37 @@ class Soccer_SAR_data:
         self.match_id = match_id
         self.config_path = config_path
         self.max_workers = max_workers
-        self.statsbomb_skillcorner_match_id_dict = statsbomb_skillcorner_match_id_dict
+        self.statsbomb_skillcorner_match_id = statsbomb_skillcorner_match_id
+        if self.data_provider == 'statsbomb_skillcorner':
+            self.skillcorner_data_dir = self.data_path + "/skillcorner/tracking"
         self.preprocess_method = preprocess_method
 
-    def load_data_single_file(self):
+    def load_data_single_file(self, match_id=None):
         #based on the data provider, load the dataloading function from load_data.py (single file)
+        if match_id is not None:
+            self.match_id = match_id
         if self.data_provider == 'statsbomb_skillcorner':
+            save_preprocess_dir = os.getcwd()+"/data/stb_skc/sar_data/"
             df, df_players, df_metadata=soccer_load_data.load_single_statsbomb_skillcorner(
                 self.data_path,
-                self.statsbomb_skillcorner_match_id_dict,
+                self.statsbomb_skillcorner_match_id,
                 self.match_id
             )
-            soccer_SAR_processing.process_directory(
+            soccer_SAR_processing.process_single_file(
                 df,
-                df_players, 
+                df_players,
+                self.skillcorner_data_dir,
                 df_metadata, 
                 self.config_path, 
                 self.match_id, 
-                save_dir=os.getcwd()+"/home/k_ide/workspace6/open-starlab/PreProcessing/data/stb_skc/sar_data"
+                save_dir=save_preprocess_dir
             )
             soccer_SAR_cleaning.clean_single_data(
-                df, 
+                save_preprocess_dir,
                 self.match_id, 
                 self.config_path, 
                 'laliga', 
-                save_dir=os.getcwd()+"/data/clean_data/stb_skc"
+                save_dir=os.getcwd()+"/data/stb_skc/clean_data"
             )
         elif self.data_provider == 'datastadium':
             soccer_SAR_cleaning.clean_single_data(
@@ -73,7 +73,7 @@ class Soccer_SAR_data:
                 self.match_id, 
                 self.config_path, 
                 'jleague', 
-                save_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/clean_data"
+                save_dir=os.getcwd()+"/data/dss/clean_data"
             )
         else:
             raise ValueError('Data provider not supported or not found')
@@ -91,49 +91,30 @@ class Soccer_SAR_data:
             (self.data_provider == 'statsbomb_skillcorner' and self.match_id is None):
             #statsbomb_skillcorner
             if self.data_provider == 'statsbomb_skillcorner':
-                out_df_list = []
-                self.match_id_df = pd.read_csv(self.match_id_df)
+                # import pdb; pdb.set_trace()
+                match_id_list = [
+                    d[:7] for d in os.listdir(self.skillcorner_data_dir)
+                ]
                 with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                     # Submit tasks to the executor
-                    futures = [executor.submit(self.load_match_statsbomb_skillcorner, i, self.match_id_df, 
-                                               self.statsbomb_event_dir,self.skillcorner_tracking_dir,self.skillcorner_match_dir) 
-                                               for i in range(len(self.match_id_df))]
-                    # Collect the results as they complete
+                    futures = [executor.submit(self.load_data_single_file, match_id) for match_id in match_id_list]
+                    # Collect results as they are completed
                     for future in tqdm(as_completed(futures), total=len(futures)):
-                        out_df_list.append(future.result())
-                df = pd.concat(out_df_list)
+                        future.result()
+                
             elif self.data_provider == "datastadium":
-                out_df_list = []
-
-                event_dir = self.data_path
-
-                def process_event_folder(f):
-                    # Define file paths for the current event folder
-                    self.data_path = os.path.join(event_dir, f, 'play.csv')
-                    self.tracking_home_path = os.path.join(event_dir, f, 'home_tracking.csv')
-                    self.tracking_away_path = os.path.join(event_dir, f, 'away_tracking.csv')
-
-                    # Load data
-                    df = self.load_data_single_file()
-                    return df
-
-                # Initialize ThreadPoolExecutor
+                folder_name_list = ['Data_20200508/', 'Data_20210127/', 'Data_20210208/', 'Data_20220308/']
                 with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-                    # Get list of event folders
-                    event_folders = sorted(f for f in os.listdir(self.data_path) if not (f.startswith('.') or f.startswith('@')))
-                    # Submit tasks to the executor
-                    future_to_event = {executor.submit(process_event_folder, folder): folder for folder in event_folders}
-                    # Collect results
-                    out_df_list = []
-                    for future in tqdm(as_completed(future_to_event), total=len(future_to_event)):
-                        try:
-                            df = future.result()
-                            out_df_list.append(df)
-                        except Exception as e:
-                            print(f'Error processing folder {future_to_event[future]}: {e}')
-                self.data_path = event_dir
-                df = pd.concat(out_df_list)
-
+                    for folder_name in folder_name_list:
+                        data_path = os.path.join(self.data_path, folder_name)
+                        self.data_path = data_path
+                        match_id_list = [
+                            d[:10] for d in os.listdir(data_path)
+                        ]
+                        futures = [executor.submit(self.load_data_single_file, match_id) for match_id in match_id_list]
+                    # Collect results as they are completed
+                    for future in tqdm(as_completed(futures), total=len(futures)):
+                        future.result()
         else:
             raise ValueError('Event path is not a valid file or directory')
         print(f'Loaded data from {self.data_provider}')
@@ -156,15 +137,14 @@ class Soccer_SAR_data:
             print(f"Skipped match statsbomb match_id: {statsbomb_match_id}")
             statsbomb_skillcorner_df=None
         return statsbomb_skillcorner_df
-    
+
 
     def preprocess_single_data(self, cleaning_dir, preprocessed_dir):
-        cleaning_dir = os.path.join(cleaning_dir, self.match_id)
         if self.preprocess_method == "SAR":
             if self.data_provider == 'datastadium':
-                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="jleague", save_dir=preprocessed_dir, config=self.config_path)
-            elif self.data_provider == "statsbomb_skillcorner":
-                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="laliga", save_dir=preprocessed_dir, config=self.config_path)
+                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="jleague", save_dir=preprocessed_dir, config=self.config_path, match_id=self.match_id)
+            elif self.data_provider == 'statsbomb_skillcorner':
+                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="laliga", save_dir=preprocessed_dir, config=self.config_path, match_id=self.match_id)
             else:
                 raise ValueError(f'Preprocessing method not supported for {self.data_provider}')
         else:
@@ -174,9 +154,26 @@ class Soccer_SAR_data:
     def preprocess_data(self, cleaning_dir, preprocessed_dir):
         if self.preprocess_method == "SAR":
             if self.data_provider == 'datastadium':
-                soccer_SAR_state.preprocess_game(cleaning_dir, league="jleague", save_dir=preprocessed_dir, config=self.config_path)
-            elif self.data_provider == 'statsbomb_skillcorner':
-                soccer_SAR_state.preprocess_game(cleaning_dir, league="laliga", save_dir=preprocessed_dir, config=self.config_path)
+                with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                    futures = []
+                    match_id_list = [
+                        d[:10] for d in os.listdir(cleaning_dir)
+                    ]
+                    for match_id in match_id_list:
+                        futures.append(executor.submit(soccer_SAR_state.preprocess_single_game, cleaning_dir, "jleague", preprocessed_dir, self.config_path, match_id))
+                    # Collect results as they are completed
+                    for future in tqdm(as_completed(futures), total=len(futures)):
+                        future.result()
+                
+            elif self.data_provider == "statsbomb_skillcorner":
+                match_id_list = [
+                    d[:7] for d in os.listdir(cleaning_dir)
+                ]
+                with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                    futures = [executor.submit(soccer_SAR_state.preprocess_single_game, cleaning_dir, "laliga", preprocessed_dir, self.config_path, match_id) for match_id in match_id_list]
+                    # Collect results as they are completed
+                    for future in tqdm(as_completed(futures), total=len(futures)):
+                        future.result()   
             else:
                 raise ValueError(f'Preprocessing method not supported for {self.data_provider}')
         else:
@@ -185,27 +182,28 @@ class Soccer_SAR_data:
 
 if __name__ == '__main__':
     statsbomb_skillcorner_path="/data_pool_1/laliga_23"
-    statsbomb_skillcorner_match_path=os.getcwd()+"preprocessing/sports/SAR_data/match_id_dict.json"
+    statsbomb_skillcorner_match_id=os.getcwd()+"/preprocessing/sports/SAR_data/match_id_dict.json"
 
-    datastadium_dir="/work5/fujii/work/JLeagueData/Data_20200508/"
+    datastadium_dir="/work5/fujii/work/JLeagueData/"
 
     # Load each data provider
+    
     # test load_statsbomb_skillcorner single file
     # Soccer_SAR_data(
     #     data_provider='statsbomb_skillcorner',
     #     data_path=statsbomb_skillcorner_path,
     #     match_id="1120811", # match_id for skillcorner
-    #     config_path=os.getcwd()+"/data/preprocess_data/stb_skc/config.json",
-    #     skillcorner_match_dir=statsbomb_skillcorner_match_path,
+    #     config_path=os.getcwd()+"/data/stb_skc/config/preprocessing_statsbomb_skillcorner2024.json",
+    #     statsbomb_skillcorner_match_id=statsbomb_skillcorner_match_id,
     # ).load_data()
 
 
     # test load datastadium single file
     # Soccer_SAR_data(
     #     data_provider='datastadium',
-    #     data_path=datastadium_dir,
+    #     data_path=os.path.join(datastadium_dir, "Data_20200508/"),
     #     match_id="2019091416",
-    #     config_path="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/config/preprocessing_dssports2020.json",
+    #     config_path=os.getcwd()+"/data/dss/config/preprocessing_dssports2020.json",
     # ).load_data()
 
 
@@ -213,36 +211,69 @@ if __name__ == '__main__':
     # Soccer_SAR_data(
     #     data_provider='statsbomb_skillcorner',
     #     data_path=statsbomb_skillcorner_path,
-    #     skillcorner_match_dir=statsbomb_skillcorner_match_path,
-    #     match_id_df=os.getcwd()+'/preprocessing/example/id_matching.csv',
-    #     max_workers=10
+    #     config_path=os.getcwd()+"/data/stb_skc/config/preprocessing_statsbomb_skillcorner2024.json",
+    #     statsbomb_skillcorner_match_id=statsbomb_skillcorner_match_id,
+    #     max_workers=2
     # ).load_data()
         
     # #test load_datastadium multiple files
     # Soccer_SAR_data(
     #     data_provider='datastadium',
-    #     event_path=datastadium_dir,
-    #     max_workers=10
+    #     data_path=datastadium_dir,
+    #     config_path=os.getcwd()+"/data/dss/config/preprocessing_dssports2020.json",
+    #     max_workers=2
     # ).load_data()
+
+
 
     # Preprocess each data provider
 
     # test preprocess statsbomb_skillcorner single file
+    # Soccer_SAR_data(
+    #     data_provider='statsbomb_skillcorner',
+    #     data_path=statsbomb_skillcorner_path,
+    #     match_id="1120811", # match_id for skillcorner
+    #     config_path=os.getcwd()+"/data/stb_skc/config/preprocessing_statsbomb_skillcorner2024.json",
+    #     preprocess_method="SAR"
+    # ).preprocess_single_data(
+    #     cleaning_dir=os.getcwd()+"/data/stb_skc/clean_data",
+    #     preprocessed_dir=os.getcwd()+"/data/stb_skc/preprocess_data"
+    # )
 
     # test preprocess datastadium single file
-    Soccer_SAR_data(
-        data_provider='datastadium',
-        match_id="2019091416",
-        config_path="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/config/preprocessing_dssports2020.json",
-        preprocess_method="SAR"
-    ).preprocess_single_data(
-        cleaning_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/clean_data",
-        preprocessed_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/preprocess_data"
-    )
+    # Soccer_SAR_data(
+    #     data_provider='datastadium',
+    #     match_id="2019091416",
+    #     config_path="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/config/preprocessing_dssports2020.json",
+    #     preprocess_method="SAR"
+    # ).preprocess_single_data(
+    #     cleaning_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/clean_data",
+    #     preprocessed_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/preprocess_data"
+    # )
 
     # test preprocess statsbomb_skillcorner multiple files
+    # Soccer_SAR_data(
+    #     data_provider='statsbomb_skillcorner',
+    #     data_path=statsbomb_skillcorner_path,
+    #     config_path=os.getcwd()+"/data/stb_skc/config/preprocessing_statsbomb_skillcorner2024.json",
+    #     preprocess_method="SAR",
+    #     max_workers=2
+    # ).preprocess_data(
+    #     cleaning_dir=os.getcwd()+"/data/stb_skc/clean_data",
+    #     preprocessed_dir=os.getcwd()+"/data/stb_skc/preprocess_data"
+    # )
 
     # test preprocess datastadium multiple files
+    # Soccer_SAR_data(
+    #     data_provider='datastadium',
+    #     config_path=os.getcwd()+"/data/dss/config/preprocessing_dssports2020.json",
+    #     preprocess_method="SAR",
+    #     max_workers=2
+    # ).preprocess_data(
+    #     cleaning_dir=os.getcwd()+"/data/dss/clean_data",
+    #     preprocessed_dir=os.getcwd()+"/data/dss/preprocess_data"
+    # )
+
 
 
     print("-----------done-----------")

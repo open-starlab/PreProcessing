@@ -8,7 +8,7 @@ import os
 import ast
 import pdb
 
-from utils.file_utils import load_json
+from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json
 # if __name__ == '__main__':
 #     from utils.file_utils import load_json
 # else:
@@ -34,7 +34,7 @@ def load_single_statsbomb_skillcorner(data_path: str, match_id_dict: str, skillc
     statsbomb_lineup_dir = f"{data_path}/statsbomb/lineups"
     skillcorner_tracking_dir = f"{data_path}/skillcorner/tracking"
     skillcorner_match_dir = f"{data_path}/skillcorner/match"
-
+    match_id_dict = load_json(match_id_dict)
     statsbomb_match_id = match_id_dict[skillcorner_match_id]
     
     # File paths
@@ -387,44 +387,3 @@ def calculate_velocity_and_max_timestamp(data):
 
     return max_velocity_timestamp, max_velocity
 
-
-if __name__ == "__main__":
-    import pdb
-    import os
-    #cd to ../PreProcessing
-
-    statsbomb_skillcorner_event_path="/data_pool_1/laliga_23/statsbomb/events"
-    statsbomb_skillcorner_lineup_path="/data_pool_1/laliga_23/statsbomb/lineups"
-    statsbomb_skillcorner_tracking_path="/data_pool_1/laliga_23/skillcorner/tracking"
-    statsbomb_skillcorner_match_path="/data_pool_1/laliga_23/skillcorner/match"
-    match_id_dict=os.getcwd()+"/SAR_data/match_id_dict.json"
-    
-    datastadium_event_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/play.csv"
-    datastadium_home_tracking_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/home_tracking.csv"
-    datastadium_away_tracking_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/away_tracking.csv"
-
-    # load match_id_dict
-    with open(match_id_dict) as f:
-        match_id_dict = json.load(f)
-
-    for dir in os.scandir(statsbomb_skillcorner_tracking_path):
-        dir_name = dir.name[:7]
-        skillcorner_match_id = dir_name
-        statsbomb_match_id = match_id_dict[skillcorner_match_id]
-        skillcorner_match_id = int(skillcorner_match_id)
-        statsbomb_match_id = int(statsbomb_match_id)
-
-        #test load_statsbomb_skillcorner
-        statsbomb_skillcorner_df, players_df, metadata=load_statsbomb_skillcorner(statsbomb_skillcorner_event_path,statsbomb_skillcorner_lineup_path,statsbomb_skillcorner_tracking_path,
-                                                            statsbomb_skillcorner_match_path,statsbomb_match_id,skillcorner_match_id)
-        output_dir=os.getcwd()+f"/test/sports/event_data/data/statsbomb_skillcorner/{skillcorner_match_id}"
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        statsbomb_skillcorner_df.to_csv(os.path.join(output_dir, "event_360_data.csv"),index=False)
-        players_df.to_csv(os.path.join(output_dir, "players_info.csv"),index=True)
-        metadata.to_csv(os.path.join(output_dir, "metadata.csv"),index=False)
-
-
-
-    print("----------------done-----------------")
-    pdb.set_trace()
