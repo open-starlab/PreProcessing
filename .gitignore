@@ -11,3 +11,5 @@ preprocessing/event_data/__pycache__
 preprocessing/sports/event_data/__pycache__
 dist/
 venv/
+__pycache__/
+*.pyc
