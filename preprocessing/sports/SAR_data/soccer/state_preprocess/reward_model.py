@@ -4,8 +4,7 @@ from typing import List
 import pandas as pd
 from tango.common import Registrable
 
-from football_markov.metrics.epv import EPV
-
+from preprocessing.sports.SAR_data.soccer.state_preprocess.epv import EPV
 
 class RewardModelBase(Registrable):
     def __init__(self) -> None:
