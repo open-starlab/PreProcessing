@@ -17,6 +17,8 @@ You can find detailed documentation on supported data providers [here](https://o
 - Statsbomb with Skillcorner Tracking Data
 - Wyscout
 
+For data format examples, visit [Kloppy](https://github.com/PySport/kloppy/tree/master/kloppy/tests/files)
+
 ## Supported Preprocessing Methods
 For information on supported preprocessing methods, visit [this documentation](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Data_Format/index.html). The available preprocessing methods are:
 
@@ -30,6 +32,7 @@ Here are some examples of how to download and preprocess data:
 - **Wyscout Data (NMSTPP format):**
   - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Example/Football/Example_1/contents.html)
   - [GitHub Example](https://github.com/open-starlab/PreProcessing/blob/master/example/NMSTPP_data.py)
+  - [Colab Example](https://colab.research.google.com/drive/1c7pAwXDVaT_XTYNHvgvxgmxj0E-6IEKH?authuser=1#scrollTo=p9AZJWlYfJYs)
 
 - **StatsBomb and SkillCorner Data:**
   - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Example/Football/Example_2/contents.html)
