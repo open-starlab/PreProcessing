@@ -10,6 +10,7 @@ Opta data:xml
 DataFactory:json
 sportec:xml
 DataStadium:csv 
+soccertrack:csv and xml
 '''
 
 import os
@@ -20,9 +21,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 if __name__ == '__main__':
     import soccer_load_data
     import soccer_processing
+    import soccer_tracking_data
 else:
     from . import soccer_load_data
     from . import soccer_processing
+    from . import soccer_tracking_data
 import pdb
 
 #create a class to wrap the data source
@@ -31,7 +34,9 @@ class Soccer_event_data:
                  tracking_path=None,meta_data=None,statsbomb_api_args=[],
                  statsbomb_match_id=None,skillcorner_match_id=None,max_workers=1,match_id_df=None,
                  statsbomb_event_dir=None, skillcorner_tracking_dir=None, skillcorner_match_dir=None,
-                 preprocess_method=None,sb360_path=None,wyscout_matches_path=None):
+                 preprocess_method=None,sb360_path=None,wyscout_matches_path=None,
+                 st_track_path=None, st_meta_path=None,verbose=False,
+                 preprocess_tracking=False):
         self.data_provider = data_provider
         self.event_path = event_path
         self.match_id = match_id
@@ -50,6 +55,11 @@ class Soccer_event_data:
         self.skillcorner_match_dir = skillcorner_match_dir
         self.preprocess_method = preprocess_method
         self.wyscout_matches_path=wyscout_matches_path
+        self.st_track_path = st_track_path
+        self.st_meta_path = st_meta_path
+        self.preprocess_tracking = preprocess_tracking
+        self.verbose = verbose
+        self.call_preprocess = False
 
     def load_data_single_file(self):
         #based on the data provider, load the dataloading function from load_data.py (single file)
@@ -67,10 +77,16 @@ class Soccer_event_data:
             df=soccer_load_data.load_statsbomb(self.event_path,sb360_path=self.sb360_path,match_id=self.statsbomb_match_id,*self.statsbomb_api_args)
         elif self.data_provider == 'statsbomb_skillcorner':
             df=soccer_load_data.load_statsbomb_skillcorner(statsbomb_event_dir=self.statsbomb_event_dir, skillcorner_tracking_dir=self.skillcorner_tracking_dir, skillcorner_match_dir=self.skillcorner_match_dir, statsbomb_match_id=self.statsbomb_match_id, skillcorner_match_id=self.skillcorner_match_id)
+            if self.preprocess_tracking and not self.call_preprocess:
+                df=soccer_tracking_data.statsbomb_skillcorner_tracking_data_preprocessing(df)
+            if self.preprocess_method is not None and not self.call_preprocess:
+                df=soccer_tracking_data.statsbomb_skillcorner_event_data_preprocessing(df,process_event_coord=False)
         elif self.data_provider == 'wyscout':
             df=soccer_load_data.load_wyscout(self.event_path,self.wyscout_matches_path)
         elif self.data_provider == 'datastadium':
             df=soccer_load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
+        elif self.data_provider == 'bepro':
+            df=soccer_load_data.load_soccertrack(self.event_path, self.st_track_path, self.st_meta_path, self.verbose)
         else:
             raise ValueError('Data provider not supported or not found')
         return df
@@ -275,7 +291,8 @@ class Soccer_event_data:
                 statsbomb_match_id, 
                 skillcorner_match_id
             )
-        except:
+        except: #Exception as e: 
+            # print("An error occurred:", e)
             print(f"Skipped match statsbomb match_id: {statsbomb_match_id}")
             statsbomb_skillcorner_df=None
         return statsbomb_skillcorner_df
@@ -304,6 +321,7 @@ class Soccer_event_data:
         return df_out
     
     def preprocessing(self):
+        self.call_preprocess = True
         print(f'Preprocessing data from {self.data_provider} with method {self.preprocess_method}')
         if self.preprocess_method is not None:
             df = self.load_data()
@@ -330,7 +348,7 @@ class Soccer_event_data:
                     except Exception as e:
                         print(f'Exception for match_id {match_id}: {e}')
             
-            df = pd.concat(out_df_list)
+            df = pd.concat(out_df_list) if len(out_df_list) > 1 else out_df_list[0]
             df = df.reset_index(drop=True)
             df['index_column'] = df.index
             df = df.sort_values(by=['match_id', "index_column"])
@@ -338,6 +356,7 @@ class Soccer_event_data:
         else:
             raise ValueError('Preprocessing method not found')
         print(f'Preprocessed data from {self.data_provider} with method {self.preprocess_method}')
+        self.call_preprocess = False
         return df
     
 if __name__ == '__main__':
@@ -363,7 +382,6 @@ if __name__ == '__main__':
     datastadium_event_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/play.csv"
     datastadium_tracking_home_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/home_tracking.csv"
     datastadium_tracking_away_path=os.getcwd()+"/test/sports/event_data/data/datastadium/2019022307/away_tracking.csv"
-    datastadium_dir="/work2/fujii/JLeagueData/Data_2019FM"
 
     #test single file
 
@@ -549,6 +567,14 @@ if __name__ == '__main__':
     #test UIED datastadium multiple files
     # df_datastadium=Event_data(data_provider='datastadium',event_path=datastadium_dir,preprocess_method="UIED",max_workers=10).preprocessing()
     # df_datastadium.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/preprocess_UIED_class_multi.csv",index=False)
-
-
+    
+    #test soccertrack
+    soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
+    soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
+    soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
+    df_soccertrack=Soccer_event_data('soccertrack',soccer_track_event_path,
+                                     st_track_path = soccer_track_tracking_path,
+                                     st_meta_path = soccer_track_meta_path,
+                                     verbose = True).load_data()
+    df_soccertrack.to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_soccer_event_class.csv",index=False)
     print("-----------done-----------")
