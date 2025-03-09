@@ -21,7 +21,7 @@ PLAYER_ROLE_MAP = bidict(
     }
 )
 
-INPUT_EVENT_COLUMNS = [
+INPUT_EVENT_COLUMNS_PVF = [
     'game_id',
     "frame_id",
     "absolute_time",
@@ -59,7 +59,7 @@ INPUT_EVENT_COLUMNS = [
     "is_through_pass",
 ]
 
-INPUT_EVENT_COLUMNS_LALIGA = [
+INPUT_EVENT_COLUMNS_EDMF_LALIGA = [
     'game_id',
     "frame_id",
     "absolute_time",
@@ -97,6 +97,44 @@ INPUT_EVENT_COLUMNS_LALIGA = [
     "formation",
 ]
 
+INPUT_EVENT_COLUMNS_EDMF_JLEAGUE = [
+    'game_id',
+    "frame_id",
+    "absolute_time",
+    "match_status_id",
+    "home_away",
+    "event_x",
+    "event_y",
+    "team_id",
+    "team_name",
+    "player_id",
+    "player_name",
+    "jersey_number",
+    "player_role_id",
+    "event_id",
+    "event_name",
+    "ball_x",
+    "ball_y",
+    "attack_history_num",
+    "attack_direction",
+    "series_num",
+    "ball_touch",
+    "success",
+    "history_num",
+    "attack_start_history_num",
+    "attack_end_history_num",
+    "is_goal",
+    "is_shot",
+    "is_pass",
+    "is_dribble",
+    "is_ball_recovery",
+    "is_block",
+    "is_interception",
+    "is_clearance",
+    "is_cross",
+    "is_through_pass",
+]
+
 
 INPUT_TRACKING_COLUMNS = [
     "game_id",
@@ -117,6 +155,19 @@ INPUT_PLAYER_COLUMNS = [
     "starting_member",
     "on_pitch",
 ]
+
+INPUT_PLAYER_COLUMNS_EDMF = [
+    "home_away",
+    "team_id",
+    "player_id",
+    "player_name",
+    "player_role",
+    "jersey_number",
+    "starting_member",
+    "on_pitch",
+    "height",
+]
+
 
 laliga_player_name_map = {
     "enrique barja afonso": "enrique barja alfonso",

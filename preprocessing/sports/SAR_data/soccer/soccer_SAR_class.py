@@ -28,7 +28,7 @@ from . import soccer_SAR_state
 class Soccer_SAR_data:
     def __init__(self,data_provider,data_path=None,match_id=None,config_path=None,
                  statsbomb_skillcorner_match_id=None,max_workers=1,
-                 preprocess_method=None
+                 preprocess_method=None, state_def='PVF'
                  ):
         self.data_provider = data_provider
         self.data_path = data_path
@@ -39,6 +39,7 @@ class Soccer_SAR_data:
         if self.data_provider == 'statsbomb_skillcorner':
             self.skillcorner_data_dir = self.data_path + "/skillcorner/tracking"
         self.preprocess_method = preprocess_method
+        self.state_def = state_def
 
     def load_data_single_file(self, match_id=None):
         #based on the data provider, load the dataloading function from load_data.py (single file)
@@ -65,6 +66,7 @@ class Soccer_SAR_data:
                 self.match_id, 
                 self.config_path, 
                 'laliga', 
+                self.state_def,
                 save_dir=os.getcwd()+"/data/stb_skc/clean_data"
             )
         elif self.data_provider == 'datastadium':
@@ -73,6 +75,7 @@ class Soccer_SAR_data:
                 self.match_id, 
                 self.config_path, 
                 'jleague', 
+                self.state_def,
                 save_dir=os.getcwd()+"/data/dss/clean_data"
             )
         else:
@@ -142,9 +145,9 @@ class Soccer_SAR_data:
     def preprocess_single_data(self, cleaning_dir, preprocessed_dir):
         if self.preprocess_method == "SAR":
             if self.data_provider == 'datastadium':
-                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="jleague", save_dir=preprocessed_dir, config=self.config_path, match_id=self.match_id)
+                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="jleague", state_def=self.state_def, save_dir=preprocessed_dir, config=self.config_path, match_id=self.match_id)
             elif self.data_provider == 'statsbomb_skillcorner':
-                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="laliga", save_dir=preprocessed_dir, config=self.config_path, match_id=self.match_id)
+                soccer_SAR_state.preprocess_single_game(cleaning_dir, league="laliga", state_def=self.state_def, save_dir=preprocessed_dir, config=self.config_path, match_id=self.match_id)
             else:
                 raise ValueError(f'Preprocessing method not supported for {self.data_provider}')
         else:

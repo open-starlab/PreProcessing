@@ -1,7 +1,8 @@
 from .soccer.soccer_SAR_class import Soccer_SAR_data
 
 class SAR_data:
-    sports = ['statsbomb_skillcorner', 'datastadium', 'statsbomb']
+    sports = ['statsbomb_skillcorner', 'datastadium']
+    state_def = ['PVF', 'EDMF']
 
     def __new__(cls, data_provider, *args, **kwargs):
         if data_provider in cls.sports:

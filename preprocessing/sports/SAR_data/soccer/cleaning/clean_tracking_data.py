@@ -804,6 +804,7 @@ def format_tracking_data(
     home_team_name: str,
     away_team_name: str,
     player_dict: Dict[Tuple[str, str], Dict],
+    state_def: str
 ) -> pd.DataFrame:
     """
     This function formats the tracking data.
@@ -825,28 +826,68 @@ def format_tracking_data(
             "ball": None,
             "players": [],
         }
-        for _, d in group.iterrows():
-            if d['jersey_number'] == 0:
-                frame_dict['ball'] = {"position": {"x": d['x'], "y": d['y']}}
-            else:
-                home_away_str = d['home_away']
-                jersey_number = d['jersey_number']
-                frame_dict['players'].append(
-                    {
-                        "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
-                        "player_name": player_dict[home_away_str, jersey_number]['player_name']
-                        if jersey_number > 0
-                        else None,
-                        "player_id": player_dict[home_away_str, jersey_number]['player_id']
-                        if jersey_number > 0
-                        else jersey_number,
-                        "player_role": player_dict[home_away_str, jersey_number]['player_role']
-                        if jersey_number > 0
-                        else None,
-                        "jersey_number": jersey_number,
-                        "position": {"x": d['x'], "y": d['y']},
-                    }
-                )
+        if state_def == 'PVF':
+            for _, d in group.iterrows():
+                if d['jersey_number'] == 0:
+                    frame_dict['ball'] = {"position": {"x": d['x'], "y": d['y']}}
+                else:
+                    home_away_str = d['home_away']
+                    jersey_number = d['jersey_number']
+                    frame_dict['players'].append(
+                        {
+                            "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
+                            "player_name": player_dict[home_away_str, jersey_number]['player_name']
+                            if jersey_number > 0
+                            else None,
+                            "player_id": player_dict[home_away_str, jersey_number]['player_id']
+                            if jersey_number > 0
+                            else jersey_number,
+                            "player_role": player_dict[home_away_str, jersey_number]['player_role']
+                            if jersey_number > 0
+                            else None,
+                            "jersey_number": jersey_number,
+                            "position": {"x": d['x'], "y": d['y']},
+                        }
+                    )
+        elif state_def == 'EDMF':
+            for _, d in group.iterrows():
+                if d['jersey_number'] == 0:
+                    frame_dict['ball'] = {"position": {"x": d['x'], "y": d['y']}}
+                elif d['jersey_number'] < 0:
+                    home_away_str = d['home_away']
+                    frame_dict['players'].append(
+                        {
+                            "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
+                            "player_name": None,
+                            "player_id": None,
+                            "player_role": None,
+                            "jersey_number": d['jersey_number'],
+                            "height": None,
+                            "position": {"x": d['x'], "y": d['y']},
+                        }
+                    )
+                else:
+                    home_away_str = d['home_away']
+                    jersey_number = d['jersey_number']
+                    frame_dict['players'].append(
+                        {
+                            "team_name": home_team_name if home_away_str == 'HOME' else away_team_name,
+                            "player_name": player_dict[home_away_str, jersey_number]['player_name']
+                            if jersey_number > 0
+                            else None,
+                            "player_id": player_dict[home_away_str, jersey_number]['player_id']
+                            if jersey_number > 0
+                            else jersey_number,
+                            "player_role": player_dict[home_away_str, jersey_number]['player_role']
+                            if jersey_number > 0
+                            else None,
+                            "jersey_number": jersey_number
+                            if jersey_number > 0
+                            else None,
+                            "height": player_dict[home_away_str, jersey_number]['height'],
+                            "position": {"x": d['x'], "y": d['y']},
+                        }
+                    )
                 
         tracking_list.append(frame_dict)
 

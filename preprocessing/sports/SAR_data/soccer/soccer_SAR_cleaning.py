@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def clean_single_data(data_path, match_id, config_path, league, save_dir):
+def clean_single_data(data_path, match_id, config_path, league, state_def, save_dir):
     data_path = Path(data_path + match_id)
     save_dir = Path(save_dir)
     config = load_json(config_path)
@@ -59,7 +59,7 @@ def clean_single_data(data_path, match_id, config_path, league, save_dir):
     start_time = time.time()
     
     event_data = safe_pd_read_csv(data_path / config["event_filename"])
-    event_data = check_and_rename_event_columns(event_data, config['event_columns_mapping'], league)
+    event_data = check_and_rename_event_columns(event_data, config['event_columns_mapping'], league, state_def)
     event_data['home_away'] = event_data['home_away'].apply(lambda x: HOME_AWAY_MAP[x])
     event_data['half'] = event_data['match_status_id'].apply(lambda x: "first" if x == 1 else "second")
     event_data = event_data.drop(columns=['match_status_id']).sort_values("frame_id").reset_index(drop=True)
@@ -71,8 +71,8 @@ def clean_single_data(data_path, match_id, config_path, league, save_dir):
 
     # player data
     player_data = safe_pd_read_csv(data_path / config["player_metadata_filename"])
-    player_data = check_and_rename_player_columns(player_data, config['player_columns_mapping'])
-    player_data = clean_player_data(player_data)
+    player_data = check_and_rename_player_columns(player_data, config['player_columns_mapping'], state_def)
+    player_data = clean_player_data(player_data, state_def)
     # import pdb; pdb.set_trace()
     try:
         condition = (player_data['team_id'] == 0) & (player_data['player_id'] == 0)
@@ -142,10 +142,10 @@ def clean_single_data(data_path, match_id, config_path, league, save_dir):
     tracking_data = preprocess_coordinates_in_tracking_data(
         tracking_data, event_data, config['origin_pos'], config['absolute_coordinates'], league=league
     )
-    tracking_data = format_tracking_data(tracking_data, home_team_name, away_team_name, player_dict)
+    tracking_data = format_tracking_data(tracking_data, home_team_name, away_team_name, player_dict, state_def)
     tracking_data = calculate_speed(tracking_data, sampling_rate=config['target_sampling_rate'])
     tracking_data = calculate_acceleration(tracking_data, sampling_rate=config['target_sampling_rate'])
-    merged_data = merge_tracking_and_event_data(tracking_data, event_data, league=league)
+    merged_data = merge_tracking_and_event_data(tracking_data, event_data, league, state_def)
 
     # save
     output_dir = save_dir / data_path.name
