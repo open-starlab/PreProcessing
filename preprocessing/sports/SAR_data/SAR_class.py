@@ -20,7 +20,7 @@ class SAR_data:
 
 if __name__ == '__main__':
     # Test block remains unchanged, using a supported provider ('datastadium')
-    datastadium_path = "/work5/fujii/work/JLeagueData/Data_20200508/"
+    datastadium_path = "./JLeagueData/Data_20200508/"
     match_id = "2019091416"
     config_path = "data/dss/config/preprocessing_dssports2020.json"
     SAR_data(data_provider='datastadium', data_path=datastadium_path, match_id=match_id, config_path=config_path).load_data()
