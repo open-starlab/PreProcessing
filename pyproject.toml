@@ -27,7 +27,6 @@ dependencies = [
     "chardet>=5.2.0",
     "jsonlines>=3.1.0",
     "bidict>=0.22.1",
-    "scipy>=1.14.0",
     "pydantic>=2.9.0",
     "shapely>=2.0.0",
     "pyarrow>=4.0.0,<20.0.0",
