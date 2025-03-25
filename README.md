@@ -26,7 +26,7 @@ pip install -e .
 - [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/soccer/README.md)
 - [Event data in Rocket League 🚀](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/rocket_league/README.md)
 
-#### SAR Data
+#### SAR (State-Action-Reward) Data
 - [SAR data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/SAR_data/soccer/README.md)
 
 
