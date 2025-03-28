@@ -1,6 +1,3 @@
-from .soccer.soccer_event_class import Soccer_event_data
-from .rocket_league.rocket_league_event_class import Rocket_league_event_data
-
 class Event_data:
     soccer_data_provider = ['datafactory', 'metrica', 'opta', 'robocup_2d', 'sportec', 'statsbomb', 'statsbomb_skillcorner',
                             'wyscout', 'datastadium','bepro']
@@ -9,10 +6,12 @@ class Event_data:
 
     def __new__(cls, data_provider, *args, **kwargs):
         if data_provider in cls.soccer_data_provider:
+            from .soccer.soccer_event_class import Soccer_event_data
             return Soccer_event_data(data_provider, *args, **kwargs)
         elif data_provider in cls.handball_data_provider:
             raise NotImplementedError('Handball event data not implemented yet')
         elif data_provider in cls.rocket_league_data_provider:
+            from .rocket_league.rocket_league_event_class import Rocket_league_event_data
             return Rocket_league_event_data(data_provider, *args, **kwargs) #TODO: implement rocket league event data
         else:
             raise ValueError(f'Unknown data provider: {data_provider}')

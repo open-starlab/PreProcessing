@@ -1,5 +1,3 @@
-from .soccer.soccer_SAR_class import Soccer_SAR_data
-
 class SAR_data:
     # Modified the sports list to only include fully supported providers
     sports = ['statsbomb_skillcorner', 'datastadium']
@@ -7,6 +5,7 @@ class SAR_data:
     def __new__(cls, data_provider, *args, **kwargs):
         if data_provider in cls.sports:
             # If the data_provider is in the supported list, return an instance of Soccer_SAR_data
+            from .soccer.soccer_SAR_class import Soccer_SAR_data
             return Soccer_SAR_data(data_provider, *args, **kwargs)
         elif data_provider == "statsbomb":
             # For 'statsbomb', raise a NotImplementedError indicating it is not implemented

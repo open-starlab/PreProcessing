@@ -16,4 +16,4 @@ if __name__ == '__main__':
     # Test block remains unchanged, using a supported provider 
     provider_path = "./provider_1/Data/"
     match_id = "1234"
-    Space_data(data_provider='provider_1', data_path = provider_path,...).load_data()
+    Space_data(data_provider='provider_1', data_path = provider_path).load_data()
