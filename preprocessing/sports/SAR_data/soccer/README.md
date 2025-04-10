@@ -20,6 +20,8 @@ Here are some examples of how to download and preprocess data:
 
 - **DataStadium Data:**
   - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/SAR_data/Example/Soccer/Example_1/contents.html)
+  - [Example Config File](https://github.com/open-starlab/PreProcessing/blob/master/example/config/datastadium/preprocessing_dssports2020.json)
 
 - **StatsBomb and SkillCorner Data:**
   - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/SAR_data/Example/Soccer/Example_2/contents.html)
+  - [Example Config File](https://github.com/open-starlab/PreProcessing/blob/master/example/config/statsbomb_skillcorner/preprocessing_statsbomb_skillcorner2024.json)
