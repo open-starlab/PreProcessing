@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'preprocessing/sports/SAR_data/*'
+      - 'preprocessing/data/*'
       - '.github/workflows/pytest.yml'
 
 # Add these permissions
