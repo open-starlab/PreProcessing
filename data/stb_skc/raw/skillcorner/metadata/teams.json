@@ -1,0 +1,32 @@
+[
+  {
+    "id": 266,
+    "name": "AE Team 2024",
+    "coach": {
+      "id": 203,
+      "first_name": "Coach",
+      "last_name": "AE"
+    },
+    "stadium": {
+      "id": 546,
+      "name": "RoboCup Stadium",
+      "city": "Virtual City",
+      "capacity": 15000
+    }
+  },
+  {
+    "id": 274,
+    "name": "Cyrus 2024",
+    "coach": {
+      "id": 204,
+      "first_name": "Coach",
+      "last_name": "Cyrus"
+    },
+    "stadium": {
+      "id": 546,
+      "name": "RoboCup Stadium",
+      "city": "Virtual City",
+      "capacity": 15000
+    }
+  }
+]

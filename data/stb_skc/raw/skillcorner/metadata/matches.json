@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1317846,
+    "date_time": "2025-04-09T17:15:21Z",
+    "home_team": {
+      "id": 266,
+      "short_name": "AET"
+    },
+    "away_team": {
+      "id": 274,
+      "short_name": "CYR"
+    },
+    "status": "closed"
+  }
+]
