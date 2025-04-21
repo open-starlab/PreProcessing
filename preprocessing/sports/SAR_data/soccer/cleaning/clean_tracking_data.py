@@ -1016,7 +1016,7 @@ def calculate_speed(tracking_data: pd.DataFrame, sampling_rate: int = 10) -> pd.
                         try:
                             d["velocity"] = deepcopy(prev_player2vel[d['player_name']])
                         except:
-                            print(f"prev_data: {prev_data}.")
+                            print(f"prev_data: {prev_data}.") # add for pytest
                             continue
                 else:
                     # singleton? -> set velocity to 0
@@ -1026,11 +1026,7 @@ def calculate_speed(tracking_data: pd.DataFrame, sampling_rate: int = 10) -> pd.
         tracking_data.loc[idx, 'ball'] = json.dumps(ball_pos)
         tracking_data.loc[idx, 'players'] = json.dumps(player_data)
 
-    # tracking_data['ball'] = tracking_data['ball'].apply(json.loads)
-    # tracking_data['players'] = tracking_data['players'].apply(json.loads)
-    # 'ball' カラムの各要素が None でないことを確認
     tracking_data['ball'] = tracking_data['ball'].apply(parse_tracking_data)
-    # 'players' カラムの各要素が None でないことを確認
     tracking_data['players'] = tracking_data['players'].apply(parse_tracking_data)
     return tracking_data
 
@@ -1094,7 +1090,8 @@ def calculate_acceleration(tracking_data: pd.DataFrame, sampling_rate: int = 10)
                         "y": (next_data['ball']['velocity']['y'] - ball_pos["velocity"]["y"]) / time_delta,
                     }
                 except:
-                    continue
+                    continue # add for pytest
+                
                 next_player2vel = __get_player2vel(next_data['players'])
                 for d in player_data:
                     if d['player_name'] in next_player2vel:
@@ -1129,8 +1126,6 @@ def calculate_acceleration(tracking_data: pd.DataFrame, sampling_rate: int = 10)
         tracking_data.loc[idx, 'ball'] = json.dumps(ball_pos)
         tracking_data.loc[idx, 'players'] = json.dumps(player_data)
 
-    # 'ball' カラムの各要素が None でないことを確認
     tracking_data['ball'] = tracking_data['ball'].apply(parse_tracking_data)
-    # 'players' カラムの各要素が None でないことを確認
     tracking_data['players'] = tracking_data['players'].apply(parse_tracking_data)
     return tracking_data
