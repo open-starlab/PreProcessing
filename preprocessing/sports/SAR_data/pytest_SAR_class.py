@@ -15,10 +15,10 @@ class SAR_data:
 if __name__ == '__main__':
     #check if the Soccer_event_data class is correctly implemented
 
-    # datastadium_path = "data/dss/raw/"
-    # match_id = "0001"
-    # config_path = "data/dss/config/preprocessing_dssports2020.json"
-    # SAR_data(data_provider='datastadium', data_path=datastadium_path, match_id=match_id, config_path=config_path).load_data()
+    datastadium_path = "data/dss/raw/"
+    match_id = "0001"
+    config_path = "data/dss/config/preprocessing_dssports2020.json"
+    SAR_data(data_provider='datastadium', data_path=datastadium_path, match_id=match_id, config_path=config_path).load_data()
 
     statsbomb_skillcorner_path = "data/stb_skc/raw"
     match_id = "1317846"
