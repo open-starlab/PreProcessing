@@ -5,7 +5,7 @@ on:
     paths:
       - 'preprocessing/sports/SAR_data/*'
       - 'preprocessing/data/*'
-      - '.github/workflows/pytest.yml'
+      - '.github/workflows/SAR_pytest.yml'
 
 # Add these permissions
 permissions:
