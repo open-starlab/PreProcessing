@@ -44,7 +44,7 @@ def adjust_player_roles(player_data: pd.DataFrame, event_data: pd.DataFrame) -> 
     return player_data
 
 
-def clean_player_data(player_data: pd.DataFrame, state_def: str) -> pd.DataFrame:
+def clean_player_data(player_data: pd.DataFrame) -> pd.DataFrame:
     """
     This function cleans the player data by filtering out players who did not participate in the game.
     It also maps the home and away teams to their respective identifiers.
@@ -59,18 +59,13 @@ def clean_player_data(player_data: pd.DataFrame, state_def: str) -> pd.DataFrame
     player_data = player_data.query("on_pitch == 1")
     player_data.loc[:, 'home_away'] = player_data['home_away'].apply(lambda x: HOME_AWAY_MAP[x])
     player_data.loc[:, 'player_role'] = player_data['player_role'].apply(lambda x: PLAYER_ROLE_MAP[x])
-    if state_def == 'PVF':
-        player_data = player_data[
-            ['team_id', 'home_away', 'player_id', 'player_name', 'player_role', 'jersey_number', 'starting_member']
-        ]
-    elif state_def == 'EDMF':
-        player_data = player_data[
-            ['team_id', 'home_away', 'player_id', 'player_name', 'player_role', 'jersey_number', 'height', 'starting_member']
-        ]
+    player_data = player_data[
+        ['team_id', 'home_away', 'player_id', 'player_name', 'player_role', 'jersey_number', 'starting_member']
+    ]
     return player_data
 
 
-def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.DataFrame, league: str, state_def: str) -> List[Dict[str, Any]]:
+def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.DataFrame, league: str) -> List[Dict[str, Any]]:
     """
     This function merges the tracking data and event data.
     Merge operation is done on the half and time_from_half_start columns.
@@ -82,42 +77,7 @@ def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.Da
     Returns:
     List[Dict[str, Any]]: List of dictionaries containing the merged tracking and event data
     """
-
-    event_columns_PVF = [
-        'game_id',
-        'frame_id',
-        'half',
-        'time_from_half_start',
-        'event_id',
-        'event_name',
-        'event_x',
-        'event_y',
-        'team_id',
-        'team_name',
-        'home_away',
-        'player_id',
-        'player_name',
-        'jersey_number',
-        'player_role',
-        'attack_history_num',
-        'attack_direction',
-        'series_num',
-        'ball_touch',
-        'success',
-        'history_num',
-        'attack_start_history_num',
-        'attack_end_history_num',
-        'is_goal',
-        'is_shot',
-        'is_pass',
-        'is_cross',
-        'is_through_pass',
-        'is_dribble',
-        'ball',
-        'players',
-    ]
-
-    event_columns_EDMF_laliga = [
+    event_columns_laliga = [
         'game_id',
         'frame_id',
         'half',
@@ -155,7 +115,7 @@ def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.Da
         'players',
     ]
     
-    event_columns_EDMF_jleague = [
+    event_columns_jleague = [
         'game_id',
         'frame_id',
         'half',
@@ -194,7 +154,7 @@ def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.Da
     ]
 
     
-    frame_df_columns_PVF = [
+    frame_df_columns = [
         'frame_id',
         'event_id',
         'team_id',
@@ -211,7 +171,7 @@ def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.Da
         'is_dribble',
     ]
 
-    frame_df_columns_EDMF_laliga = [
+    frame_df_columns_laliga = [
         'frame_id',
         'event_id',
         'team_id',
@@ -231,7 +191,7 @@ def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.Da
         "is_clearance",
     ]
     
-    frame_df_columns_EDMF_jleague = [
+    frame_df_columns_jleague = [
         'frame_id',
         'event_id',
         'team_id',
@@ -251,50 +211,34 @@ def merge_tracking_and_event_data(tracking_data: pd.DataFrame, event_data: pd.Da
         'is_cross',
         'is_through_pass',
     ]
-    
-    if state_def == 'PVF':
+    if league == "jleague":
         frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
-            event_columns_PVF
+            event_columns_jleague
         ].reset_index(drop=True)
-    
+
         frame_df[
-            frame_df_columns_PVF
+            frame_df_columns_jleague
         ] = (
             frame_df[
-                frame_df_columns_PVF
+                frame_df_columns_jleague
             ]
             .fillna(-1)
             .astype(int)
         )
-    elif state_def == "EDMF":
-        if league == "jleague":
-            frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
-                event_columns_EDMF_jleague
-            ].reset_index(drop=True)
+    elif league == "laliga":
+        frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
+            event_columns_laliga
+        ].reset_index(drop=True)
     
+        frame_df[
+            frame_df_columns_laliga
+        ] = (
             frame_df[
-                frame_df_columns_EDMF_jleague
-            ] = (
-                frame_df[
-                    frame_df_columns_EDMF_jleague
-                ]
-                .fillna(-1)
-                .astype(int)
-            )
-        elif league == "laliga":
-            frame_df = pd.merge(tracking_data, event_data, on=["half", 'time_from_half_start'], how='left')[
-                event_columns_EDMF_laliga
-            ].reset_index(drop=True)
-        
-            frame_df[
-                frame_df_columns_EDMF_laliga
-            ] = (
-                frame_df[
-                    frame_df_columns_EDMF_laliga
-                ]
-                .fillna(-1)
-                .astype(int)
-            )
+                frame_df_columns_laliga
+            ]
+            .fillna(-1)
+            .astype(int)
+        )
 
 
     frame_df['half'] = frame_df['half'].fillna(method='ffill').fillna(method='bfill')

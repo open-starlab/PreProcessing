@@ -101,7 +101,7 @@ class PorocessTrackingData:
             # pdb.set_trace()
             
             # Calculate ball velocity and acceralation
-            if ball_x is not None and ball_y is not None:
+            if ball_x is not None and ball_y is not None and previous_ball_position is not None:
                 prev_ball_x, prev_ball_y = previous_ball_position
                 if prev_ball_x is not None and prev_ball_y is not None:
                     ball_velocity_x = (ball_x - prev_ball_x) * self.fps
@@ -599,12 +599,15 @@ class ProcessEventData:
         """
         Get the outcome flag of the player
         """
-        if row['アクション名'] == 'Shot':
-            return self.df.loc[row['履歴No']-1, 'outcome']
-        elif row['アクション名'] == 'Pass':
-            return self.df.loc[row['履歴No']-1, 'outcome']
-        elif row['アクション名'] == 'Dribble':
-            return self.df.loc[row['履歴No']-1, 'outcome']
+        try:
+            if row['アクション名'] == 'Shot':
+                return self.df.loc[row['履歴No']-1, 'outcome']
+            elif row['アクション名'] == 'Pass':
+                return self.df.loc[row['履歴No']-1, 'outcome']
+            elif row['アクション名'] == 'Dribble':
+                return self.df.loc[row['履歴No']-1, 'outcome']
+        except KeyError:
+            None
         return None
     
     def success_flag(self, row):

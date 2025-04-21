@@ -1,7 +1,7 @@
 # OpenSTARLab PreProcessing package
 [![Documentation Status](https://readthedocs.org/projects/openstarlab/badge/?version=latest)](https://openstarlab.readthedocs.io/en/latest/?badge=latest)
 [![dm](https://img.shields.io/pypi/dm/openstarlab-preprocessing)](https://pypi.org/project/openstarlab-preprocessing/)
-![ArXiv](https://img.shields.io/badge/ArXiv-2502.02785-b31b1b?logo=arxiv)
+[![ArXiv](https://img.shields.io/badge/ArXiv-2502.02785-b31b1b?logo=arxiv)](https://arxiv.org/abs/2502.02785)
 
 ## Introduction
 The OpenSTARLab PreProcessing package is a core component for the OpenSTARLab suite, providing essential data preprocessing functions. It is designed with minimal dependencies and aims to avoid those that are heavily version-dependent.
@@ -26,9 +26,11 @@ pip install -e .
 - [Event data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/soccer/README.md)
 - [Event data in Rocket League 🚀](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/event_data/rocket_league/README.md)
 
-#### SAR Data
+#### SAR (State-Action-Reward) Data
 - [SAR data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/SAR_data/soccer/README.md)
 
+#### Space Data
+- [Space data in Basketball 🏀](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/space_data/basketball/README.md)
 
 ## RoadMap
 - [x] Release the package
