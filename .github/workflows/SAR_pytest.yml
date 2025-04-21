@@ -35,7 +35,7 @@ jobs:
         
     - name: Run SAR class tests
       run: |
-        pytest pytest_SAR_class.py -v
+        pytest preprocessing/sports/SAR_data/pytest_SAR_class.py -v
 
     - name: Report test results
       if: always()
