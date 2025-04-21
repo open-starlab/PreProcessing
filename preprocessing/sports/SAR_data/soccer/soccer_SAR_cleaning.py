@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def clean_single_data(data_path, match_id, config_path, league, state_def, save_dir):
+def clean_single_data(data_path, match_id, config_path, league, save_dir):
     data_path = Path(data_path + match_id)
     save_dir = Path(save_dir)
     config = load_json(config_path)
