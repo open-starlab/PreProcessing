@@ -35,9 +35,14 @@ jobs:
         cd ./PreProcessing
         pip install .
         
-    - name: Run init tests
+    # - name: Run init tests
+    #   run: |
+    #     pytest preprocessing/pytest/pytest_init.py -v
+        
+    - name: Run tests with output
       run: |
-        pytest preprocessing/pytest/pytest_init.py -v
+        pytest -v -s preprocessing/pytest/pytest_init.py --junitxml=pytest_results.xml > result.log
+        cat result.log  # Print the result.log to the console
 
     - name: Report test results
       if: always()
