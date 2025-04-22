@@ -101,7 +101,7 @@ class PorocessTrackingData:
             # pdb.set_trace()
             
             # Calculate ball velocity and acceralation
-            if ball_x is not None and ball_y is not None:
+            if ball_x is not None and ball_y is not None and previous_ball_position is not None:
                 prev_ball_x, prev_ball_y = previous_ball_position
                 if prev_ball_x is not None and prev_ball_y is not None:
                     ball_velocity_x = (ball_x - prev_ball_x) * self.fps
@@ -359,7 +359,6 @@ class PorocessTrackingData:
         else:
             ArithmeticError(f"Start frame not found in ball tracking data")
         
-        # start_frame以後のball tracking dataを取得
         df_ball = df_ball[df_ball['Frame'] >= start_frame]
         df_ball = df_ball.reset_index(drop=True)
 
@@ -371,13 +370,11 @@ class PorocessTrackingData:
         """
         Match player tracking data with event data
         """
-        # df_playerを22行ずつループ
         frame = 0
 
         for i in range(0, len(df_player), 22):
             player_data = df_player.loc[i:i+21]
 
-            # 座標のペアを作成
             coordinates = []
             for j in range(1, 24):
                 hx = self.df[f'h{j}_x'].iloc[0]
@@ -392,7 +389,6 @@ class PorocessTrackingData:
 
             for coord in coordinates:
                 x, y = coord
-                # x_col, y_colがplayer_data['X'], player_data['Y']にそれぞれ含まれているか確認
                 if (x == player_data['x']).any():
                     y_ = player_data[player_data['x'] == x]['y']
                     if y == y_.iloc[0]:
@@ -599,12 +595,15 @@ class ProcessEventData:
         """
         Get the outcome flag of the player
         """
-        if row['アクション名'] == 'Shot':
-            return self.df.loc[row['履歴No']-1, 'outcome']
-        elif row['アクション名'] == 'Pass':
-            return self.df.loc[row['履歴No']-1, 'outcome']
-        elif row['アクション名'] == 'Dribble':
-            return self.df.loc[row['履歴No']-1, 'outcome']
+        try:
+            if row['アクション名'] == 'Shot':
+                return self.df.loc[row['履歴No']-1, 'outcome']
+            elif row['アクション名'] == 'Pass':
+                return self.df.loc[row['履歴No']-1, 'outcome']
+            elif row['アクション名'] == 'Dribble':
+                return self.df.loc[row['履歴No']-1, 'outcome']
+        except KeyError:
+            None
         return None
     
     def success_flag(self, row):
@@ -692,7 +691,6 @@ class ProcessEventData:
         df_play['履歴No'] = self.df['index']
         df_play['シリーズNo'] = self.df.apply(lambda row: self.series_number(row, series_count), axis=1).cumsum()
 
-        # df_play['アクション名'] = df_play.apply(lambda row: self.convert_action_name(row), axis=1)
         df_play = self.calculate_attack_periods(df_play)
 
         df_play['F_ボールタッチ'] = df_play['アクションID'].isin(self.config['ball_touch']).astype(int)

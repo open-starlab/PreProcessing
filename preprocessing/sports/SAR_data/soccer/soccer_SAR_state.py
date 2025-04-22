@@ -40,4 +40,3 @@ def preprocess_single_game(game_dir: str, league: str, save_dir: str, config: di
     )
     logger.info(f"preprocessing finished... game_id: {game_dir.name} ({time.time() - start:.2f} sec)")
 
-

@@ -2,10 +2,11 @@ from typing import Dict, List
 import pandas as pd
 
 from preprocessing.sports.SAR_data.soccer.constant import (
-    INPUT_EVENT_COLUMNS, 
-    INPUT_PLAYER_COLUMNS, 
-    INPUT_TRACKING_COLUMNS, 
-    INPUT_EVENT_COLUMNS_LALIGA
+    INPUT_EVENT_COLUMNS_JLEAGUE,
+    INPUT_EVENT_COLUMNS_LALIGA,
+    INPUT_PLAYER_COLUMNS_JLEAGUE,
+    INPUT_PLAYER_COLUMNS_LALIGA,
+    INPUT_TRACKING_COLUMNS
 )
 
 
@@ -31,7 +32,7 @@ def check_and_rename_event_columns(
     print(f"Expected columns for {league}: {list(event_columns_mapping.values())}")
 
     league_columns_map = {
-        "jleague": INPUT_EVENT_COLUMNS,
+        "jleague": INPUT_EVENT_COLUMNS_JLEAGUE,
         "laliga": INPUT_EVENT_COLUMNS_LALIGA,
     }
 
@@ -55,16 +56,17 @@ def check_and_rename_event_columns_laliga(
     _validate_columns(event_columns_mapping, INPUT_EVENT_COLUMNS_LALIGA, context="event data (laliga)")
     event_data = event_data.rename(columns={v: k for k, v in event_columns_mapping.items()})
     event_data = event_data[INPUT_EVENT_COLUMNS_LALIGA]
-    return event_data           
+    return event_data
+        
 def check_and_rename_event_columns_jleague(
     event_data: pd.DataFrame,
     event_columns_mapping: Dict[str, str]
 ) -> pd.DataFrame:
     print(f"Actual columns: {event_data.columns.tolist()}")
     print(f"Expected columns for jleague: {list(event_columns_mapping.values())}")
-    _validate_columns(event_columns_mapping, INPUT_EVENT_COLUMNS, context="event data (jleague)")
+    _validate_columns(event_columns_mapping, INPUT_EVENT_COLUMNS_JLEAGUE, context="event data (jleague)")
     event_data = event_data.rename(columns={v: k for k, v in event_columns_mapping.items()})
-    event_data = event_data[INPUT_EVENT_COLUMNS]
+    event_data = event_data[INPUT_EVENT_COLUMNS_JLEAGUE]
     return event_data
 
 def check_and_rename_tracking_columns(
@@ -81,12 +83,20 @@ def check_and_rename_tracking_columns(
 
 def check_and_rename_player_columns(
     player_data: pd.DataFrame, 
-    player_columns_mapping: Dict[str, str]
+    player_columns_mapping: Dict[str, str],
+    league: str
 ) -> pd.DataFrame:
     match_id_prefix = str(player_data['試合ID'].iloc[0])[:4]
     if match_id_prefix in ("2019", "2020"):
         player_data['試合ポジションID'] = -1
-    _validate_columns(player_columns_mapping, INPUT_PLAYER_COLUMNS, context="player data")
+
+    league_columns_map = {
+        "jleague": INPUT_PLAYER_COLUMNS_JLEAGUE,
+        "laliga": INPUT_PLAYER_COLUMNS_LALIGA,
+    }
+
+    expected_columns = league_columns_map[league]
+    _validate_columns(player_columns_mapping, expected_columns, context="player data")
     player_data = player_data.rename(columns={v: k for k, v in player_columns_mapping.items()})
-    player_data = player_data[INPUT_PLAYER_COLUMNS]
+    player_data = player_data[expected_columns]
     return player_data

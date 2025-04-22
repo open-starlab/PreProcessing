@@ -71,7 +71,7 @@ def clean_single_data(data_path, match_id, config_path, league, save_dir):
 
     # player data
     player_data = safe_pd_read_csv(data_path / config["player_metadata_filename"])
-    player_data = check_and_rename_player_columns(player_data, config['player_columns_mapping'])
+    player_data = check_and_rename_player_columns(player_data, config['player_columns_mapping'], league)
     player_data = clean_player_data(player_data)
     # import pdb; pdb.set_trace()
     try:
@@ -89,8 +89,8 @@ def clean_single_data(data_path, match_id, config_path, league, save_dir):
 
     if league == "jleague":
         # split tracking data into player and ball
-        tracking_1stHalf_data = pd.read_csv(data_path / config['tracking_1stHalf_filename'], encoding='shift_jis')
-        tracking_2ndHalf_data = pd.read_csv(data_path / config['tracking_2ndHalf_filename'], encoding='shift_jis')
+        tracking_1stHalf_data = safe_pd_read_csv(data_path / config['tracking_1stHalf_filename'])
+        tracking_2ndHalf_data = safe_pd_read_csv(data_path / config['tracking_2ndHalf_filename'])
         player_tracking_data, ball_tracking_data = split_tracking_data(tracking_1stHalf_data, tracking_2ndHalf_data)
 
         # adjust the player roles
@@ -145,7 +145,7 @@ def clean_single_data(data_path, match_id, config_path, league, save_dir):
     tracking_data = format_tracking_data(tracking_data, home_team_name, away_team_name, player_dict)
     tracking_data = calculate_speed(tracking_data, sampling_rate=config['target_sampling_rate'])
     tracking_data = calculate_acceleration(tracking_data, sampling_rate=config['target_sampling_rate'])
-    merged_data = merge_tracking_and_event_data(tracking_data, event_data, league=league)
+    merged_data = merge_tracking_and_event_data(tracking_data, event_data, league)
 
     # save
     output_dir = save_dir / data_path.name

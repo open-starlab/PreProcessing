@@ -64,7 +64,7 @@ class Soccer_SAR_data:
                 save_preprocess_dir,
                 self.match_id, 
                 self.config_path, 
-                'laliga', 
+                'laliga',
                 save_dir=os.getcwd()+"/data/stb_skc/clean_data"
             )
         elif self.data_provider == 'datastadium':
@@ -72,7 +72,7 @@ class Soccer_SAR_data:
                 self.data_path, 
                 self.match_id, 
                 self.config_path, 
-                'jleague', 
+                'jleague',
                 save_dir=os.getcwd()+"/data/dss/clean_data"
             )
         else:

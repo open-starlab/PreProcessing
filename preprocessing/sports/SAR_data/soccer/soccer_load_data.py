@@ -73,7 +73,8 @@ def load_single_statsbomb_skillcorner(data_path: str, match_id_dict: str, skillc
         'Atlético Madrid': 'Atlético Madrid', 'RCD Mallorca': 'Mallorca', 'Valencia CF': 'Valencia', 
         'CA Osasuna': 'Osasuna', 'Girona FC': 'Girona', 'Real Betis Balompié': 'Real Betis', 
         'FC Barcelona': 'Barcelona', 'Deportivo Alavés': 'Deportivo Alavés', 'Granada CF': 'Granada', 
-        'Rayo Vallecano': 'Rayo Vallecano', 'Real Madrid CF': 'Real Madrid'
+        'Rayo Vallecano': 'Rayo Vallecano', 'Real Madrid CF': 'Real Madrid', 'AE Team 2024': 'AE Team 2024',
+        'Cyrus 2024': 'Cyrus 2024'
     }
     
     home_team_name = team_name_dict[match['home_team']['name']]
@@ -161,12 +162,18 @@ def load_single_statsbomb_skillcorner(data_path: str, match_id_dict: str, skillc
         if time and period==1 and seconds<=5:
             for obj in data:
                 if obj['trackable_object']==ball_id:
-                    ball_velocity_period_1.append([time, obj['x'], obj['y'],obj['z']])
+                    try:
+                        ball_velocity_period_1.append([time, obj['x'], obj['y'],obj['z']])
+                    except:
+                        ball_velocity_period_1.append([time, obj['x'], obj['y']])
 
         if time and period==2 and seconds <= 45*60+5:
             for obj in data:
                 if obj['trackable_object']==ball_id:
-                    ball_velocity_period_2.append([time, obj['x'], obj['y'],obj['z']])
+                    try:
+                        ball_velocity_period_2.append([time, obj['x'], obj['y'],obj['z']])
+                    except:
+                        ball_velocity_period_2.append([time, obj['x'], obj['y']])
             
     if not ball_velocity_period_1 == [] or not ball_velocity_period_2 == []:
         try:

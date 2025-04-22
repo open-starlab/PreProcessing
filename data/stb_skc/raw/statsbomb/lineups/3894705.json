@@ -1,0 +1,732 @@
+{
+  "AE Team 2024": [
+    {
+      "player_id": 11592,
+      "player_name": "Player L1",
+      "player_nickname": null,
+      "birth_date": "1994-01-01",
+      "player_gender": "male",
+      "player_height": 185.0,
+      "player_weight": 80.0,
+      "jersey_number": 1,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 1,
+          "position": "Goalkeeper",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11593,
+      "player_name": "Player L2",
+      "player_nickname": null,
+      "birth_date": "1995-02-15",
+      "player_gender": "male",
+      "player_height": 182.0,
+      "player_weight": 78.0,
+      "jersey_number": 2,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 2,
+          "position": "Right Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11594,
+      "player_name": "Player L3",
+      "player_nickname": null,
+      "birth_date": "1996-03-10",
+      "player_gender": "male",
+      "player_height": 188.0,
+      "player_weight": 82.0,
+      "jersey_number": 3,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 3,
+          "position": "Right Center Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11595,
+      "player_name": "Player L4",
+      "player_nickname": null,
+      "birth_date": "1994-04-20",
+      "player_gender": "male",
+      "player_height": 186.0,
+      "player_weight": 81.0,
+      "jersey_number": 4,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 4,
+          "position": "Left Center Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11596,
+      "player_name": "Player L5",
+      "player_nickname": null,
+      "birth_date": "1997-05-05",
+      "player_gender": "male",
+      "player_height": 180.0,
+      "player_weight": 75.0,
+      "jersey_number": 5,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 5,
+          "position": "Left Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11597,
+      "player_name": "Player L6",
+      "player_nickname": null,
+      "birth_date": "1993-06-15",
+      "player_gender": "male",
+      "player_height": 175.0,
+      "player_weight": 72.0,
+      "jersey_number": 6,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 6,
+          "position": "Right Defensive Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11598,
+      "player_name": "Player L7",
+      "player_nickname": null,
+      "birth_date": "1998-07-22",
+      "player_gender": "male",
+      "player_height": 178.0,
+      "player_weight": 74.0,
+      "jersey_number": 7,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 7,
+          "position": "Left Defensive Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 1,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11599,
+      "player_name": "Player L8",
+      "player_nickname": null,
+      "birth_date": "1996-08-30",
+      "player_gender": "male",
+      "player_height": 183.0,
+      "player_weight": 79.0,
+      "jersey_number": 8,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 8,
+          "position": "Right Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11600,
+      "player_name": "Player L9",
+      "player_nickname": null,
+      "birth_date": "1997-09-12",
+      "player_gender": "male",
+      "player_height": 184.0,
+      "player_weight": 80.0,
+      "jersey_number": 9,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 9,
+          "position": "Central Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 1,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11601,
+      "player_name": "Player L10",
+      "player_nickname": null,
+      "birth_date": "1995-10-05",
+      "player_gender": "male",
+      "player_height": 179.0,
+      "player_weight": 76.0,
+      "jersey_number": 10,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 10,
+          "position": "Left Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 1,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11602,
+      "player_name": "Player L11",
+      "player_nickname": null,
+      "birth_date": "1994-11-18",
+      "player_gender": "male",
+      "player_height": 181.0,
+      "player_weight": 77.0,
+      "jersey_number": 11,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 11,
+          "position": "Right Wing",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    }
+  ],
+  "Cyrus 2024": [
+    {
+      "player_id": 11603,
+      "player_name": "Player R1",
+      "player_nickname": null,
+      "birth_date": "1993-12-23",
+      "player_gender": "male",
+      "player_height": 190.0,
+      "player_weight": 85.0,
+      "jersey_number": 1,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 1,
+          "position": "Goalkeeper",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 1
+      }
+    },
+    {
+      "player_id": 11604,
+      "player_name": "Player R2",
+      "player_nickname": null,
+      "birth_date": "1995-01-07",
+      "player_gender": "male",
+      "player_height": 183.0,
+      "player_weight": 78.0,
+      "jersey_number": 2,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 2,
+          "position": "Right Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11605,
+      "player_name": "Player R3",
+      "player_nickname": null,
+      "birth_date": "1997-02-14",
+      "player_gender": "male",
+      "player_height": 184.0,
+      "player_weight": 79.0,
+      "jersey_number": 3,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 3,
+          "position": "Right Center Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11606,
+      "player_name": "Player R4",
+      "player_nickname": null,
+      "birth_date": "1996-03-22",
+      "player_gender": "male",
+      "player_height": 187.0,
+      "player_weight": 82.0,
+      "jersey_number": 4,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 4,
+          "position": "Left Center Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11607,
+      "player_name": "Player R5",
+      "player_nickname": null,
+      "birth_date": "1994-04-30",
+      "player_gender": "male",
+      "player_height": 180.0,
+      "player_weight": 76.0,
+      "jersey_number": 5,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 5,
+          "position": "Left Back",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11608,
+      "player_name": "Player R6",
+      "player_nickname": null,
+      "birth_date": "1998-05-11",
+      "player_gender": "male",
+      "player_height": 176.0,
+      "player_weight": 73.0,
+      "jersey_number": 6,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 6,
+          "position": "Right Defensive Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11609,
+      "player_name": "Player R7",
+      "player_nickname": null,
+      "birth_date": "1995-06-19",
+      "player_gender": "male",
+      "player_height": 179.0,
+      "player_weight": 75.0,
+      "jersey_number": 7,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 7,
+          "position": "Left Defensive Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 1,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11610,
+      "player_name": "Player R8",
+      "player_nickname": null,
+      "birth_date": "1997-07-24",
+      "player_gender": "male",
+      "player_height": 182.0,
+      "player_weight": 78.0,
+      "jersey_number": 8,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 8,
+          "position": "Right Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11611,
+      "player_name": "Player R9",
+      "player_nickname": null,
+      "birth_date": "1994-08-08",
+      "player_gender": "male",
+      "player_height": 183.0,
+      "player_weight": 79.0,
+      "jersey_number": 9,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 9,
+          "position": "Central Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 1,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11612,
+      "player_name": "Player R10",
+      "player_nickname": null,
+      "birth_date": "1996-09-16",
+      "player_gender": "male",
+      "player_height": 177.0,
+      "player_weight": 74.0,
+      "jersey_number": 10,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 10,
+          "position": "Left Midfield",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 1,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    },
+    {
+      "player_id": 11613,
+      "player_name": "Player R11",
+      "player_nickname": null,
+      "birth_date": "1995-10-28",
+      "player_gender": "male",
+      "player_height": 180.0,
+      "player_weight": 76.0,
+      "jersey_number": 11,
+      "country": "International",
+      "positions": [
+        {
+          "position_id": 11,
+          "position": "Right Wing",
+          "from": "00:00:00.000",
+          "to": null,
+          "from_period": 1,
+          "to_period": null,
+          "start_reason": "Starting XI",
+          "end_reason": "Final Whistle",
+          "counterpart_id": null,
+          "counterpart_name": null
+        }
+      ],
+      "stats": {
+        "own_goals": 0,
+        "goals": 0,
+        "assists": 0,
+        "penalties_scored": 0,
+        "penalties_missed": 0,
+        "penalties_saved": 0
+      }
+    }
+  ]
+}

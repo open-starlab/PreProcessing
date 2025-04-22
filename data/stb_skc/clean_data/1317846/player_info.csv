@@ -1,0 +1,47 @@
+team_id,home_away,player_id,player_name,player_role,jersey_number,starting_member
+266,HOME,11592,player l1,GK,1,1
+274,AWAY,11603,player r1,GK,1,1
+266,HOME,11593,player l2,DF,2,1
+274,AWAY,11604,player r2,DF,2,1
+266,HOME,11594,player l3,DF,3,1
+274,AWAY,11605,player r3,DF,3,1
+266,HOME,11595,player l4,DF,4,1
+274,AWAY,11606,player r4,DF,4,1
+266,HOME,11596,player l5,DF,5,1
+274,AWAY,11607,player r5,DF,5,1
+266,HOME,11597,player l6,MF,6,1
+274,AWAY,11608,player r6,MF,6,1
+266,HOME,11598,player l7,MF,7,1
+274,AWAY,11609,player r7,MF,7,1
+266,HOME,11599,player l8,MF,8,1
+274,AWAY,11610,player r8,MF,8,1
+266,HOME,11600,player l9,Substitute,9,1
+274,AWAY,11611,player r9,Substitute,9,1
+266,HOME,11601,player l10,FW,10,1
+274,AWAY,11612,player r10,FW,10,1
+266,HOME,11602,player l11,FW,11,1
+274,AWAY,11613,player r11,FW,11,1
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
+0,AWAY,0,,Substitute,0,0
