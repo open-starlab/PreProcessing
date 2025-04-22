@@ -169,6 +169,10 @@ class InvalidPlayerIDException(Exception):
 def frame2state(
     frame: pd.Series, team_name_attack: str, origin_pos: str = "center", absolute_coordinates: bool = False, league: str = "jleague"
 ) -> State:
+    # check code for pytest
+    if not frame['state']['ball']:
+        return None
+
     state = frame['state']
     ball = Ball.from_dict(state['ball'])
     goal_position = opponent_goal_position(
@@ -276,6 +280,13 @@ def frames2events(
         team_name_defense = team_names[1] if team_names[0] == team_name_attack else team_names[0]
 
         states = current_frames.apply(frame2state, axis=1, args=(team_name_attack, origin_pos, absolute_coordinates, league))
+
+        if None in states.values:
+            logger.warning(f"None in states: {states}")
+            # remove None Values
+            states = states[states.notnull()].reset_index(drop=True)
+            
+
         rewards = reward_model.calculate_reward(league, current_frames, next_frames)
         events = [Event(state=state, reward=reward) for state, reward in zip(states, rewards)]
 

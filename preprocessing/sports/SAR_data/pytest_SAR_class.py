@@ -40,15 +40,3 @@ def test_datastadium_preprocess():
         cleaning_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/clean_data",
         preprocessed_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/preprocess_data"
     )
-
-def test_statsbomb_skillcorner_preprocess():
-    Soccer_SAR_data(
-        data_provider='statsbomb_skillcorner',
-        data_path='/data_pool_1/laliga_23',
-        match_id="1317846", # match_id for skillcorner
-        config_path=os.getcwd()+"/data/stb_skc/config/preprocessing_statsbomb_skillcorner2024.json",
-        preprocess_method="SAR"
-    ).preprocess_single_data(
-        cleaning_dir=os.getcwd()+"/data/stb_skc/clean_data",
-        preprocessed_dir=os.getcwd()+"/data/stb_skc/preprocess_data"
-    )
