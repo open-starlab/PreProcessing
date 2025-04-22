@@ -1,0 +1,62 @@
+name: Package Init Tests
+
+on:
+  pull_request:
+    paths:
+      - 'preprocessing/*'
+      - 'preprocessing/data/dss/*'
+      - 'preprocessing/data/stb_skc/*'
+      - '.github/workflows/pytest_init.yml'
+
+# Add these permissions
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  test-init:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10.8', '3.9', '3.8']
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+        git clone https://github.com/open-starlab/PreProcessing.git
+        cd ./PreProcessing
+        pip install .
+        
+    - name: Run init tests
+      run: |
+        pytest preprocessing/pytest/pytest_init.py -v
+
+    - name: Report test results
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const output = `
+          #### Init Test Results 📝
+          - Status: ${process.env.TEST_OUTCOME}
+          - OS: ${{ runner.os }}
+          - Python: ${{ matrix.python-version }}
+          `;
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+      env:
+        TEST_OUTCOME: ${{ job.status }}
