@@ -4,8 +4,6 @@ on:
   pull_request:
     paths:
       - 'preprocessing/*'
-      - 'preprocessing/data/dss/*'
-      - 'preprocessing/data/stb_skc/*'
       - '.github/workflows/pytest_init.yml'
 
 # Add these permissions
@@ -19,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10.8', '3.9', '3.8']
+        python-version: ['3.10', '3.9', '3.8']
 
     steps:
     - uses: actions/checkout@v4
