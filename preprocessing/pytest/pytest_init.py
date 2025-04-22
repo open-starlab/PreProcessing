@@ -4,7 +4,7 @@ import os
 
 def test_imports_from_init():
     # Path to the __init__.py file
-    init_path = os.path.join(os.path.dirname(__file__), '__init__.py')
+    init_path = os.path.join(os.path.dirname(__file__), '..', '__init__.py')
 
     # Read __init__.py to get the `__all__` exports
     with open(init_path, 'r') as file:
