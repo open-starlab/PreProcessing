@@ -35,7 +35,7 @@ jobs:
         pip install pytest
         git clone https://github.com/open-starlab/PreProcessing.git
         cd ./PreProcessing
-        pip install -e .
+        pip install .
         
     - name: Run SAR class tests
       run: |
