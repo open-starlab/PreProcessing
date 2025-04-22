@@ -20,7 +20,7 @@ def test_imports_from_init():
 
     # Test each import dynamically
     for export in exports:
-        print(f"Testing import: {export}")  # Print what is being tested
+        print(f"\n--- Testing import: {export} ---")  # Print what is being tested
         
         # Try to import each symbol from the module
         try:
