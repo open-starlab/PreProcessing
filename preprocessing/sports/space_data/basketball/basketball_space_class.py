@@ -2,9 +2,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 from scipy.io import loadmat
-import numpy as np
 import pandas as pd
-import gc
 import gdown
 import zipfile
 import os
@@ -15,118 +13,119 @@ class Basketball_space_data:
         self.data_path = data_path
 
 
-    def preprocessing(self,nb_process_game):
+    def preprocessing(self, nb_process_game):
 
         if self.data_provider == "SportVU_NBA":
 
             # Read sequence info
             sequence_info = pd.read_csv(f"{self.data_path}/nba_datalength_updated.csv")
+            sequence_info = sequence_info.rename(columns={'eventid': 'attackid',
+                                                          'eventid_original': 'attackid_original'})
+
             event_data = loadmat(f'{self.data_path}/allevents_dataset.mat')['event'][0]
 
-            # Instead of keeping all data in memory, write to CSV immediately in chunks
-            with open(f'{self.data_path}/reshape_data.csv', 'w') as f_data:
-                # Get column names for the main dataframe
-                sample_columns = list(sequence_info.columns) + [
-                    'f_id', 'event_label', 'score', 
-                    'calc_fid', 'last_choice', 'calc_posx', 'calc_posy'
-                ] + [
-                    'x_att0','y_att0','x_att1','y_att1','x_att2','y_att2','x_att3','y_att3','x_att4','y_att4',
-                    'x_def0','y_def0','x_def1','y_def1','x_def2','y_def2','x_def3','y_def3','x_def4','y_def4',
-                    'x_ball','y_ball','z_ball',
-                    'vx_att0','vy_att0','vx_att1','vy_att1','vx_att2','vy_att2','vx_att3','vy_att3','vx_att4','vy_att4',
-                    'vx_def0','vy_def0','vx_def1','vy_def1','vx_def2','vy_def2','vx_def3','vy_def3','vx_def4','vy_def4',
-                    'vx_ball','vy_ball','vz_ball',
-                    'clock','shot_clock',
-                    'ID_att0','ID_att1','ID_att2','ID_att3','ID_att4','ID_def0','ID_def1','ID_def2','ID_def3','ID_def4',
-                    'jersey_att0','jersey_att1','jersey_att2','jersey_att3','jersey_att4',
-                    'jersey_def0','jersey_def1','jersey_def2','jersey_def3','jersey_def4',
-                    'ball_hold','ball_holder'
-                ]
-                
-                f_data.write(','.join(sample_columns) + '\n')
-                
-                # Process each game
-                if nb_process_game == 'ALL':
-                    length_reshape_game = sum(1 for f in os.scandir(f"{self.data_path}/modified_scoreDataset") if f.is_file())
-                
-                else:
-                    length_reshape_game = nb_process_game
+            # Get column names for the main dataframe
+            sample_columns = list(sequence_info.columns) + [
+                'f_id', 'event_label', 
+                'calc_fid', 'last_choice', 'calc_posx', 'calc_posy'
+            ] + [
+                'x_att0','y_att0','x_att1','y_att1','x_att2','y_att2','x_att3','y_att3','x_att4','y_att4',
+                'x_def0','y_def0','x_def1','y_def1','x_def2','y_def2','x_def3','y_def3','x_def4','y_def4',
+                'x_ball','y_ball','z_ball',
+                'vx_att0','vy_att0','vx_att1','vy_att1','vx_att2','vy_att2','vx_att3','vy_att3','vx_att4','vy_att4',
+                'vx_def0','vy_def0','vx_def1','vy_def1','vx_def2','vy_def2','vx_def3','vy_def3','vx_def4','vy_def4',
+                'vx_ball','vy_ball','vz_ball',
+                'clock','shot_clock',
+                'ID_att0','ID_att1','ID_att2','ID_att3','ID_att4','ID_def0','ID_def1','ID_def2','ID_def3','ID_def4',
+                'jersey_att0','jersey_att1','jersey_att2','jersey_att3','jersey_att4',
+                'jersey_def0','jersey_def1','jersey_def2','jersey_def3','jersey_def4',
+                'ball_hold','ball_holder'
+            ]
+            
+            # Process each game
+            if nb_process_game == 'ALL':
+                length_reshape_game = sum(1 for f in os.scandir(f"{self.data_path}/modified_scoreDataset") if f.is_file())
+            else:
+                length_reshape_game = nb_process_game
 
-                for game_id in tqdm(range(0, length_reshape_game)):
+            for game_id in tqdm(range(0, length_reshape_game)):
+                match_rows = []
+                game_str = str(game_id+1).zfill(3)
+                game_sequences = sequence_info[sequence_info['game'] == game_id+1]
+                nb_sequences = len(game_sequences)
+                tracking_data = loadmat(f"{self.data_path}/modified_scoreDataset/attackDataset_game{game_str}.mat")['data'][0]
+                
+                # Process each sequence in the game
+                for j in range(nb_sequences):
+                    # Get sequence info
+                    current_sequence = game_sequences.iloc[j].to_dict()
                     
-                    game_str = str(game_id+1).zfill(3)
-                    game_sequences = sequence_info[sequence_info['game'] == game_id+1]
-                    nb_sequences = len(game_sequences)
+                    # Get event data for this sequence
+                    event_df = pd.DataFrame(event_data[game_id][0][j])
                     
+                    # Check if event_df only has 6 columns mean incomplete data
+                    if event_df.shape[1] == 6:
+                        continue
                     
-                    tracking_data = loadmat(f"{self.data_path}/modified_scoreDataset/attackDataset_game{game_str}.mat")['data'][0]
+                    event_df.columns = ['f_id', 'event_label', 'score', 'ball_x', 'ball_y', 
+                                        'ball_holder_pid_idx', 'calc_fid', 'last_choice', 'calc_posx', 'calc_posy']
                     
-                        
-                    # Process each sequence in the game
-                    for j in range(nb_sequences):
-                        # Get sequence info
-                        current_sequence = game_sequences.iloc[j].to_dict()
-                        
-                        # Get event data for this sequence
-                        event_df = pd.DataFrame(event_data[game_id][0][j])
-                        
-                        # Check if event_df only has 6 columns
-                        if event_df.shape[1] == 6:
-                            # Add 4 more columns filled with NaN values
-                            for k in range(6, 10):
-                                event_df[k] = np.nan
-                        
-                        event_df.columns = ['f_id', 'event_label', 'score', 'ball_x', 'ball_y', 
-                                            'ball_holder_pid_idx', 'calc_fid', 'last_choice', 'calc_posx', 'calc_posy']
-                        
-                        # Delete unnecessary ball-related columns
-                        if 'ball_x' in event_df.columns and 'ball_y' in event_df.columns and 'ball_holder_pid_idx' in event_df.columns:
-                            event_df = event_df.drop(['ball_x', 'ball_y', 'ball_holder_pid_idx'], axis=1)
-                        
-                        # Get tracking data for this sequence
-                        tracking_df = pd.DataFrame(tracking_data[j])
-                        
-                        tracking_df.columns = [
-                            'x_att0','y_att0','x_att1','y_att1','x_att2','y_att2','x_att3','y_att3','x_att4','y_att4',
-                            'x_def0','y_def0','x_def1','y_def1','x_def2','y_def2','x_def3','y_def3','x_def4','y_def4',
-                            'x_ball','y_ball','z_ball',
-                            'vx_att0','vy_att0','vx_att1','vy_att1','vx_att2','vy_att2','vx_att3','vy_att3','vx_att4','vy_att4',
-                            'vx_def0','vy_def0','vx_def1','vy_def1','vx_def2','vy_def2','vx_def3','vy_def3','vx_def4','vy_def4',
-                            'vx_ball','vy_ball','vz_ball',
-                            'clock','shot_clock',
-                            'ID_att0','ID_att1','ID_att2','ID_att3','ID_att4','ID_def0','ID_def1','ID_def2','ID_def3','ID_def4',
-                            'jersey_att0','jersey_att1','jersey_att2','jersey_att3','jersey_att4',
-                            'jersey_def0','jersey_def1','jersey_def2','jersey_def3','jersey_def4',
-                            'ball_hold','ball_holder'
-                        ]
-                        
-                        # Check if the lengths match
-                        if len(event_df) == len(tracking_df):
-                            # Process row by row to avoid creating large DataFrames
-                            for idx in range(len(event_df)):
-                                row_data = []
-                                # Add sequence info
-                                for col in sequence_info.columns:
-                                    row_data.append(str(current_sequence[col]))
-                                # Add event data
-                                for col_idx in range(event_df.shape[1]):
-                                    row_data.append(str(event_df.iloc[idx, col_idx]))
-                                # Add tracking data
-                                for col_idx in range(tracking_df.shape[1]):
-                                    row_data.append(str(tracking_df.iloc[idx, col_idx]))
-                                
-                                # Write row to file
-                                f_data.write(','.join(row_data) + '\n')
-                                    
-                        # Clear memory
-                        del event_df, tracking_df
-                        gc.collect()
+                    col_to_int= ['f_id','event_label','score','calc_fid','last_choice']
+                    event_df[col_to_int] = event_df[col_to_int].astype(int)
+
+                    # Delete unnecessary ball-related columns
+                    if 'ball_x' in event_df.columns and 'ball_y' in event_df.columns and 'ball_holder_pid_idx' in event_df.columns and 'score' in event_df.columns:
+                        event_df = event_df.drop(['ball_x', 'ball_y', 'ball_holder_pid_idx','score'], axis=1)
+
+                    # Get tracking data for this sequence
+                    tracking_df = pd.DataFrame(tracking_data[j])
                     
-                    # Clear game-specific memory
-                    del tracking_data, game_sequences
-                    gc.collect()
+                    tracking_df.columns = [
+                        'x_att0','y_att0','x_att1','y_att1','x_att2','y_att2','x_att3','y_att3','x_att4','y_att4',
+                        'x_def0','y_def0','x_def1','y_def1','x_def2','y_def2','x_def3','y_def3','x_def4','y_def4',
+                        'x_ball','y_ball','z_ball',
+                        'vx_att0','vy_att0','vx_att1','vy_att1','vx_att2','vy_att2','vx_att3','vy_att3','vx_att4','vy_att4',
+                        'vx_def0','vy_def0','vx_def1','vy_def1','vx_def2','vy_def2','vx_def3','vy_def3','vx_def4','vy_def4',
+                        'vx_ball','vy_ball','vz_ball',
+                        'clock','shot_clock',
+                        'ID_att0','ID_att1','ID_att2','ID_att3','ID_att4','ID_def0','ID_def1','ID_def2','ID_def3','ID_def4',
+                        'jersey_att0','jersey_att1','jersey_att2','jersey_att3','jersey_att4',
+                        'jersey_def0','jersey_def1','jersey_def2','jersey_def3','jersey_def4',
+                        'ball_hold','ball_holder'
+                    ]
+
+                    # Conversion en int
+                    cols_to_int = [
+                        'ID_att0','ID_att1','ID_att2','ID_att3','ID_att4','ID_def0','ID_def1','ID_def2','ID_def3','ID_def4',
+                        'jersey_att0','jersey_att1','jersey_att2','jersey_att3','jersey_att4',
+                        'jersey_def0','jersey_def1','jersey_def2','jersey_def3','jersey_def4',
+                        'ball_hold','ball_holder'
+                    ]
+                    tracking_df[cols_to_int] = tracking_df[cols_to_int].astype(int)
                     
-            return pd.read_csv(f'{self.data_path}/reshape_data.csv')
+                    # Check if the lengths match
+                    if len(event_df) == len(tracking_df):
+                        for idx in range(len(event_df)):
+                            row_data = []
+                            # Add sequence info
+                            for col in sequence_info.columns:
+                                row_data.append(str(current_sequence[col]))
+                            # Add event data
+                            for col_idx in range(event_df.shape[1]):
+                                row_data.append(str(event_df.iloc[idx, col_idx]))
+                            # Add tracking data
+                            for col_idx in range(tracking_df.shape[1]):
+                                row_data.append(str(tracking_df.iloc[idx, col_idx]))
+                            match_rows.append(row_data)
+
+                # Crée un DataFrame pour ce match
+                match_df = pd.DataFrame(match_rows, columns=sample_columns)
+
+                # Nom du fichier pour ce match
+                match_filename = f"SportVU2015_2016_{game_id+1}.csv"
+                match_df.to_csv(os.path.join(self.data_path, match_filename), index=False)
+                
+        return
     
     def download_data(self):
         id_allevents_dataset = "1GNaEO4C5kxJuJV2YHw6KpNDbmsAMXPqr"
