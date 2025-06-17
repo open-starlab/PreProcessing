@@ -2,7 +2,7 @@
 [![Documentation Status](https://readthedocs.org/projects/openstarlab/badge/?version=latest)](https://openstarlab.readthedocs.io/en/latest/?badge=latest)
 [![dm](https://img.shields.io/pypi/dm/openstarlab-preprocessing)](https://pypi.org/project/openstarlab-preprocessing/)
 [![ArXiv](https://img.shields.io/badge/ArXiv-2502.02785-b31b1b?logo=arxiv)](https://arxiv.org/abs/2502.02785)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/yDrcywCs)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/PnH2MDDaCf)
 
 ## Introduction
 The OpenSTARLab PreProcessing package is a core component for the OpenSTARLab suite, providing essential data preprocessing functions. It is designed with minimal dependencies and aims to avoid those that are heavily version-dependent.
