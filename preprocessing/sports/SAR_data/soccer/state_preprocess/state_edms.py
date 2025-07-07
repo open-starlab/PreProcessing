@@ -3,8 +3,6 @@ from typing import List, Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-import torch
-from torch.distributions import Normal
 import matplotlib.path as mpath
 
 from ..constant import FIELD_LENGTH, FIELD_WIDTH, VERY_SLOW_THRESHOLD, MAX_REALISTIC_TIME
@@ -288,34 +286,34 @@ def truncated_normal_pdf(x, mean, std, a, b):
     Calculates the probability density function (PDF) of a truncated normal distribution.
 
     Args:
-        x (tensor): The input tensor.
+        x (array-like): The input values.
         mean (float): The mean of the underlying normal distribution.
         std (float): The standard deviation of the underlying normal distribution.
         a (float): The lower bound of the truncation range.
         b (float): The upper bound of the truncation range.
 
     Returns:
-        tensor: The PDF values of the truncated normal distribution for the given input tensor.
+        ndarray: The PDF values of the truncated normal distribution for the given input values.
     """
-    # Convert x, mean, std, a, b into tensors
-    x = torch.tensor(x)
-    mean = torch.tensor(mean)
-    std = torch.tensor(std)
-    a = torch.tensor(a)
-    b = torch.tensor(b)
+    # Convert inputs to numpy arrays
+    x = np.asarray(x)
+    mean = np.asarray(mean)
+    std = np.asarray(std)
+    a = np.asarray(a)
+    b = np.asarray(b)
 
     z_a = (a - mean) / std
     z_b = (b - mean) / std
     z_x = (x - mean) / std
 
     # Handle NaN values more gracefully
-    if torch.isnan(z_x).any():
+    if np.isnan(z_x).any():
         logger.warning("NaN values detected in truncated_normal_pdf calculation")
         # Replace NaN values with zeros
-        z_x = torch.nan_to_num(z_x, nan=0.0)
+        z_x = np.nan_to_num(z_x, nan=0.0)
 
-    cdf_diff = Normal(0, 1).cdf(z_b) - Normal(0, 1).cdf(z_a)
-    truncated_pdf = torch.exp(Normal(0, 1).log_prob(z_x)) / (std * cdf_diff)
+    cdf_diff = norm.cdf(z_b) - norm.cdf(z_a)
+    truncated_pdf = norm.pdf(z_x) / (std * cdf_diff)
 
     return truncated_pdf
 
