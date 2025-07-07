@@ -91,7 +91,7 @@ class Ball(BaseModel):
         )
 
 
-class State_PVF(BaseModel):
+class State_PVS(BaseModel):
     ball: Ball
     players: List[Player]
     attack_players: List[Player]
@@ -116,7 +116,7 @@ class State_PVF(BaseModel):
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "State_PVF":
+    def from_dict(cls, d: dict) -> "State_PVS":
         return cls(
             ball=Ball.from_dict(d["ball"]),
             players=[Player.from_dict(player) for player in d["players"]],
@@ -125,13 +125,13 @@ class State_PVF(BaseModel):
         )
 
 
-class Event_PVF(BaseModel):
-    state: State_PVF
+class Event_PVS(BaseModel):
+    state: State_PVS
     action: List[str] | None = None
     reward: float
 
     @model_validator(mode="after")
-    def set_and_validate_action(self) -> "Event_PVF":
+    def set_and_validate_action(self) -> "Event_PVS":
         if self.action is None:
             self.action = [player.action for player in self.state.players]
         for action in self.action:
@@ -147,15 +147,15 @@ class Event_PVF(BaseModel):
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Event_PVF":
+    def from_dict(cls, d: dict) -> "Event_PVS":
         return cls(
-            state=State_PVF.from_dict(d["state"]),
+            state=State_PVS.from_dict(d["state"]),
             action=d["action"],
             reward=d["reward"],
         )
 
 
-class Events_PVF(BaseModel):
+class Events_PVS(BaseModel):
     game_id: str
     half: str
     sequence_id: int
@@ -163,7 +163,7 @@ class Events_PVF(BaseModel):
     sequence_end_frame: str
     team_name_attack: str
     team_name_defense: str
-    events: List[Event_PVF]
+    events: List[Event_PVS]
 
     @field_validator("events")
     @classmethod
@@ -171,7 +171,7 @@ class Events_PVF(BaseModel):
         if not isinstance(v, list):
             raise TypeError("events must be a list")
         for event in v:
-            if not isinstance(event, Event_PVF):
+            if not isinstance(event, Event_PVS):
                 raise TypeError("events must be a list of Event")
         return v
 
@@ -188,7 +188,7 @@ class Events_PVF(BaseModel):
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Events_PVF":
+    def from_dict(cls, d: dict) -> "Events_PVS":
         return cls(
             game_id=d["game_id"],
             half=d["half"],
@@ -197,7 +197,7 @@ class Events_PVF(BaseModel):
             sequence_end_frame=d["sequence_end_frame"],
             team_name_attack=d["team_name_attack"],
             team_name_defense=d["team_name_defense"],
-            events=[Event_PVF.from_dict(event) for event in d["events"]],
+            events=[Event_PVS.from_dict(event) for event in d["events"]],
         )
 
 
@@ -367,7 +367,7 @@ class RawState(BaseModel):
         )
 
 
-class State_EDMF(BaseModel):
+class State_EDMS(BaseModel):
     relative_state: RelativeState
     absolute_state: AbsoluteState
     raw_state: RawState
@@ -383,7 +383,7 @@ class State_EDMF(BaseModel):
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "State_EDMF":
+    def from_dict(cls, d: dict) -> "State_EDMS":
         return cls(
             relative_state=RelativeState(**d["relative_state"]),
             absolute_state=AbsoluteState(**d["absolute_state"]),
@@ -391,13 +391,13 @@ class State_EDMF(BaseModel):
         )
 
 
-class Event_EDMF(BaseModel):
-    state: State_EDMF
+class Event_EDMS(BaseModel):
+    state: State_EDMS
     action: List[List[str]] | None = None
     reward: float
 
     @model_validator(mode="after")
-    def set_and_validate_action(self) -> "Event_EDMF":
+    def set_and_validate_action(self) -> "Event_EDMS":
         if self.action is None:
             self.action = [self.state.absolute_state.attack_action, self.state.absolute_state.defense_action]
         # for action in self.action:
@@ -413,15 +413,15 @@ class Event_EDMF(BaseModel):
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Event_EDMF":
+    def from_dict(cls, d: dict) -> "Event_EDMS":
         return cls(
-            state=State_EDMF.from_dict(d["state"]),
+            state=State_EDMS.from_dict(d["state"]),
             action=d["action"],
             reward=d["reward"],
         )
 
 
-class Events_EDMF(BaseModel):
+class Events_EDMS(BaseModel):
     game_id: str
     half: str
     sequence_id: int
@@ -429,7 +429,7 @@ class Events_EDMF(BaseModel):
     sequence_end_frame: str
     team_name_attack: str
     team_name_defense: str
-    events: List[Event_EDMF]
+    events: List[Event_EDMS]
 
     @field_validator("events")
     @classmethod
@@ -437,7 +437,7 @@ class Events_EDMF(BaseModel):
         if not isinstance(v, list):
             raise TypeError("events must be a list")
         for event in v:
-            if not isinstance(event, Event_EDMF):
+            if not isinstance(event, Event_EDMS):
                 raise TypeError("events must be a list of Event")
         return v
 
@@ -454,7 +454,7 @@ class Events_EDMF(BaseModel):
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Events_EDMF":
+    def from_dict(cls, d: dict) -> "Events_EDMS":
         return cls(
             game_id=d["game_id"],
             half=d["half"],
@@ -463,5 +463,5 @@ class Events_EDMF(BaseModel):
             sequence_end_frame=d["sequence_end_frame"],
             team_name_attack=d["team_name_attack"],
             team_name_defense=d["team_name_defense"],
-            events=[Event_EDMF.from_dict(event) for event in d["events"]],
+            events=[Event_EDMS.from_dict(event) for event in d["events"]],
         )
