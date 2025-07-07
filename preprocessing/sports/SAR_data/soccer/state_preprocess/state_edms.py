@@ -11,7 +11,6 @@ from ..dataclass import Ball, Player, Position, OnBall, OffBall, AbsoluteState
 from scipy.spatial import Voronoi
 from scipy.stats import norm
 from shapely.geometry import Polygon
-import cv2
 from functools import lru_cache
 
 logger = logging.getLogger(__name__)
@@ -265,7 +264,17 @@ def weighted_area(polygon, weight_image, team, team_name):
 
     # 多角形のマスクを作成
     mask = np.zeros(weight_image.shape, dtype=np.uint8)
-    cv2.fillPoly(mask, [vertices], 1)
+    
+    # Create a path object from the polygon vertices
+    path = mpath.Path(vertices)
+    
+    # Create a grid of coordinates for the mask
+    y_coords, x_coords = np.mgrid[0:weight_image.shape[0], 0:weight_image.shape[1]]
+    points = np.vstack([x_coords.ravel(), y_coords.ravel()]).T
+    
+    # Check which points are inside the polygon
+    mask_flat = path.contains_points(points)
+    mask = mask_flat.reshape(weight_image.shape).astype(np.uint8)
 
     # team が team_name と異なる場合、weight_image を x 軸方向に反転
     if team != team_name:

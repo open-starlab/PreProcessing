@@ -805,7 +805,7 @@ def format_tracking_data(
     home_team_name (str): Home team name
     away_team_name (str): Away team name
     player_dict (Dict[Tuple[str, str], Dict]): Dictionary containing player information
-    state_def (str, optional): State definition, either "PVF" or "EDMF". Defaults to "PVS".
+    state_def (str, optional): State definition, either "PVS" or "EDMS". Defaults to "PVS".
 
     Returns:
     pd.DataFrame: DataFrame with formatted tracking data
@@ -818,7 +818,7 @@ def format_tracking_data(
             "ball": None,
             "players": [],
         }
-        if state_def == "PVF":
+        if state_def == "PVS":
             for _, d in group.iterrows():
                 if d["jersey_number"] == 0:
                     frame_dict["ball"] = {"position": {"x": d["x"], "y": d["y"]}}
@@ -841,7 +841,7 @@ def format_tracking_data(
                             "position": {"x": d["x"], "y": d["y"]},
                         }
                     )
-        elif state_def == "EDMF":
+        elif state_def == "EDMS":
             for _, d in group.iterrows():
                 if d["jersey_number"] == 0:
                     frame_dict["ball"] = {"position": {"x": d["x"], "y": d["y"]}}
@@ -878,8 +878,14 @@ def format_tracking_data(
                             "position": {"x": d["x"], "y": d["y"]},
                         }
                     )
-        tracking_list.append(frame_dict)
+        # Skip frames with invalid ball data
+        if frame_dict["ball"] is None or frame_dict["ball"] == {}:
+            logger.warning(
+                f"Skipping frame with invalid ball data: half={frame_dict['half']}, time={frame_dict['time_from_half_start']}"
+            )
+            continue
 
+        tracking_list.append(frame_dict)
     return pd.DataFrame(tracking_list)
 
 
@@ -956,7 +962,7 @@ def calculate_speed(tracking_data: pd.DataFrame, sampling_rate: int = 10) -> pd.
                         "y": (next_data["ball"]["position"]["y"] - ball_pos["position"]["y"]) / time_delta,
                     }
                 except:
-                    logger.warning(f"ball is not in next_data")
+                    logger.warning("ball is not in next_data")
                     ball_pos["velocity"] = {"x": 0, "y": 0}
                 next_player2pos = __get_player2pos(next_data["players"])
                 for d in player_data:

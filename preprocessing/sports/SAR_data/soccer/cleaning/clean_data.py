@@ -86,7 +86,7 @@ def merge_tracking_and_event_data(
     Returns:
     List[Dict[str, Any]]: List of dictionaries containing the merged tracking and event data
     """
-    event_columns_PVF = [
+    event_columns_PVS = [
         "game_id",
         "frame_id",
         "half",
@@ -120,7 +120,7 @@ def merge_tracking_and_event_data(
         "players",
     ]
 
-    event_columns_EDMF_laliga = [
+    event_columns_EDMS_laliga = [
         "game_id",
         "frame_id",
         "half",
@@ -158,7 +158,7 @@ def merge_tracking_and_event_data(
         "players",
     ]
 
-    event_columns_EDMF_jleague = [
+    event_columns_EDMS_jleague = [
         "game_id",
         "frame_id",
         "half",
@@ -196,7 +196,7 @@ def merge_tracking_and_event_data(
         "players",
     ]
 
-    frame_df_columns_PVF = [
+    frame_df_columns_PVS = [
         "frame_id",
         "event_id",
         "team_id",
@@ -213,7 +213,7 @@ def merge_tracking_and_event_data(
         "is_dribble",
     ]
 
-    frame_df_columns_EDMF_laliga = [
+    frame_df_columns_EDMS_laliga = [
         "frame_id",
         "event_id",
         "team_id",
@@ -233,7 +233,7 @@ def merge_tracking_and_event_data(
         "is_clearance",
     ]
 
-    frame_df_columns_EDMF_jleague = [
+    frame_df_columns_EDMS_jleague = [
         "frame_id",
         "event_id",
         "team_id",
@@ -254,25 +254,25 @@ def merge_tracking_and_event_data(
         "is_through_pass",
     ]
 
-    if state_def == "PVF":
+    if state_def == "PVS":
         frame_df = pd.merge(tracking_data, event_data, on=["half", "time_from_half_start"], how="left")[
-            event_columns_PVF
+            event_columns_PVS
         ].reset_index(drop=True)
 
-        frame_df[frame_df_columns_PVF] = frame_df[frame_df_columns_PVF].fillna(-1).astype(int)
-    elif state_def == "EDMF":
+        frame_df[frame_df_columns_PVS] = frame_df[frame_df_columns_PVS].fillna(-1).astype(int)
+    elif state_def == "EDMS":
         if league == "jleague":
             frame_df = pd.merge(tracking_data, event_data, on=["half", "time_from_half_start"], how="left")[
-                event_columns_EDMF_jleague
+                event_columns_EDMS_jleague
             ].reset_index(drop=True)
 
-            frame_df[frame_df_columns_EDMF_jleague] = frame_df[frame_df_columns_EDMF_jleague].fillna(-1).astype(int)
+            frame_df[frame_df_columns_EDMS_jleague] = frame_df[frame_df_columns_EDMS_jleague].fillna(-1).astype(int)
         elif league == "laliga" or league == "soccernet":
             frame_df = pd.merge(tracking_data, event_data, on=["half", "time_from_half_start"], how="left")[
-                event_columns_EDMF_laliga
+                event_columns_EDMS_laliga
             ].reset_index(drop=True)
 
-            frame_df[frame_df_columns_EDMF_laliga] = frame_df[frame_df_columns_EDMF_laliga].fillna(-1).astype(int)
+            frame_df[frame_df_columns_EDMS_laliga] = frame_df[frame_df_columns_EDMS_laliga].fillna(-1).astype(int)
 
     frame_df["half"] = frame_df["half"].fillna(method="ffill").fillna(method="bfill")
     frame_df["state"] = frame_df.apply(lambda x: {"ball": x["ball"], "players": x["players"]}, axis=1)

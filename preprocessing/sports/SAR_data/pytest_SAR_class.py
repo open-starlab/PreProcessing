@@ -53,8 +53,15 @@ def test_datastadium_pvs_preprocess():
 
     Soccer_SAR_data(
         data_provider="datastadium",
-        state_def="pvs",
+        state_def="PVS",
         match_id=match_id_dss,
         config_path=config_path_dss,
         preprocess_method="SAR",
     ).preprocess_single_data(cleaning_dir=cleaning_dir, preprocessed_dir=preprocessed_dir)
+
+
+if __name__ == "__main__":
+    test_datastadium_pvs_load_data()
+    # test_statsbomb_skillcorner_pvs_load_data()
+    test_datastadium_pvs_preprocess()
+    print("All tests passed successfully.")

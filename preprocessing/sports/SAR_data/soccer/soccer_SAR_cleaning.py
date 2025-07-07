@@ -10,7 +10,6 @@ from preprocessing.sports.SAR_data.soccer.cleaning.clean_event_data import (
     get_changed_player_list,
     get_timestamp,
     preprocess_coordinates_in_event_data,
-    apply_event_name_mapping,
 )
 from preprocessing.sports.SAR_data.soccer.cleaning.clean_data import (
     clean_player_data,
@@ -71,9 +70,9 @@ def clean_single_data(data_path, match_id, config_path, league, state_def, save_
     event_data = preprocess_coordinates_in_event_data(event_data, config["origin_pos"], config["absolute_coordinates"], league)
 
     # apply event name mapping
-    event_mapping = config["event_mapping"]
-    if event_mapping and league == "jleague":
-        event_data = apply_event_name_mapping(event_data, event_mapping)
+    # event_mapping = config["event_name_mapping"]
+    # if event_mapping and league == "jleague":
+    #     event_data = apply_event_name_mapping(event_data, event_mapping)
 
     # player data
     player_data = safe_pd_read_csv(data_path / config["player_metadata_filename"])
@@ -151,6 +150,37 @@ def clean_single_data(data_path, match_id, config_path, league, state_def, save_
     tracking_data = calculate_speed(tracking_data, sampling_rate=config["target_sampling_rate"])
     tracking_data = calculate_acceleration(tracking_data, sampling_rate=config["target_sampling_rate"])
     merged_data = merge_tracking_and_event_data(tracking_data, event_data, state_def, league)
+
+    # Filter out frames with invalid ball data
+    initial_count = len(merged_data)
+    valid_frames = []
+
+    for frame in merged_data:
+        state = frame.get("state")
+        if state is None:
+            continue
+
+        ball_data = state.get("ball")
+        if ball_data is None or ball_data == {}:
+            logger.warning(
+                f"Skipping frame with empty ball data: game_id={frame.get('game_id')}, frame_id={frame.get('frame_id')}"
+            )
+            continue
+
+        # Check if ball data has required position field
+        if not isinstance(ball_data, dict) or "position" not in ball_data:
+            logger.warning(
+                f"Skipping frame with invalid ball structure: game_id={frame.get('game_id')}, frame_id={frame.get('frame_id')}"
+            )
+            continue
+
+        valid_frames.append(frame)
+
+    merged_data = valid_frames
+    filtered_count = len(merged_data)
+
+    if initial_count != filtered_count:
+        logger.info(f"Filtered out {initial_count - filtered_count} frames with invalid ball data")
 
     # save
     output_dir = save_dir / data_path.name
