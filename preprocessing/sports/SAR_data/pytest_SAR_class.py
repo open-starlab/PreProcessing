@@ -61,7 +61,7 @@ def test_datastadium_pvs_preprocess():
 
 
 if __name__ == "__main__":
-    test_datastadium_pvs_load_data()
+    # test_datastadium_pvs_load_data()
     # test_statsbomb_skillcorner_pvs_load_data()
-    test_datastadium_pvs_preprocess()
+    # test_datastadium_pvs_preprocess()
     print("All tests passed successfully.")
