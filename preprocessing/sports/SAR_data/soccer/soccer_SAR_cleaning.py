@@ -76,7 +76,7 @@ def clean_single_data(data_path, match_id, config_path, league, state_def, save_
 
     # player data
     player_data = safe_pd_read_csv(data_path / config["player_metadata_filename"])
-    player_data = check_and_rename_player_columns(player_data, config["player_columns_mapping"], state_def)
+    player_data = check_and_rename_player_columns(player_data, config["player_columns_mapping"], state_def, league)
     player_data = clean_player_data(player_data, state_def)
 
     condition = (player_data["team_id"] == 0) & (player_data["player_id"] == 0)

@@ -64,11 +64,14 @@ def check_and_rename_tracking_columns(tracking_data: pd.DataFrame, tracking_colu
 
 
 def check_and_rename_player_columns(
-    player_data: pd.DataFrame, player_columns_mapping: Dict[str, str], state: str
+    player_data: pd.DataFrame, player_columns_mapping: Dict[str, str], state: str, league: str
 ) -> pd.DataFrame:
     match_id_prefix = str(player_data["試合ID"].iloc[0])[:4]
     if match_id_prefix in ("2019", "2020"):
         player_data["試合ポジションID"] = -1
+
+    if league == "laliga" and state == "PVS":
+        player_columns_mapping.pop("height", None)
 
     state_columns_map = {
         "PVS": INPUT_PLAYER_COLUMNS_PVS,
