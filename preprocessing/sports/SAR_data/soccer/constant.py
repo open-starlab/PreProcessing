@@ -54,11 +54,12 @@ INPUT_EVENT_COLUMNS_LALIGA = [
     "is_shot",
     "is_pass",
     "is_dribble",
-    "is_pressure",
     "is_ball_recovery",
     "is_block",
     "is_interception",
     "is_clearance",
+    "is_cross",
+    "is_through_pass",
     "formation",
 ]
 
