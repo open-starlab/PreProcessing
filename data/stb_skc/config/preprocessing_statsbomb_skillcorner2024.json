@@ -48,7 +48,7 @@
     "event_columns_mapping": {
         "game_id": "試合ID",
         "frame_id": "フレーム番号",
-        "absolute_time": "絶対時間",
+        "absolute_time": "絶対時間秒数",
         "match_status_id": "試合状態ID",
         "home_away": "ホームアウェイF",
         "event_x": "位置座標X",
@@ -61,8 +61,8 @@
         "player_role_id": "ポジションID",
         "event_id": "アクションID",
         "event_name": "アクション名",
-        "ball_x": "ボールX",
-        "ball_y": "ボールY",
+        "ball_x": "ボールＸ",
+        "ball_y": "ボールＹ",
         "attack_history_num": "攻撃履歴No",
         "attack_direction": "攻撃方向",
         "series_num": "シリーズNo",
@@ -75,11 +75,12 @@
         "is_shot": "F_シュート",
         "is_pass": "F_パス",
         "is_dribble": "F_ドリブル",
-        "is_pressure": "F_プレッシャー",
         "is_ball_recovery": "F_ボールリカバリー",
         "is_block": "F_ブロック",
         "is_interception": "F_インターセプト",
         "is_clearance": "F_クリア",
+        "is_cross": "F_クロス",
+        "is_through_pass": "F_スルーパス",
         "formation": "フォーメーション"
     },
     "tracking_columns_mapping": {

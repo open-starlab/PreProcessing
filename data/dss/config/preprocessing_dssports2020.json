@@ -112,6 +112,16 @@
     "reward_model": {
         "type": "simple_epv"
     },
+    "event_name_mapping": {
+        "goalkeeper_actions": {
+            "target_name": "Goal Keeper",
+            "source_names": ["キャッチ", "GK", "ハンドクリア", "ブロック"]
+        },
+        "pass_actions": {
+            "target_name": "パス",
+            "source_names": ["フィード", "ホームパス", "アウェイパス"]
+        }
+    },
     "needs_columns": [
         "id",
         "dribble_outcome",
