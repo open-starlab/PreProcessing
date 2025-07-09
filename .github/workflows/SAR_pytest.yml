@@ -4,11 +4,12 @@ on:
   pull_request:
     paths:
       - 'preprocessing/sports/SAR_data/*'
+      - 'preprocessing/pytest/test_preprocessing_qmix.py'
+      - 'preprocessing/sports/robocup/*'
       - 'data/dss/*'
       - 'data/stb_skc/*'
       - '.github/workflows/SAR_pytest.yml'
 
-# Add these permissions
 permissions:
   contents: read
   pull-requests: write
@@ -23,12 +24,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -36,10 +37,14 @@ jobs:
         git clone https://github.com/open-starlab/PreProcessing.git
         cd ./PreProcessing
         pip install .
-        
+
     - name: Run SAR class tests
       run: |
         pytest preprocessing/sports/SAR_data/pytest_SAR_class.py -v
+
+    - name: Run QMix RoboCup2D preprocessing test
+      run: |
+        pytest preprocessing/pytest/test_preprocessing_qmix.py -v
 
     - name: Report test results
       if: always()

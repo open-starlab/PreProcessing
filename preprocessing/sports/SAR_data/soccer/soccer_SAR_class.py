@@ -18,12 +18,33 @@ import pandas as pd
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import pdb
-
+from .qmix_SAR_cleaning import clean_robocup_data # type: ignore
+from .qmix_SAR_processing import process_frame_data # type: ignore
+from .qmix_SAR_state import generate_qmix_state # type: ignore
 from . import soccer_load_data
 from . import soccer_SAR_processing
 from . import soccer_SAR_cleaning
 from . import soccer_SAR_state
+  
+class RoboCup2D_QMix_Processor:
+    """A class to process RoboCup 2D simulation data for QMix-compatible state generation."""
+    def __init__(self, data_path, match_id, config_path):
+        self.data_path = data_path
+        self.match_id = match_id
+        self.config_path = config_path
+        self.raw_df = None
+        self.episodes = []
 
+    def load_data(self):
+        self.raw_df = clean_robocup_data(self.data_path, self.match_id)
+        self.episodes = process_frame_data(self.raw_df)
+
+    def get_episodes(self):
+        return self.episodes
+
+    def get_state_at_frame(self, frame_id):
+        return generate_qmix_state(self.raw_df, frame_id)
+    
 #create a class to wrap the data source
 class Soccer_SAR_data:
     def __init__(self,data_provider,data_path=None,match_id=None,config_path=None,
@@ -77,7 +98,7 @@ class Soccer_SAR_data:
             )
         else:
             raise ValueError('Data provider not supported or not found')
-
+        
     
     def load_data(self):
         print(f'Loading data from {self.data_provider}')

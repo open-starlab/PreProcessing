@@ -12,6 +12,9 @@ from multiprocessing import Pool
 import json
 import unicodedata
 from tqdm import tqdm
+import numpy as np
+from collections import defaultdict
+from .qmix_SAR_state import compute_observations, assign_roles_softmax # type: ignore
 
 # if __name__ == '__main__':
 from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json
@@ -766,3 +769,44 @@ def process_single_file(data_df, player_df, tracking_path, metadata, config, mat
 
     print(f"Processing {match_id} finished")
 
+def process_frame_data(df):
+    grouped = df.groupby("frame_id")
+    episodes = []
+    episode = {"obs": [], "state": [], "actions": [], "roles": [], "reward": [], "terminated": []}
+    last_positions = {}
+
+    for frame_id, frame_df in grouped:
+        agents, ball = extract_agent_features(frame_df, last_positions)
+        obs, roles = compute_observations(agents, ball)
+        state = np.concatenate(obs)
+
+        episode["obs"].append(obs)
+        episode["state"].append(state)
+        episode["actions"].append([0] * len(agents))  # Placeholder
+        episode["roles"].append(roles)
+        episode["reward"].append(0.0)
+        episode["terminated"].append(False)
+
+    episode["terminated"][-1] = True
+    episodes.append(episode)
+    return episodes
+
+def extract_agent_features(frame_df, last_positions):
+    agents = {}
+    ball = np.array([frame_df.iloc[0]["ball_x"], frame_df.iloc[0]["ball_y"]])
+
+    for _, row in frame_df.iterrows():
+        pid = row["player_id"]
+        pos = np.array([row["event_x"], row["event_y"]])
+        velocity = pos - last_positions.get(pid, pos)
+        last_positions[pid] = pos
+
+        agents[pid] = {
+            "id": pid,
+            "pos": pos,
+            "velocity": velocity,
+            "stamina": 1.0,      # Placeholder
+            "last_action": 0     # Placeholder
+        }
+
+    return agents, ball

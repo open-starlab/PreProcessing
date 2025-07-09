@@ -51,6 +51,14 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
+def clean_robocup_data(data_path, match_id, config_path, save_dir):
+    file_path = f"{data_path}/{match_id}.csv"
+    df = pd.read_csv(file_path)
+    df = df.sort_values(by=['frame_id', 'player_id'])
+    df = df.dropna(subset=["event_x","event_y","ball_x","ball_y"])
+    df = df.reset_index(drop=True)
+    return df
+
 def clean_single_data(data_path, match_id, config_path, league, save_dir):
     data_path = Path(data_path + match_id)
     save_dir = Path(save_dir)
