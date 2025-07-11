@@ -1,11 +1,12 @@
 class SAR_data:
     # Supported providers and state definitions
     sports = ["statsbomb_skillcorner", "datastadium", "robocup_2d"]
-    state_list = ["PVS", "EDMS"]
+    state_list = ["PVS", "EDMS","PVSS"] #"PVSS" add as the name of the observation state & Ask Fuji Sensi
+
 
     def __new__(cls, data_provider, state_def=None, *args, **kwargs):
         # Handle RoboCup 2D QMix preprocessing (state_def not required)
-        if data_provider == 'robocup_2d':
+        if data_provider == 'robocup_2d' and state_def=="PVSS":
             from .soccer.soccer_SAR_class import RoboCup2D_QMix_Processor  
             return RoboCup2D_QMix_Processor(*args, **kwargs)
 
