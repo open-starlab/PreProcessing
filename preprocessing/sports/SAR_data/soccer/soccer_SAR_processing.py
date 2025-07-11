@@ -14,10 +14,10 @@ import unicodedata
 from tqdm import tqdm
 import numpy as np
 from collections import defaultdict
-from .qmix_SAR_state import compute_observations, assign_roles_softmax # type: ignore
 
 # if __name__ == '__main__':
 from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json
+
 # else:
 #     from .utils.file_utils import load_json
 
@@ -770,6 +770,7 @@ def process_single_file(data_df, player_df, tracking_path, metadata, config, mat
     print(f"Processing {match_id} finished")
 
 def process_frame_data(df):
+    from preprocessing.sports.SAR_data.soccer.soccer_SAR_state import compute_observations
     grouped = df.groupby("frame_id")
     episodes = []
     episode = {"obs": [], "state": [], "actions": [], "roles": [], "reward": [], "terminated": []}
