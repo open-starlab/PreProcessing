@@ -6,18 +6,21 @@ from functools import partial
 from multiprocessing import Pool
 from pathlib import Path
 import copy
+import os
+import pickle
 import pandas as pd
+import json
 import numpy as np
 from tqdm import tqdm
 from scipy.special import softmax
-from preprocessing.sports.SAR_data.soccer.soccer_SAR_processing import extract_agent_features
 from preprocessing.sports.SAR_data.soccer.state_preprocess.preprocess_frame import frames2events
 from preprocessing.sports.SAR_data.soccer.state_preprocess.reward_model import RewardModelBase
-from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json, save_as_jsonlines, save_formatted_json
+from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json, save_as_jsonlines
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+# Existing single-game preprocessing for soccer SAR
 
 def preprocess_single_game(game_dir: str, league: str, save_dir: str, config: dict, match_id: str) -> None:
     save_dir = Path(save_dir)
@@ -41,16 +44,21 @@ def preprocess_single_game(game_dir: str, league: str, save_dir: str, config: di
     )
     logger.info(f"preprocessing finished... game_id: {game_dir.name} ({time.time() - start:.2f} sec)")
 
+# QMix-related functions
+
+ROLES = ["striker", "midfielder", "defender", "goalkeeper"]
+
 def assign_roles_softmax(agents, ball_pos):
     dists = np.array([np.linalg.norm(agent["pos"] - ball_pos) for agent in agents.values()])
     logits = -dists
     probs = softmax(logits)
     role_ids = {}
 
-    sorted_roles = np.argsort(probs)[::-1]
-    for i, (pid, _) in zip(sorted_roles, agents.items()):
-        role_ids[pid] = i % len(ROLES) # type: ignore
+    sorted_idxs = np.argsort(probs)[::-1]
+    for idx, (pid, _) in zip(sorted_idxs, agents.items()):
+        role_ids[pid] = idx % len(ROLES)
     return role_ids
+
 
 def compute_observations(agents, ball_pos):
     obs = []
@@ -71,9 +79,43 @@ def compute_observations(agents, ball_pos):
         obs.append(obs_vec)
     return obs, roles
 
-def generate_qmix_state(df, frame_id):
+
+def generate_qmix_state(df: pd.DataFrame, frame_id: int) -> np.ndarray:
+    from preprocessing.sports.SAR_data.soccer.soccer_SAR_processing import extract_agent_features
     frame_df = df[df["frame_id"] == frame_id]
-    last_positions = {}  # Could load from cache if needed
+    last_positions = {}
     agents, ball = extract_agent_features(frame_df, last_positions)
     obs, _ = compute_observations(agents, ball)
     return np.concatenate(obs)
+
+
+def process_frame_data(df: pd.DataFrame) -> list:
+    """
+    Convert cleaned RoboCup2D dataframe into a list of QMix-compatible episodes.
+    Each episode is a dict with keys: obs, state, actions, roles, reward, terminated.
+    """
+    from preprocessing.sports.SAR_data.soccer.state_preprocess.preprocess_frame import extract_agent_features, compute_observations
+    episodes = []
+    # Group by frame to build time-series
+    grouped = df.groupby('frame_id')
+    episode = {"obs": [], "state": [], "actions": [], "roles": [], "reward": [], "terminated": []}
+    last_positions = {}
+
+    for frame_id, frame_df in grouped:
+        # extract agent features (pos, velocity, stamina, last_action)
+        agents, ball = extract_agent_features(frame_df, last_positions)
+        obs, roles = compute_observations(agents, ball)
+        state = np.concatenate(obs)
+
+        episode["obs"].append(obs)
+        episode["state"].append(state)
+        episode["actions"].append([0] * len(agents))  # placeholder actions
+        episode["roles"].append(roles)
+        episode["reward"].append(0.0)  # placeholder rewards
+        episode["terminated"].append(False)
+
+    # Mark last timestep as terminated
+    if episode["terminated"]:
+        episode["terminated"][-1] = True
+    episodes.append(episode)
+    return episodes
