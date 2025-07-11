@@ -394,3 +394,20 @@ def calculate_velocity_and_max_timestamp(data):
 
     return max_velocity_timestamp, max_velocity
 
+import os
+import pandas as pd
+
+def clean_robocup_data(data_path: str, match_id: str, config_path: str = None, save_dir: str = None) -> pd.DataFrame:
+    """
+    Clean raw RoboCup2D CSV data for QMix preprocessing.
+    """
+    file_path = os.path.join(data_path, match_id) if match_id.endswith(".csv") else os.path.join(data_path, f"{match_id}.csv")
+
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"RoboCup2D CSV not found: {file_path}")
+
+    df = pd.read_csv(file_path)
+    df = df.sort_values(by=['frame_id', 'player_id'])
+    df = df.dropna(subset=["event_x", "event_y", "ball_x", "ball_y"])  
+    df = df.reset_index(drop=True)
+    return df
