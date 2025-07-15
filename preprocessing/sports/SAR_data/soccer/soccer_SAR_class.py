@@ -116,7 +116,7 @@ class Soccer_SAR_data:
     def load_data(self):
         # ----- QMix: RoboCup2D preprocessing -----
         if self.data_provider == 'robocup_2d':
-            from .soccer_SAR_cleaning import clean_robocup_data
+            from .soccer_load_data import clean_robocup_data
             from .soccer_SAR_processing import process_frame_data
 
             print(f'Loading RoboCup2D data for QMix from {self.data_path}/{self.match_id}.csv')
