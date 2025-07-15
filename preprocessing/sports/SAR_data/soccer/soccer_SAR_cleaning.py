@@ -15,7 +15,7 @@ from preprocessing.sports.SAR_data.soccer.constant import HOME_AWAY_MAP
 from preprocessing.sports.SAR_data.soccer.cleaning.clean_event_data import (
     clean_event_data,
     get_changed_player_list,
-    get_timestamp,
+    get_timestamp,  
     preprocess_coordinates_in_event_data,
 )
 from preprocessing.sports.SAR_data.soccer.cleaning.clean_data import (
@@ -44,20 +44,11 @@ from preprocessing.sports.SAR_data.soccer.cleaning.map_column_names import (
     check_and_rename_tracking_columns,
 )
 from preprocessing.sports.SAR_data.soccer.env import DATA_DIR
-from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines, save_formatted_json
+from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json, safe_pd_read_csv, save_as_jsonlines
 
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-
-def clean_robocup_data(data_path, match_id, config_path, save_dir):
-    file_path = f"{data_path}/{match_id}.csv"
-    df = pd.read_csv(file_path)
-    df = df.sort_values(by=['frame_id', 'player_id'])
-    df = df.dropna(subset=["event_x","event_y","ball_x","ball_y"])
-    df = df.reset_index(drop=True)
-    return df
 
 def clean_single_data(data_path, match_id, config_path, league, save_dir):
     data_path = Path(data_path + match_id)
