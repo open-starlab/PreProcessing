@@ -12,7 +12,6 @@ from multiprocessing import Pool
 import json
 import unicodedata
 from tqdm import tqdm
-import numpy as np
 from collections import defaultdict
 
 # if __name__ == '__main__':
