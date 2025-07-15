@@ -1,19 +1,12 @@
-#Target data provider [Statsbomb_Skillcorner, Datastadium]
-
+#Target data provider [Statsbomb_Skillcorner, Datastadium,Robocup_2D]
 import json
 import pandas as pd
 import numpy as np
 from datetime import datetime
 import os
 import ast
-import pdb
-
+from .soccer_SAR_cleaning import clean_single_data
 from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json
-# if __name__ == '__main__':
-#     from utils.file_utils import load_json
-# else:
-#     from .utils.file_utils import load_json
-
 
 def load_single_statsbomb_skillcorner(data_path: str, match_id_dict: str, skillcorner_match_id: str) -> pd.DataFrame:
     """
@@ -252,7 +245,7 @@ def load_single_statsbomb_skillcorner(data_path: str, match_id_dict: str, skillc
             elif pass_height:
                 event_type_2=pass_height
             outcome = event.get('pass_outcome')
-        elif event_type=="Shot":
+        elif event_type=="Shot": 
             outcome = event.get('shot_outcome')
         elif event_type == "Dribble":
             outcome = event.get('dribble_outcome')
@@ -394,20 +387,48 @@ def calculate_velocity_and_max_timestamp(data):
 
     return max_velocity_timestamp, max_velocity
 
-import os
-import pandas as pd
 
-def clean_robocup_data(data_path: str, match_id: str, config_path: str = None, save_dir: str = None) -> pd.DataFrame:
+def clean_robocup_data(
+    data_path: str,
+    match_id: str,
+    config_path: str = None,
+    save_dir: str = None
+) -> pd.DataFrame:
     """
     Clean raw RoboCup2D CSV data for QMix preprocessing.
     """
-    file_path = os.path.join(data_path, match_id) if match_id.endswith(".csv") else os.path.join(data_path, f"{match_id}.csv")
-
+    # build filepath (accepting match_id with or without .csv)
+    file_path = (
+        os.path.join(data_path, match_id)
+        if match_id.endswith(".csv")
+        else os.path.join(data_path, f"{match_id}.csv")
+    )
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"RoboCup2D CSV not found: {file_path}")
 
+    # load
     df = pd.read_csv(file_path)
+
+    # rename columns in your CSV to the names that our pipeline expects
+    df = df.rename(columns={
+        'cycle':      'frame_id',    # example: actual CSV uses 'cycle'
+        'player':     'player_id',   # actual CSV uses 'player'
+        'x':          'event_x',     # event x-coordinate
+        'y':          'event_y',     # event y-coordinate
+        # (leave ball_x/ball_y as-is if they already match
+    })
+
+    # now validate presence of required columns
+    required_cols = ['frame_id', 'player_id', 'event_x', 'event_y', 'ball_x', 'ball_y']
+    missing = [c for c in required_cols if c not in df.columns]
+    if missing:
+        raise KeyError(
+            f"Missing required columns in CSV: {missing}\n"
+            f"Found: {list(df.columns)}"
+        )
+
+    # standard cleaning
     df = df.sort_values(by=['frame_id', 'player_id'])
-    df = df.dropna(subset=["event_x", "event_y", "ball_x", "ball_y"])  
+    df = df.dropna(subset=["event_x", "event_y", "ball_x", "ball_y"])
     df = df.reset_index(drop=True)
     return df
