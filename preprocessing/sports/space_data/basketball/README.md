@@ -6,6 +6,26 @@
 This script allows you to download and preprocess [SportVU NBA](https://drive.google.com/drive/folders/1mJaYJ7xJ95XoBD0LJXhIInSNp_Y_c-pq) tracking data (modification of [BasketballData](https://github.com/rajshah4/BasketballData)) using the `Space_data` classes.
 
 ---
+## Dataframe information
+![Dataframe strucuture](dataframe_prepro.png)
+
+Event labels ID:
+```python
+EVENT_LABELS = {
+    'nonevent': 0,
+    'pass': 1,
+    'catch and pass': 2,
+    'handoff catch and pass': 3,
+    'catch': 4,
+    'handoff pass': 5,
+    'handoff catch and handoff pass': 6,
+    'catch and handoff pass': 7,
+    'handoff catch': 8,
+    '2 point shot': 9,
+    '3 point shot': 10,
+    'turnover': 11
+}
+```
 
 ## Example Usage
 
