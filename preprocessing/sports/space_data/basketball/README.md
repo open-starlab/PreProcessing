@@ -7,7 +7,7 @@ This script allows you to download and preprocess [SportVU NBA](https://drive.go
 
 ---
 ## Dataframe information
-![Dataframe strucuture](dataframe_prepro.png)
+![Dataframe strucuture](dataframe_prepro.jpg)
 
 Event labels ID:
 ```python
