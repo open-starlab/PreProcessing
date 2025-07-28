@@ -6,9 +6,11 @@ import time
 import json
 import unicodedata
 from tqdm import tqdm
+from collections import defaultdict
 
 # if __name__ == '__main__':
 from preprocessing.sports.SAR_data.soccer.utils.file_utils import load_json
+
 # else:
 #     from .utils.file_utils import load_json
 
@@ -801,3 +803,59 @@ def process_single_file(data_df, player_df, tracking_path, metadata, config, mat
     ProcessEventData(data_df, player_df, metadata, config, save_dir).statsbomb_to_datastadium()
 
     print(f"Processing {match_id} finished")
+import numpy as np
+
+def process_frame_data(df: pd.DataFrame) -> list:
+    """
+    Build QMix episodes from a cleaned RoboCup2D DataFrame.
+    """
+    from preprocessing.sports.SAR_data.soccer.soccer_SAR_state import compute_observations
+
+    episodes = []
+    last_positions = {}
+    episode = {
+        "obs": [], "state": [], "actions": [], "roles": [], "reward": [], "terminated": []
+    }
+
+    for frame_id, frame_df in df.groupby("frame_id"):
+        agents, ball = extract_agent_features(frame_df, last_positions)
+        obs, roles = compute_observations(agents, ball)
+        state = np.concatenate(obs)
+
+        episode["obs"].append(obs)
+        episode["state"].append(state)
+        episode["actions"].append([0] * len(agents))  # Placeholder
+        episode["roles"].append(roles)
+        episode["reward"].append(0.0)
+        episode["terminated"].append(False)
+
+    # Mark last step as terminal
+    episode["terminated"][-1] = True
+    episodes.append(episode)
+    return episodes
+
+
+def extract_agent_features(frame_df: pd.DataFrame, last_positions: dict) -> tuple:
+    """
+    From a per‐frame DataFrame, extract agent positions, velocities, and ball position.
+    """
+    agents = {}
+    # ball_x/ball_y are columns in the cleaned RoboCup2D DF
+    ball = np.array([frame_df.iloc[0]["ball_x"], frame_df.iloc[0]["ball_y"]])
+
+    for _, row in frame_df.iterrows():
+        pid = row["player_id"]
+        pos = np.array([row["event_x"], row["event_y"]])
+        prev = last_positions.get(pid, pos)
+        velocity = pos - prev
+        last_positions[pid] = pos
+
+        agents[pid] = {
+            "id": pid,
+            "pos": pos,
+            "velocity": velocity,
+            "stamina": 1.0,      # Placeholder
+            "last_action": 0     # Placeholder
+        }
+
+    return agents, ball
