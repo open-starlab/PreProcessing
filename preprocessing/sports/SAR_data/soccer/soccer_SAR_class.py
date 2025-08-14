@@ -23,7 +23,6 @@ from . import soccer_SAR_cleaning
 from . import soccer_SAR_state
 
 
-# create a class to wrap the data source
 class Soccer_SAR_data:
     def __init__(
         self,
@@ -87,14 +86,15 @@ class Soccer_SAR_data:
 
     def load_data(self):
         print(f"Loading data from {self.data_provider}")
-        # check if the event path is a single file or a directory
+        # check if processing single file or multiple files
         if (
             (self.data_provider == "datastadium" and self.match_id is not None)
             or (self.data_provider == "statsbomb" and self.match_id is None and os.path.isfile(self.data_path))
             or (self.data_provider == "statsbomb_skillcorner" and self.match_id is not None)
         ):
+            # Load single file - call load_data_single_file
             self.load_data_single_file()
-        # load data from multiple files
+        # load data from multiple files with parallel processing
         elif (
             (self.data_path is not None and os.path.isdir(self.data_path))
             or self.data_provider == "statsbomb"
@@ -102,11 +102,22 @@ class Soccer_SAR_data:
         ):
             # statsbomb_skillcorner
             if self.data_provider == "statsbomb_skillcorner":
-                # import pdb; pdb.set_trace()
                 match_id_list = [d[:7] for d in os.listdir(self.skillcorner_data_dir)]
                 with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-                    # Submit tasks to the executor
-                    futures = [executor.submit(self.load_data_single_file, match_id) for match_id in match_id_list]
+                    futures = []
+                    for match_id in match_id_list:
+                        # Create temporary instance for each match
+                        temp_instance = Soccer_SAR_data(
+                            data_provider=self.data_provider,
+                            state_def=self.state_def,
+                            data_path=self.data_path,
+                            match_id=match_id,
+                            config_path=self.config_path,
+                            statsbomb_skillcorner_match_id=self.statsbomb_skillcorner_match_id,
+                            max_workers=1,  # Set to 1 to avoid nested parallelization
+                            preprocess_method=self.preprocess_method,
+                        )
+                        futures.append(executor.submit(temp_instance.load_data_single_file))
                     # Collect results as they are completed
                     for future in tqdm(as_completed(futures), total=len(futures)):
                         future.result()
@@ -114,11 +125,22 @@ class Soccer_SAR_data:
             elif self.data_provider == "datastadium":
                 folder_name_list = ["Data_20200508/", "Data_20210127/", "Data_20210208/", "Data_20220308/"]
                 with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                    futures = []
                     for folder_name in folder_name_list:
                         data_path = os.path.join(self.data_path, folder_name)
-                        self.data_path = data_path
                         match_id_list = [d[:10] for d in os.listdir(data_path)]
-                        futures = [executor.submit(self.load_data_single_file, match_id) for match_id in match_id_list]
+                        for match_id in match_id_list:
+                            # Create temporary instance for each match
+                            temp_instance = Soccer_SAR_data(
+                                data_provider=self.data_provider,
+                                state_def=self.state_def,
+                                data_path=data_path,
+                                match_id=match_id,
+                                config_path=self.config_path,
+                                max_workers=1,  # Set to 1 to avoid nested parallelization
+                                preprocess_method=self.preprocess_method,
+                            )
+                            futures.append(executor.submit(temp_instance.load_data_single_file))
                     # Collect results as they are completed
                     for future in tqdm(as_completed(futures), total=len(futures)):
                         future.result()
@@ -126,30 +148,26 @@ class Soccer_SAR_data:
             raise ValueError("Event path is not a valid file or directory")
         print(f"Loaded data from {self.data_provider}")
 
-    def load_match_statsbomb_skillcorner(
-        self,
-        i,
-        match_id_df,
-        statsbomb_skillcorner_event_path,
-        statsbomb_skillcorner_tracking_path,
-        statsbomb_skillcorner_match_path,
-    ):
-        statsbomb_match_id = match_id_df.loc[i, "match_id_statsbomb"]
-        skillcorner_match_id = match_id_df.loc[i, "match_id_skillcorner"]
-        try:
-            statsbomb_skillcorner_df = soccer_load_data.load_statsbomb_skillcorner(
-                statsbomb_skillcorner_event_path,
-                statsbomb_skillcorner_tracking_path,
-                statsbomb_skillcorner_match_path,
-                statsbomb_match_id,
-                skillcorner_match_id,
-            )
-        except Exception as e:
-            print(f"Error loading match {statsbomb_match_id} from StatsBomb SkillCorner: {e}")
-            statsbomb_skillcorner_df = None
-        return statsbomb_skillcorner_df
+    def preprocess_single_data(self, cleaning_dir=None, preprocessed_dir=None, skip_load_data=False):
+        # Load single data file unless called from preprocess_data (which already loads data)
+        if not skip_load_data:
+            print("Starting single data preprocessing...")
+            self.load_data_single_file()
 
-    def preprocess_single_data(self, cleaning_dir, preprocessed_dir):
+        # Set default directories if not provided
+        if cleaning_dir is None:
+            if self.data_provider == "datastadium":
+                cleaning_dir = os.getcwd() + "/data/dss/clean_data"
+            elif self.data_provider == "statsbomb_skillcorner":
+                cleaning_dir = os.getcwd() + "/data/stb_skc/clean_data"
+
+        if preprocessed_dir is None:
+            if self.data_provider == "datastadium":
+                preprocessed_dir = os.getcwd() + "/data/dss/preprocess_data"
+            elif self.data_provider == "statsbomb_skillcorner":
+                preprocessed_dir = os.getcwd() + "/data/stb_skc/preprocess_data"
+
+        # Preprocess the loaded data
         if self.preprocess_method == "SAR":
             if self.data_provider == "datastadium":
                 soccer_SAR_state.preprocess_single_game(
@@ -174,50 +192,97 @@ class Soccer_SAR_data:
         else:
             raise ValueError(f"Preprocessing method not supported for {self.preprocess_method}")
 
-    def preprocess_data(self, cleaning_dir, preprocessed_dir):
-        if self.preprocess_method == "SAR":
-            if self.data_provider == "datastadium":
-                with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-                    futures = []
-                    match_id_list = [d[:10] for d in os.listdir(cleaning_dir)]
-                    for match_id in match_id_list:
-                        futures.append(
-                            executor.submit(
-                                soccer_SAR_state.preprocess_single_game,
-                                cleaning_dir,
-                                self.state_def,
-                                "jleague",
-                                preprocessed_dir,
-                                self.config_path,
-                                match_id,
-                            )
-                        )
-                    # Collect results as they are completed
-                    for future in tqdm(as_completed(futures), total=len(futures)):
-                        future.result()
+        if not skip_load_data:
+            print("Single data preprocessing completed successfully!")
 
+    def preprocess_data(self, cleaning_dir=None, preprocessed_dir=None):
+        # First, load the data
+        print("Starting data preprocessing...")
+        self.load_data()
+
+        # Set default directories if not provided
+        if cleaning_dir is None:
+            if self.data_provider == "datastadium":
+                cleaning_dir = os.getcwd() + "/data/dss/clean_data"
             elif self.data_provider == "statsbomb_skillcorner":
-                match_id_list = [d[:7] for d in os.listdir(cleaning_dir)]
-                with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-                    futures = [
-                        executor.submit(
-                            soccer_SAR_state.preprocess_single_game,
-                            cleaning_dir,
-                            self.state_def,
-                            "laliga",
-                            preprocessed_dir,
-                            self.config_path,
-                            match_id,
-                        )
-                        for match_id in match_id_list
-                    ]
-                    # Collect results as they are completed
-                    for future in tqdm(as_completed(futures), total=len(futures)):
-                        future.result()
-            else:
-                raise ValueError(f"Preprocessing method not supported for {self.data_provider}")
+                cleaning_dir = os.getcwd() + "/data/stb_skc/clean_data"
+
+        if preprocessed_dir is None:
+            if self.data_provider == "datastadium":
+                preprocessed_dir = os.getcwd() + "/data/dss/preprocess_data"
+            elif self.data_provider == "statsbomb_skillcorner":
+                preprocessed_dir = os.getcwd() + "/data/stb_skc/preprocess_data"
+
+        # Check if processing single file or multiple files
+        if (self.data_provider == "datastadium" and self.match_id is not None) or (
+            self.data_provider == "statsbomb_skillcorner" and self.match_id is not None
+        ):
+            # Process single file - call preprocess_single_data (skip load_data since already called)
+            self.preprocess_single_data(cleaning_dir, preprocessed_dir, skip_load_data=True)
         else:
-            raise ValueError(f"Preprocessing method not supported for {self.preprocess_method}")
+            # Process multiple files with parallel processing
+            if self.preprocess_method is not None:
+                if self.preprocess_method == "SAR":
+                    if self.data_provider == "datastadium":
+                        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                            futures = []
+                            match_id_list = [d[:10] for d in os.listdir(cleaning_dir)]
+                            for match_id in match_id_list:
+                                # Create temporary instance for each match
+                                temp_instance = Soccer_SAR_data(
+                                    data_provider=self.data_provider,
+                                    state_def=self.state_def,
+                                    data_path=self.data_path,
+                                    match_id=match_id,
+                                    config_path=self.config_path,
+                                    preprocess_method=self.preprocess_method,
+                                )
+                                futures.append(
+                                    executor.submit(
+                                        temp_instance.preprocess_single_data,
+                                        cleaning_dir,
+                                        preprocessed_dir,
+                                    )
+                                )
+                            # Collect results as they are completed
+                            for future in tqdm(as_completed(futures), total=len(futures)):
+                                future.result()
+
+                    elif self.data_provider == "statsbomb_skillcorner":
+                        match_id_list = [d[:7] for d in os.listdir(cleaning_dir)]
+                        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                            futures = []
+                            for match_id in match_id_list:
+                                # Create temporary instance for each match
+                                temp_instance = Soccer_SAR_data(
+                                    data_provider=self.data_provider,
+                                    state_def=self.state_def,
+                                    data_path=self.data_path,
+                                    match_id=match_id,
+                                    config_path=self.config_path,
+                                    statsbomb_skillcorner_match_id=self.statsbomb_skillcorner_match_id,
+                                    preprocess_method=self.preprocess_method,
+                                )
+                                futures.append(
+                                    executor.submit(
+                                        temp_instance.preprocess_single_data,
+                                        cleaning_dir,
+                                        preprocessed_dir,
+                                    )
+                                )
+                            # Collect results as they are completed
+                            for future in tqdm(as_completed(futures), total=len(futures)):
+                                future.result()
+                    else:
+                        raise ValueError(f"Preprocessing method not supported for {self.data_provider}")
+                else:
+                    raise ValueError(f"Preprocessing method not supported for {self.preprocess_method}")
+            else:
+                raise ValueError(
+                    "Preprocessing method is not defined. Please set preprocess_method to 'SAR' or other valid methods."
+                )
+
+        print("Data preprocessing completed successfully!")
 
 
 if __name__ == "__main__":

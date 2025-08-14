@@ -25,16 +25,26 @@ class SAR_data:
 
 if __name__ == "__main__":
     # Test block remains unchanged, using a supported provider ('datastadium')
-    datastadium_path = "./JLeagueData/Data_20200508/"
-    match_id = "2019091416"
+    datafactory_path = "datafactory_directory_path"
+    match_id = "match_id"
     config_path = "data/dss/config/preprocessing_dssports2020.json"
 
-    # PVS
-    SAR_data(
-        data_provider="datastadium", state_def="PVS", data_path=datastadium_path, match_id=match_id, config_path=config_path
-    ).load_data()
+    # PVS load data
+    # SAR_data(
+    #     data_provider="datafactory", state_def="PVS", data_path=datafactory_path, match_id=match_id, config_path=config_path
+    # ).load_data()
 
-    # EDMS
-    SAR_data(
-        data_provider="datastadium", state_def="EDMS", data_path=datastadium_path, match_id=match_id, config_path=config_path
-    ).load_data()
+    # run preprocessing_data method
+    # SAR_data(
+    #     data_provider="datafactory",
+    #     state_def="PVS",
+    #     data_path=datafactory_path,
+    #     match_id=match_id,
+    #     config_path=config_path,
+    #     preprocess_method="SAR",
+    # ).preprocess_data()
+
+    # # EDMS
+    # SAR_data(
+    #     data_provider="datafactory", state_def="EDMS", data_path=datafactory_path, match_id=match_id, config_path=config_path
+    # ).load_data()
