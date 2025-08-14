@@ -3,7 +3,7 @@ name: Package Init Tests
 on:
   pull_request:
     paths:
-      - 'preprocessing/*'
+      - 'preprocessing/**'
       - '.github/workflows/pytest_init.yml'
 
 # Add these permissions
