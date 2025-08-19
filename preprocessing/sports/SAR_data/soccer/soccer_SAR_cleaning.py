@@ -48,7 +48,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def clean_single_data(data_path, match_id, config_path, league, state_def, save_dir):
-    data_path = Path(data_path + match_id)
+    data_path = Path(data_path + str(match_id))
     save_dir = Path(save_dir)
     config = load_json(config_path)
     logger.info(f"cleaning started... {data_path.name}")
@@ -68,11 +68,6 @@ def clean_single_data(data_path, match_id, config_path, league, state_def, save_
         original_sampling_rate=config["original_sampling_rate"],
     )
     event_data = preprocess_coordinates_in_event_data(event_data, config["origin_pos"], config["absolute_coordinates"], league)
-
-    # apply event name mapping
-    # event_mapping = config["event_name_mapping"]
-    # if event_mapping and league == "jleague":
-    #     event_data = apply_event_name_mapping(event_data, event_mapping)
 
     # player data
     player_data = safe_pd_read_csv(data_path / config["player_metadata_filename"])
@@ -97,7 +92,7 @@ def clean_single_data(data_path, match_id, config_path, league, state_def, save_
 
         # adjust the player roles
         player_data = adjust_player_roles(player_data, event_data)
-    elif league == "laliga":
+    elif league == "laliga" or league == "fifawc":
         player_tracking_data = safe_pd_read_csv(data_path / config["player_tracking_filename"])
         ball_tracking_data = safe_pd_read_csv(data_path / config["ball_tracking_filename"])
 

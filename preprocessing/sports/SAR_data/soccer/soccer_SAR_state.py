@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 
 def preprocess_single_game(game_dir: str, state: str, league: str, save_dir: str, config: dict, match_id: str) -> None:
     save_dir = Path(save_dir)
-    game_dir = Path(game_dir) / match_id
+    game_dir = Path(game_dir) / str(match_id)
     config = load_json(config)
     logger.info(f"preprocessing started... {game_dir.name}")
     start = time.time()

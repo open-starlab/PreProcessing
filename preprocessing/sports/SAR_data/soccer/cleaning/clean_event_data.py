@@ -21,7 +21,7 @@ def get_changed_player_list(event_data: pd.DataFrame, league: str) -> Tuple[List
     Tuple[List[int], List[int]]:
         Tuple containing two lists of players who have changed in the home and away teams respectively
     """
-    if league == "jleague":
+    if league == "jleague" or league == "fifawc":
         changed_player_list_in_home = list(
             event_data.query("event_name == '交代' and home_away == 'HOME'")["jersey_number"].values.astype(int)
         )
@@ -50,7 +50,7 @@ def get_timestamp(event_data: pd.DataFrame, league: str) -> Dict[str, int]:
     Dict[str, int]: Dictionary containing the start and end frames of the first and second halves of the game
     """
 
-    if league == "jleague":
+    if league == "jleague" or league == "fifawc":
         timestamp_dict = {
             "first_start_frame": event_data.loc[event_data["event_name"] == "前半開始", "frame_id"].values[0],
             "first_end_frame": event_data.loc[event_data["event_name"] == "前半終了", "frame_id"].values[0],
@@ -172,7 +172,7 @@ def preprocess_coordinates_in_event_data(
     # common: convert coordinates to meters
     if league == "jleague":
         event_data[["ball_x", "ball_y"]] = event_data[["ball_x", "ball_y"]] / 3
-    elif league == "laliga":
+    elif league == "laliga" or league == "fifawc":
         event_data[["ball_x", "ball_y"]] = event_data[["ball_x", "ball_y"]]
     else:
         raise ValueError("league must be 'jleague' or 'laliga'")
