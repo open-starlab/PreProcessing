@@ -261,7 +261,7 @@ def merge_tracking_and_event_data(
 
         frame_df[frame_df_columns_PVS] = frame_df[frame_df_columns_PVS].fillna(-1).astype(int)
     elif state_def == "EDMS":
-        if league == "jleague":
+        if league == "jleague" or league == "fifawc":
             frame_df = pd.merge(tracking_data, event_data, on=["half", "time_from_half_start"], how="left")[
                 event_columns_EDMS_jleague
             ].reset_index(drop=True)

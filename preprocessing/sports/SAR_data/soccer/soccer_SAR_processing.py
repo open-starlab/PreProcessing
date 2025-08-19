@@ -19,7 +19,7 @@ HALF_START_COUNT = 0
 HALF_END_COUNT = 0
 
 
-class PorocessTrackingData:
+class ProcessSkillcornerTrackingData:
     """
     Preprocess tracking data
 
@@ -444,7 +444,7 @@ class PorocessTrackingData:
         )
 
 
-class ProcessEventData:
+class ProcessStatsbombEventData:
     """
     Preprocess event data
 
@@ -788,7 +788,655 @@ class ProcessEventData:
         )
 
 
-def process_single_file(data_df, player_df, tracking_path, metadata, config, match_id, save_dir):
+class ProcessFIFAWCTrackingData:
+    def __init__(self, tracking_list, match_id, save_dir):
+        self.tracking_list = tracking_list
+        self.match_id = match_id
+        self.save_dir = save_dir
+        self.frame_rate = 29.97
+        self.frame_time_delta = 1 / self.frame_rate
+
+    def interpolate_duplicate_coordinates(self, df):
+        """
+        Interpolate duplicate coordinates in the DataFrame.
+        """
+        initial_na_count = df[["X", "Y"]].isna().sum().sum()
+        df[["X", "Y"]] = df[["X", "Y"]].interpolate(method="linear")
+
+        df[["X", "Y"]] = df[["X", "Y"]].ffill().bfill()
+
+        final_na_count = df[["X", "Y"]].isna().sum().sum()
+        interpolated_count = initial_na_count - final_na_count
+
+        coord_diff = df[["X", "Y"]].diff()
+        duplicate_mask = (coord_diff == 0).all(axis=1)
+        duplicate_count = duplicate_mask.sum()
+
+        if duplicate_count > 0:
+            np.random.seed(42)
+            noise = np.random.normal(0, 0.05, (duplicate_count, 2))
+
+            df.loc[duplicate_mask, ["X", "Y"]] += noise
+            interpolated_count += duplicate_count
+
+        return df
+
+    def calculate_ball_speed_acceleration_(self, ball_data, match_id):
+        """
+        Calculate ball speed and acceleration from ball tracking data.
+        """
+        if len(ball_data) < 2:
+            return ball_data
+
+        df = pd.DataFrame(ball_data)
+        df["GameID"] = df["GameID"].ffill()
+        df["GameID"] = df["GameID"].fillna(match_id)
+
+        df = df.sort_values(["GameID", "Frame"]).reset_index(drop=True)
+
+        initial_len = len(df)
+        df = df.drop_duplicates(subset=["GameID", "Frame"]).reset_index(drop=True)
+        if len(df) < initial_len:
+            print(f"    Removed {initial_len - len(df)} duplicate ball records")
+
+        df = self.interpolate_duplicate_coordinates(df)
+        df[["X", "Y"]] = df[["X", "Y"]].round(3)
+        coord_diff = df[["X", "Y"]].diff()
+        speed = np.sqrt((coord_diff**2).sum(axis=1)) / self.frame_time_delta
+        speed = speed.fillna(0)
+        acceleration = speed.diff() / self.frame_time_delta
+        acceleration = acceleration.fillna(0)
+
+        speed_values = speed.values[speed > 0]
+        acceleration_values = acceleration.values[acceleration != 0]
+
+        speed_99 = None
+        acc_99 = None
+
+        if len(speed_values) > 0:
+            speed_99 = np.percentile(speed_values, 99)
+            speed = np.clip(speed, 0, speed_99)
+            print(f"  Applied ball speed cap: {speed_99:.1f} m/s")
+
+        if len(acceleration_values) > 0:
+            acc_99 = np.percentile(np.abs(acceleration_values), 99)
+            acceleration = np.clip(acceleration, -acc_99, acc_99)
+            print(f"  Applied ball acceleration cap: ±{acc_99:.1f} m/s²")
+
+        if len(df) >= 3:
+            speed = speed.rolling(window=3, center=True, min_periods=1).mean()
+            acceleration = acceleration.rolling(window=3, center=True, min_periods=1).mean()
+
+        df["Speed"] = speed.round(3)
+        df["Acceleration"] = acceleration.round(3)
+
+        return df.to_dict("records")
+
+    def calculate_velocity_acceleration_(self, position_data, match_id):
+        """
+        Calculate velocity and acceleration from position data.
+        """
+        if len(position_data) < 2:
+            return position_data
+
+        df = pd.DataFrame(position_data)
+        df["GameID"] = df["GameID"].ffill()
+        df["GameID"] = df["GameID"].fillna(match_id)
+
+        df = df.sort_values(["GameID", "Frame", "HA", "No"]).reset_index(drop=True)
+
+        initial_len = len(df)
+        df = df.drop_duplicates(subset=["GameID", "Frame", "HA", "No"]).reset_index(drop=True)
+        if len(df) < initial_len:
+            print(f"    Removed {initial_len - len(df)} duplicate records before velocity calculation")
+
+        df["velocity"] = 0.0
+        df["acceleration"] = 0.0
+
+        all_velocities = []
+        all_accelerations = []
+
+        for (ha, player_no), group in df.groupby(["HA", "No"]):
+            if pd.isna(player_no) or len(group) < 2:
+                continue
+
+            group = group.sort_values("Frame")
+            indices = group.index
+
+            x_diff = group["x"].diff()
+            y_diff = group["y"].diff()
+
+            velocity = np.sqrt(x_diff**2 + y_diff**2) / self.frame_time_delta
+            velocity = velocity.fillna(0)
+
+            acceleration = velocity.diff() / self.frame_time_delta
+            acceleration = acceleration.fillna(0)
+
+            valid_velocities = velocity[velocity > 0].values
+            valid_accelerations = acceleration[acceleration != 0].values
+
+            if len(valid_velocities) > 0:
+                all_velocities.extend(valid_velocities)
+            if len(valid_accelerations) > 0:
+                all_accelerations.extend(valid_accelerations)
+
+            df.loc[indices, "velocity"] = velocity.round(3)
+            df.loc[indices, "acceleration"] = acceleration.round(3)
+
+        velocity_99 = None
+        acc_99 = None
+
+        if all_velocities:
+            velocity_99 = np.percentile(all_velocities, 99)
+            df["velocity"] = np.clip(df["velocity"], 0, velocity_99)
+
+        if all_accelerations:
+            acc_99 = np.percentile(np.abs(all_accelerations), 99)
+            df["acceleration"] = np.clip(df["acceleration"], -acc_99, acc_99)
+
+        print(
+            f"    Applied velocity cap: {velocity_99:.1f} m/s, acceleration cap: ±{acc_99:.1f} m/s²"
+            if all_velocities
+            else "    No velocity data processed"
+        )
+
+        return df.to_dict("records")
+
+    def parse_tracking_records(self):
+        """Extract player and ball tracking data from the loaded tracking_list."""
+        player_data = []
+        ball_data = []
+        first_frame_num = None
+
+        for record in self.tracking_list:
+            game_id = record.get("gameRefId", self.match_id)
+            original_frame_num = record.get("frameNum")
+
+            if first_frame_num is None:
+                first_frame_num = original_frame_num
+            frame_num = original_frame_num - first_frame_num
+
+            # Player data
+            for team_key, ha in [("homePlayers", 1), ("awayPlayers", 2)]:
+                if team_key in record:
+                    for player in record[team_key]:
+                        player_record = {
+                            "GameID": game_id,
+                            "Frame": frame_num,
+                            "HA": ha,
+                            "SysTarget": 0,
+                            "No": player.get("jerseyNum"),
+                            "x": round(player.get("x", 0), 3) if player.get("x") is not None else None,
+                            "y": round(player.get("y", 0), 3) if player.get("y") is not None else None,
+                            "velocity": 0,
+                            "acceleration": 0,
+                        }
+                        player_data.append(player_record)
+
+            # Ball data
+            if "balls" in record and record["balls"]:
+                ball = record["balls"][0]
+                ball_record = {
+                    "GameID": game_id,
+                    "Frame": frame_num,
+                    "HA": 0,
+                    "SysTarget": 0,
+                    "No": 0,
+                    "X": round(ball.get("x", 0), 3) if ball.get("x") is not None else None,
+                    "Y": round(ball.get("y", 0), 3) if ball.get("y") is not None else None,
+                    "Speed": 0,
+                    "Acceralation": 0,
+                }
+                ball_data.append(ball_record)
+        return player_data, ball_data
+
+    def process_tracking_data(self):
+        player_data, ball_data = self.parse_tracking_records()
+
+        if player_data:
+            player_data = self.calculate_velocity_acceleration_(player_data, self.match_id)
+            pd.DataFrame(player_data).to_csv(self.save_dir / "player.csv", index=False)
+            print(f"  Saved player.csv with {len(player_data)} records (optimized processing)")
+        if ball_data:
+            ball_data = self.calculate_ball_speed_acceleration_(ball_data, self.match_id)
+            pd.DataFrame(ball_data).to_csv(self.save_dir / "ball.csv", index=False)
+            print(f"  Saved ball.csv with {len(ball_data)} records (optimized processing)")
+
+
+class ProcessFIFAWCEventData:
+    def __init__(self, event_df, match_id, save_dir, config):
+        self.event_df = event_df
+        self.match_id = match_id
+        self.save_dir = save_dir
+        self.frame_rate = 29.97
+        self.config = config
+
+    def get_detailed_action_name_(self, game_event_type, possession_event_type, setpiece_type, period, event_flags):
+        """Determine the detailed action name"""
+        candidates = []
+
+        if game_event_type == "FIRSTKICKOFF" and period == 1:
+            return "前半開始"
+        elif game_event_type == "SECONDKICKOFF" and period == 2:
+            return "後半開始"
+        elif game_event_type in ["FIRSTKICKOFF", "SECONDKICKOFF"]:
+            return "キックオフ"
+
+        if game_event_type == "END":
+            if period == 1:
+                return "前半終了"
+            elif period == 2:
+                return "後半終了"
+            else:
+                return "終了"
+
+        if game_event_type == "SUB":
+            return "交代"
+
+        if game_event_type and game_event_type in self.config["raw_event_mapping"]:
+            candidates.append(self.config["raw_event_mapping"][game_event_type])
+
+        if possession_event_type and possession_event_type in self.config["raw_event_mapping"]:
+            candidates.append(self.config["raw_event_mapping"][possession_event_type])
+
+        if setpiece_type and setpiece_type in self.config["raw_event_mapping"]:
+            candidates.append(self.config["raw_event_mapping"][setpiece_type])
+
+        if event_flags.get("F_スルーパス"):
+            candidates.append("スルーパス")
+        if event_flags.get("F_クロス"):
+            candidates.append("クロス")
+        if event_flags.get("F_ブロック"):
+            candidates.append("ブロック")
+        if event_flags.get("F_インターセプト"):
+            candidates.append("インターセプト")
+        if event_flags.get("F_クリア"):
+            candidates.append("クリア")
+
+        for priority_event in self.config["raw_event_priority"]:
+            if priority_event in candidates:
+                return priority_event
+
+        return candidates[0] if candidates else "タッチ"
+
+    def add_halftime_substitutions_(self, df, all_events):
+        """
+        Detect halftime substitutions and add them to the event data
+        """
+        print("  Checking for halftime substitutions...")
+
+        second_half_start = df[df["アクション名"] == "後半開始"]
+        if second_half_start.empty:
+            print("    No second half start event found")
+            return df
+
+        halftime_subs = []
+
+        if halftime_subs:
+            new_subs_df = pd.DataFrame(halftime_subs)
+            df = pd.concat([df, new_subs_df], ignore_index=True)
+            df = df.sort_values(["フレーム番号", "アクション名"]).reset_index(drop=True)
+        else:
+            print("No halftime substitutions detected or all substitutions already recorded")
+
+        return df
+
+    def determine_attack_sequences_(self, events_df):
+        """
+        Determine attack sequences, series numbers, and history numbers.
+        """
+        events_df = events_df.sort_values(["絶対時間"]).reset_index(drop=True)
+        events_df["履歴No"] = range(1, len(events_df) + 1)
+
+        series_no = 1
+        attack_no = 1
+        current_attack_start = 1
+
+        series_numbers = []
+        attack_numbers = []
+        attack_starts = []
+        attack_ends = []
+
+        prev_action = None
+        prev_team = None
+        consecutive_opponent_actions = 0
+
+        for i, row in events_df.iterrows():
+            action_name = row["アクション名"]
+            team = row["ホームアウェイF"]
+
+            if i == 0 and action_name == "前半開始":
+                pass
+            else:
+                period_change_actions = ["前半開始", "後半開始", "前半終了", "後半終了"]
+                if (
+                    action_name in ["ボールアウト", "ファウルする", "ファウル受ける", "オフサイド", "キックオフ"]
+                    or action_name in period_change_actions
+                ):
+                    if i > 0:
+                        series_no += 1
+                        consecutive_opponent_actions = 0
+
+                team_changed = prev_team is not None and team != prev_team
+                if team_changed:
+                    consecutive_opponent_actions += 1
+                else:
+                    consecutive_opponent_actions = 0
+
+                attack_should_end = False
+
+                if (
+                    action_name in ["ボールアウト", "キックオフ", "CK", "スローイン", "PK", "直接FK", "間接FK"]
+                    or action_name in period_change_actions
+                ):
+                    attack_should_end = True
+
+                elif team_changed and i > 0:
+                    attack_should_end = True
+
+                elif consecutive_opponent_actions >= 2:
+                    attack_should_end = True
+
+                elif prev_action and prev_action in ["インターセプト", "タックル", "ボールゲイン"]:
+                    attack_should_end = True
+
+                if attack_should_end:
+                    if i > 0:
+                        for j in range(current_attack_start - 1, i):
+                            if j < len(attack_ends):
+                                attack_ends[j] = i
+                    attack_no += 1
+                    current_attack_start = i + 1
+                    consecutive_opponent_actions = 0
+
+            series_numbers.append(series_no)
+            attack_numbers.append(attack_no)
+            attack_starts.append(current_attack_start)
+            attack_ends.append(len(events_df))
+
+            prev_action = action_name
+            prev_team = team
+
+        if attack_ends:
+            for j in range(current_attack_start - 1, len(attack_ends)):
+                attack_ends[j] = len(events_df)
+
+        events_df["シリーズNo"] = series_numbers
+        events_df["攻撃履歴No"] = attack_numbers
+        events_df["攻撃開始履歴No"] = attack_starts
+        events_df["攻撃終了履歴No"] = attack_ends
+
+        return events_df
+
+    def set_event_flags_(self, event_record, possession_events):
+        """Set event flags based on possession events."""
+        pe = possession_events
+
+        flags = {
+            "F_ゴール": 0,
+            "F_シュート": 0,
+            "F_パス": 0,
+            "F_ドリブル": 0,
+            "F_ボールゲイン": 0,
+            "F_ブロック": 0,
+            "F_インターセプト": 0,
+            "F_クリア": 0,
+            "F_クロス": 0,
+            "F_スルーパス": 0,
+            "F_成功": 0,
+        }
+
+        possession_type = pe.get("possessionEventType", "")
+        pass_type = pe.get("passType", "")
+        pass_outcome = pe.get("passOutcomeType", "")
+        cross_outcome = pe.get("crossOutcomeType", "")
+        shot_outcome = pe.get("shotOutcomeType", "")
+
+        if possession_type == "PA":
+            flags["F_パス"] = 1
+        elif possession_type == "SH":
+            flags["F_シュート"] = 1
+        elif possession_type == "BC":
+            flags["F_ドリブル"] = 1
+        elif possession_type == "RE":
+            flags["F_ボールゲイン"] = 1
+        elif possession_type == "CL":
+            flags["F_クリア"] = 1
+        elif possession_type == "CR":
+            flags["F_クロス"] = 1
+
+        if pass_type == "T":
+            flags["F_スルーパス"] = 1
+
+        if pass_outcome == "B" or cross_outcome == "B" or shot_outcome == "B":
+            flags["F_ブロック"] = 1
+
+        if pass_outcome == "D" or cross_outcome == "D":
+            flags["F_インターセプト"] = 1
+
+        if shot_outcome == "G":
+            flags["F_ゴール"] = 1
+
+        if (
+            pass_outcome in ["C", "G"]
+            or cross_outcome in ["C", "G"]
+            or shot_outcome in ["C", "G"]
+            or possession_type in ["RE", "BC"]
+        ):
+            flags["F_成功"] = 1
+
+        event_record.update(flags)
+        return event_record, flags
+
+    def calculate_frame_from_firstkickoff(self, events, absolute_time, game_event_id):
+        """
+        Define the frame number based on the FIRSTKICKOFF event.
+        """
+        firstkickoff_time = None
+        for event in events:
+            ge = event.get("gameEvents", {})
+            if ge.get("gameEventType") == "FIRSTKICKOFF":
+                firstkickoff_time = event.get("eventTime")
+                break
+
+        if firstkickoff_time is not None and absolute_time is not None:
+            time_diff = absolute_time - firstkickoff_time
+            frame_diff = int(time_diff * self.frame_rate)
+            return max(0, frame_diff)
+        else:
+            return 0
+
+    def process_event_data(self):
+        """
+        Process FIFA World Cup event data.
+        """
+        events = []
+        all_events = self.event_df
+        for event in self.event_df:
+            game_id = event.get("gameId")
+            absolute_time = event.get("eventTime")
+
+            # Calculate firstkickoff frame
+            frame_id = self.calculate_frame_from_firstkickoff(all_events, absolute_time, event.get("gameEventId"))
+            ge = event.get("gameEvents", {})
+            pe = event.get("possessionEvents", {})
+
+            is_home_team = ge.get("homeTeam", True)
+            period = ge.get("period", 1)
+
+            temp_record = {
+                "試合ID": game_id,
+                "フレーム番号": frame_id,
+                "絶対時間": absolute_time,
+                "試合状態ID": period,
+                "ホームアウェイF": 1 if is_home_team else 2,
+                "位置座標X": None,
+                "位置座標Y": None,
+                "チームID": ge.get("teamId"),
+                "チーム名": ge.get("teamName"),
+                "選手ID": ge.get("playerId"),
+                "選手名": ge.get("playerName"),
+                "選手背番号": None,
+                "ポジションID": None,
+                "アクションID": frame_id,
+                "ボールX": None,
+                "ボールY": None,
+                "攻撃履歴No": None,
+                "攻撃方向": 1 if (is_home_team and period == 1) or (not is_home_team and period == 2) else 2,
+                "シリーズNo": None,
+                "F_ボールタッチ": 1 if (ge.get("touches") or 0) > 0 else 0,
+                "F_成功": None,
+                "履歴No": None,
+                "攻撃開始履歴No": None,
+                "攻撃終了履歴No": None,
+                "フォーメーション": None,
+            }
+
+            event_record, event_flags = self.set_event_flags_(temp_record, pe)
+
+            if ge.get("gameEventType") == "SUB":
+                temp_record["選手ID"] = ge.get("playerOffId")
+                temp_record["選手名"] = ge.get("playerOffName")
+                player_off_id = ge.get("playerOffId")
+                if player_off_id:
+                    for players_key in ["homePlayers", "awayPlayers"]:
+                        if players_key in event and event[players_key]:
+                            for player in event[players_key]:
+                                if str(player.get("playerId")) == str(player_off_id):
+                                    temp_record["選手背番号"] = player.get("jerseyNum")
+                                    temp_record["ポジションID"] = player.get("positionGroupType")
+                                    break
+                            if temp_record["選手背番号"] is not None:
+                                break
+
+            action_name = self.get_detailed_action_name_(
+                ge.get("gameEventType"), pe.get("possessionEventType"), ge.get("setpieceType"), period, event_flags
+            )
+            event_record["アクション名"] = action_name
+
+            player_id = event_record["選手ID"]
+            if player_id:
+                for players_key in ["homePlayers", "awayPlayers"]:
+                    if players_key in event and event[players_key]:
+                        for player in event[players_key]:
+                            if str(player.get("playerId")) == str(player_id):
+                                event_record["位置座標X"] = player.get("x")
+                                event_record["位置座標Y"] = player.get("y")
+                                event_record["選手背番号"] = player.get("jerseyNum")
+                                event_record["ポジションID"] = player.get("positionGroupType")
+                                break
+                        if event_record["位置座標X"] is not None:
+                            break
+
+            if "ball" in event and event["ball"] and len(event["ball"]) > 0:
+                ball = event["ball"][0]
+                event_record["ボールX"] = ball.get("x")
+                event_record["ボールY"] = ball.get("y")
+
+            events.append(event_record)
+
+        df = pd.DataFrame(events)
+
+        if "交代" in df["アクション名"].values:
+            valid_data = df.dropna(subset=["選手ID", "チーム名", "チームID", "ホームアウェイF"])
+            player_team_map = dict(zip(valid_data["選手ID"].astype(str), valid_data["チーム名"]))
+            player_team_id_map = dict(zip(valid_data["選手ID"].astype(str), valid_data["チームID"]))
+            player_home_away_map = dict(zip(valid_data["選手ID"].astype(str), valid_data["ホームアウェイF"]))
+
+            sub_mask = df["アクション名"] == "交代"
+            sub_indices = df[sub_mask].index
+
+            for idx in sub_indices:
+                player_id_str = str(df.at[idx, "選手ID"])
+                df.at[idx, "チーム名"] = player_team_map.get(player_id_str)
+                df.at[idx, "チームID"] = player_team_id_map.get(player_id_str)
+                df.at[idx, "ホームアウェイF"] = player_home_away_map.get(player_id_str)
+
+        initial_count = len(df)
+
+        protected_events = ["前半開始", "後半開始", "前半終了", "後半終了", "交代"]
+
+        missing_mask = (
+            (df["選手ID"].isna())
+            | (df["位置座標X"].isna())
+            | (df["位置座標Y"].isna())
+            | (df["チーム名"].isna())
+            | (df["選手名"].isna())
+        )
+
+        protected_mask = df["アクション名"].isin(protected_events)
+
+        delete_mask = missing_mask & ~protected_mask
+
+        if delete_mask.sum() > 0:
+            print(f"  Removing {delete_mask.sum()} events with missing player/position data")
+            print(f"  Protected {protected_mask.sum()} critical events from deletion")
+            df = df[~delete_mask].reset_index(drop=True)
+
+        df = self.add_halftime_substitutions_(df, all_events)
+
+        df = self.determine_attack_sequences_(df)
+
+        df.to_csv(self.save_dir / "play.csv", index=False)
+        print(f"  Saved play.csv with {len(df)} events (removed {initial_count - len(df)} incomplete events)")
+
+
+class ProcessFIFAWCMetaDataANDRosters:
+    def __init__(self, rosters_df, metadata_df, players_df, match_id, save_dir, config):
+        self.rosters_df = rosters_df
+        self.metadata_df = metadata_df
+        self.players_df = players_df
+        self.match_id = match_id
+        self.save_dir = save_dir
+        self.config = config
+
+    def get_player_height_from_original_data(self):
+        """Get player height data from raw_data"""
+        height_data = {}
+
+        if "height" in self.players_df.columns and "player.id" in self.players_df.columns:
+            for _, row in self.players_df.iterrows():
+                player_id = row.get("player.id")
+                height = row.get("height")
+                if pd.notna(player_id) and pd.notna(height):
+                    height_data[str(player_id)] = height
+        return height_data
+
+    def process_metadata_roster(self):
+        height_data = self.get_player_height_from_original_data()
+        players = []
+        for player_info in self.rosters_df:
+            team_name = player_info["team"]["name"]
+            home_team = self.metadata_df.get("homeTeam", {}).get("name")
+            home_away = 1 if team_name == home_team else 2
+
+            player_id = str(player_info["player"]["id"])
+
+            player_role = self.config["raw_player_role_mapping"].get(player_info["positionGroupType"], None)
+
+            player_record = {
+                "節": None,
+                "試合ID": self.metadata_df.get("id"),
+                "ホームアウェイF": home_away,
+                "チームID": player_info["team"]["id"],
+                "チーム名": player_info["team"]["name"],
+                "試合ポジションID": player_role,
+                "背番号": player_info["shirtNumber"],
+                "選手ID": player_info["player"]["id"],
+                "選手名": player_info["player"]["nickname"],
+                "出場": 1,
+                "スタメン": 1 if player_info["started"] else 0,
+                "出場時間": None,
+                "実出場時間": None,
+                "身長": height_data.get(player_id),
+            }
+            players.append(player_record)
+
+        if players:
+            pd.DataFrame(players).to_csv(self.save_dir / "players.csv", index=False)
+
+
+def process_statsbomb_skillcorner_single_file(data_df, player_df, tracking_path, metadata_df, config, match_id, save_dir):
     """
     Preprocess single file
     """
@@ -797,7 +1445,24 @@ def process_single_file(data_df, player_df, tracking_path, metadata, config, mat
     tracking_data = json.load(open(tracking_path))
     tracking_df = pd.DataFrame(tracking_data)
 
-    PorocessTrackingData(data_df, player_df, tracking_df, metadata, config, save_dir).skillcorner_to_datastadium()
-    ProcessEventData(data_df, player_df, metadata, config, save_dir).statsbomb_to_datastadium()
+    ProcessSkillcornerTrackingData(data_df, player_df, tracking_df, metadata_df, config, save_dir).skillcorner_to_datastadium()
+    ProcessStatsbombEventData(data_df, player_df, metadata_df, config, save_dir).statsbomb_to_datastadium()
 
+    print(f"Processing {match_id} finished")
+
+
+def process_fifawc_single_file(
+    event_df, tracking_list, metadata_df, rosters_df, players_df, match_id, save_preprocess_dir, config
+):
+    """
+    Process FIFAWC single file
+    """
+    config = load_json(config)
+    save_preprocess_dir = Path(save_preprocess_dir) / str(match_id)
+    save_preprocess_dir.mkdir(exist_ok=True, parents=True)
+    ProcessFIFAWCEventData(event_df, match_id, save_preprocess_dir, config).process_event_data()
+    ProcessFIFAWCTrackingData(tracking_list, match_id, save_preprocess_dir).process_tracking_data()
+    ProcessFIFAWCMetaDataANDRosters(
+        rosters_df, metadata_df, players_df, match_id, save_preprocess_dir, config
+    ).process_metadata_roster()
     print(f"Processing {match_id} finished")

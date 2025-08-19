@@ -76,7 +76,7 @@ def discretize_direction(velocity_x: float, velocity_y: float) -> str:
     return direction
 
 
-def last_attack_event_in_frames(frames: pd.DataFrame, data_type: str) -> pd.Series | None:
+def last_attack_event_in_frames(frames: pd.DataFrame, league: str) -> pd.Series | None:
     """
     Find the last attack event in frames
 
@@ -84,7 +84,7 @@ def last_attack_event_in_frames(frames: pd.DataFrame, data_type: str) -> pd.Seri
     ----------
     frames : pd.DataFrame
         Event frames
-    data_type : str
+    league : str
         Type of data source (laliga or jleague)
 
     Returns
@@ -93,7 +93,7 @@ def last_attack_event_in_frames(frames: pd.DataFrame, data_type: str) -> pd.Seri
         Last event or None if no valid events found
     """
     # Use pre-defined event lists
-    valid_event_names = LALIGA_VALID_EVENTS if data_type == "laliga" else JLEAGUE_VALID_EVENTS
+    valid_event_names = LALIGA_VALID_EVENTS if league == "laliga" else JLEAGUE_VALID_EVENTS
 
     # Use query for better performance with larger dataframes
     filtered_frames = frames[frames["event_name"].isin(valid_event_names)]
@@ -101,7 +101,7 @@ def last_attack_event_in_frames(frames: pd.DataFrame, data_type: str) -> pd.Seri
     return filtered_frames.iloc[-1] if not filtered_frames.empty else None
 
 
-def find_goal_keeper_after_shot(frames: pd.DataFrame, shot_index: int, data_type: str) -> pd.Series | None:
+def find_goal_keeper_after_shot(frames: pd.DataFrame, shot_index: int, league: str) -> pd.Series | None:
     """
     Find Goal Keeper event after a shot event
 
@@ -111,7 +111,7 @@ def find_goal_keeper_after_shot(frames: pd.DataFrame, shot_index: int, data_type
         Event frames
     shot_index : int
         Index of the shot event
-    data_type : str
+    league : str
         Type of data source (laliga or jleague)
 
     Returns
@@ -120,9 +120,9 @@ def find_goal_keeper_after_shot(frames: pd.DataFrame, shot_index: int, data_type
         Goal Keeper event or None if not found
     """
     # Define Goal Keeper event names based on data type
-    if data_type == "laliga":
+    if league == "laliga":
         goal_keeper_events = ["Goal Keeper"]
-    elif data_type == "jleague":
+    elif league == "jleague" or league == "fifawc":
         goal_keeper_events = ["Goal Keeper"]
     else:
         goal_keeper_events = ["Goal Keeper"]
@@ -134,7 +134,7 @@ def find_goal_keeper_after_shot(frames: pd.DataFrame, shot_index: int, data_type
     return goal_keeper_frames.iloc[0] if not goal_keeper_frames.empty else None
 
 
-def get_action_from_event(frame: pd.Series, data_type: str) -> str | None:
+def get_action_from_event(frame: pd.Series, league: str) -> str | None:
     """
     Get action from event data
 
@@ -142,7 +142,7 @@ def get_action_from_event(frame: pd.Series, data_type: str) -> str | None:
     ----------
     frame : pd.Series
         Frame data
-    data_type : str
+    league : str
         Type of data source (laliga or jleague)
 
     Returns
@@ -151,7 +151,7 @@ def get_action_from_event(frame: pd.Series, data_type: str) -> str | None:
         Action string or None if no action found
     """
     try:
-        if data_type == "laliga":
+        if league == "laliga":
             if frame.get("is_goal", False):
                 return "goal"
             elif frame.get("is_shot", False):
@@ -170,7 +170,7 @@ def get_action_from_event(frame: pd.Series, data_type: str) -> str | None:
                 return "pass"
             else:
                 return None
-        elif data_type == "jleague":
+        elif league == "jleague" or league == "fifawc":
             if frame.get("is_goal", False):
                 return "goal"
             elif frame.get("is_shot", False):
@@ -192,12 +192,12 @@ def get_action_from_event(frame: pd.Series, data_type: str) -> str | None:
             else:
                 return None
         else:
-            logger.warning(f"Unknown data_type: {data_type}")
+            logger.warning(f"Unknown league: {league}")
             return None
     except KeyError as e:
         logger.debug(f"KeyError in get_action_from_event: {e}")
         # Minimal fallback for known events when fields are missing
-        if data_type == "jleague":
+        if league == "jleague" or league == "fifawc":
             if frame.get("is_goal", False):
                 return "goal"
             elif frame.get("is_shot", False):

@@ -4,6 +4,7 @@ import pandas as pd
 from preprocessing.sports.SAR_data.soccer.constant import (
     INPUT_EVENT_COLUMNS_JLEAGUE,
     INPUT_EVENT_COLUMNS_LALIGA,
+    INPUT_EVENT_COLUMNS_FIFAWC,
     INPUT_PLAYER_COLUMNS_PVS,
     INPUT_PLAYER_COLUMNS_EDMS,
     INPUT_TRACKING_COLUMNS,
@@ -22,6 +23,7 @@ def check_and_rename_event_columns(
     league_columns_map = {
         "jleague": INPUT_EVENT_COLUMNS_JLEAGUE,
         "laliga": INPUT_EVENT_COLUMNS_LALIGA,
+        "fifawc": INPUT_EVENT_COLUMNS_FIFAWC,
     }
 
     if league not in league_columns_map:

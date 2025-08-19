@@ -1,6 +1,6 @@
 class SAR_data:
     # Modified the sports list to only include fully supported providers
-    sports = ["statsbomb_skillcorner", "datastadium"]
+    sports = ["statsbomb_skillcorner", "datastadium", "fifawc"]
     state_list = ["PVS", "EDMS"]
 
     def __new__(cls, data_provider, state_def, *args, **kwargs):
@@ -27,24 +27,12 @@ if __name__ == "__main__":
     # Test block remains unchanged, using a supported provider ('datastadium')
     datafactory_path = "datafactory_directory_path"
     match_id = "match_id"
-    config_path = "data/dss/config/preprocessing_dssports2020.json"
 
-    # PVS load data
     # SAR_data(
-    #     data_provider="datafactory", state_def="PVS", data_path=datafactory_path, match_id=match_id, config_path=config_path
-    # ).load_data()
-
-    # run preprocessing_data method
-    # SAR_data(
-    #     data_provider="datafactory",
+    #     data_provider="fifawc",
     #     state_def="PVS",
-    #     data_path=datafactory_path,
-    #     match_id=match_id,
-    #     config_path=config_path,
+    #     data_path="data/fifawc/raw",
+    #     match_id=3812,
+    #     config_path="data/fifawc/config/preprocessing_fifawc2022.json",
     #     preprocess_method="SAR",
     # ).preprocess_data()
-
-    # # EDMS
-    # SAR_data(
-    #     data_provider="datafactory", state_def="EDMS", data_path=datafactory_path, match_id=match_id, config_path=config_path
-    # ).load_data()
