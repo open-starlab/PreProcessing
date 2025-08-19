@@ -358,13 +358,7 @@ class Soccer_SAR_data:
 
 
 if __name__ == "__main__":
-    statsbomb_skillcorner_path = "/data_pool_1/laliga_23"
-    statsbomb_skillcorner_match_id = os.getcwd() + "/preprocessing/sports/SAR_data/match_id_dict.json"
-
-    datastadium_dir = "/work5/fujii/work/JLeagueData/"
-
     # Load each data provider
-
     # test load_statsbomb_skillcorner single file
     # Soccer_SAR_data(
     #     data_provider='statsbomb_skillcorner',
@@ -377,7 +371,7 @@ if __name__ == "__main__":
     # test load datastadium single file
     # Soccer_SAR_data(
     #     data_provider='datastadium',
-    #     data_path=os.path.join(datastadium_dir, "Data_20200508/"),
+    #     data_path=datastadium_dir,
     #     match_id="2019091416",
     #     config_path=os.getcwd()+"/data/dss/config/preprocessing_dssports2020.json",
     # ).load_data()
@@ -417,11 +411,11 @@ if __name__ == "__main__":
     # Soccer_SAR_data(
     #     data_provider='datastadium',
     #     match_id="2019091416",
-    #     config_path="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/config/preprocessing_dssports2020.json",
+    #     config_path="data/dss/config/preprocessing_dssports2020.json",
     #     preprocess_method="SAR"
     # ).preprocess_single_data(
-    #     cleaning_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/clean_data",
-    #     preprocessed_dir="/home/k_ide/workspace6/open-starlab/PreProcessing/data/dss/preprocess_data"
+    #     cleaning_dir="data/dss/clean_data",
+    #     preprocessed_dir="data/dss/preprocess_data"
     # )
 
     # test preprocess statsbomb_skillcorner multiple files

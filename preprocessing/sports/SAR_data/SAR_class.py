@@ -29,10 +29,10 @@ if __name__ == "__main__":
     match_id = "match_id"
 
     # SAR_data(
-    #     data_provider="fifawc",
+    #     data_provider="datafactory",
     #     state_def="PVS",
-    #     data_path="data/fifawc/raw",
-    #     match_id=3812,
-    #     config_path="data/fifawc/config/preprocessing_fifawc2022.json",
+    #     data_path="datafactory_path",
+    #     match_id=match_id,
+    #     config_path="preprocessing_datafactory.json",
     #     preprocess_method="SAR",
     # ).preprocess_data()
