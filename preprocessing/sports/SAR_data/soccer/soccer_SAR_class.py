@@ -244,7 +244,7 @@ class Soccer_SAR_data:
         if self.preprocess_method == "SAR":
             # First, load the data
             print("Starting data preprocessing...")
-            # self.load_data()
+            self.load_data()
 
             # Set default directories if not provided
             if cleaning_dir is None:
