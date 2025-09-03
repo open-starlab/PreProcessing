@@ -33,6 +33,7 @@ pip install -e .
 
 #### Space Data
 - [Space data in Basketball 🏀](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/space_data/basketball/README.md)
+- [Space data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/space_data/soccer/README.md)
 
 ## RoadMap
 - [x] Release the package
