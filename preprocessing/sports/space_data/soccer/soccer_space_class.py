@@ -53,21 +53,25 @@ class Soccer_space_data:
 
         from .soccer_space_preprocessing import convert_pff2metrica, convert_tracking_data_fixed_ids
 
+        home_tracking_dict={}
+        away_tracking_dict={}
+        period_2_dict={}
+        for tracking_path_i in tqdm(tracking_files, total=len(tracking_files), desc='Processing tracking files'):
+            match_i = os.path.splitext(os.path.splitext(os.path.basename(tracking_path_i))[0])[0]
+            match_tracking_df = self.load_tracking_bz2(tracking_path_i)
+            home_tracking, away_tracking, first_period_2_index, first_period_2_time = convert_tracking_data_fixed_ids(match_tracking_df)
+            home_tracking_dict[match_i] = home_tracking
+            away_tracking_dict[match_i] = away_tracking
+            period_2_dict[match_i] = (first_period_2_index, first_period_2_time)
+
         event_data_dict={}
         for event_path_i in tqdm(event_files, total=len(event_files), desc='Processing event files'):
             match_i = os.path.splitext(os.path.basename(event_path_i))[0]
             match_event_df = self.load_event_json(event_path_i)
-            Metrica_df = convert_pff2metrica(match_event_df)
+            Metrica_df = convert_pff2metrica(match_event_df, period_2_dict.get(match_i, (None, None)))
             event_data_dict[match_i] = Metrica_df
 
-        home_tracking_dict={}
-        away_tracking_dict={}
-        for tracking_path_i in tqdm(tracking_files, total=len(tracking_files), desc='Processing tracking files'):
-            match_i = os.path.splitext(os.path.splitext(os.path.basename(tracking_path_i))[0])[0]
-            match_tracking_df = self.load_tracking_bz2(tracking_path_i)
-            home_tracking, away_tracking = convert_tracking_data_fixed_ids(match_tracking_df)
-            home_tracking_dict[match_i] = home_tracking
-            away_tracking_dict[match_i] = away_tracking
+
 
         if self.out_path:
             #create output directory if not exists

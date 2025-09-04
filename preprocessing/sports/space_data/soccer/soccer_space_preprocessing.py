@@ -95,7 +95,7 @@ def type_id2name(x):
         print(f"Unmapped event type: {x}")
     return x
 
-def convert_pff2metrica(event_df):
+def convert_pff2metrica(event_df, period_2_info=(None, None)):
     """
     Convert PFF-style event data to Metrica format.
 
@@ -159,31 +159,33 @@ def convert_pff2metrica(event_df):
 
     fps = 29.97
     Metrica_df['Start Time [s]'] = (event_df['gameEvents_startGameClock']).round().astype(int)
-    Metrica_df['Start Frame'] = ((event_df['startTime'] - event_df['startTime'][0]) * fps).round().astype(int)
     Metrica_df['End Time [s]'] = (event_df['duration'] + event_df['gameEvents_startGameClock']).round().astype(int)
+
+    Metrica_df['Start Frame'] = ((event_df['startTime'] - event_df['startTime'][0]) * fps).round().astype(int)
     end_frame = ((event_df['endTime'] - event_df['startTime'][0]) * fps).round()
     Metrica_df['End Frame'] = end_frame.fillna(Metrica_df['Start Frame']).astype(int)
     Metrica_df['Team'] = np.where(event_df['gameEvents_homeTeam'] == True, 'Home',
                       np.where(event_df['gameEvents_homeTeam'] == False, 'Away', None))
     
+    first_period_2_index = period_2_info[0]
+
     # find the last row of Period = 1 and first row of Period = 2
-    last_end_p1 = Metrica_df.loc[Metrica_df['Period'] == 1, 'End Time [s]'].iloc[-1]
-    first_start_p2 = Metrica_df.loc[Metrica_df['Period'] == 2, 'Start Time [s]'].iloc[0]
+    first_start_p2 = Metrica_df.loc[Metrica_df['Period'] == 2, 'Start Frame'].iloc[0]
 
     # compute offset
-    offset = first_start_p2 - last_end_p1 + 1
+    offset = first_start_p2 - first_period_2_index
 
     # adjust times directly with np.where (vectorized)
-    Metrica_df['Start Time [s]'] = np.where(
+    Metrica_df['Start Frame'] = np.where(
         Metrica_df['Period'] == 2,
-        Metrica_df['Start Time [s]'] - offset,
-        Metrica_df['Start Time [s]']
+        Metrica_df['Start Frame'] - offset,
+        Metrica_df['Start Frame']
     )
 
-    Metrica_df['End Time [s]'] = np.where(
+    Metrica_df['End Frame'] = np.where(
         Metrica_df['Period'] == 2,
-        Metrica_df['End Time [s]'] - offset,
-        Metrica_df['End Time [s]']
+        Metrica_df['End Frame'] - offset,
+        Metrica_df['End Frame']
 )
 
 
@@ -273,6 +275,10 @@ def convert_tracking_data_fixed_ids(tracking_df):
         home_tracking.loc[home_tracking['Period'] == 2, 'Time [s]'] += max_time_period_1
         away_tracking.loc[away_tracking['Period'] == 2, 'Time [s]'] += max_time_period_1
 
+    # Get the row index for the first occurrence of Period 2
+    first_period_2_index = tracking_df[tracking_df['period'] == 2].index.min()
+    first_period_2_time = tracking_df.loc[first_period_2_index, 'periodElapsedTime'] if pd.notna(first_period_2_index) else 0
+
     #fill nan value
     entry_home_df = home_tracking.loc[0].isnull()
     entry_away_df = away_tracking.loc[0].isnull()
@@ -311,4 +317,4 @@ def convert_tracking_data_fixed_ids(tracking_df):
     away_tracking['ball_y'] = away_tracking['ball_y'].fillna(method='bfill')
 
 
-    return home_tracking, away_tracking
+    return home_tracking, away_tracking, first_period_2_index, first_period_2_time
