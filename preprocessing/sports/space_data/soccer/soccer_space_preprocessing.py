@@ -118,6 +118,9 @@ def convert_pff2metrica(event_df, period_2_info=(None, None)):
         ['Team', 'Type', 'Subtype', 'Period', 'Start Frame', 'Start Time [s]',
          'End Frame', 'End Time [s]', 'From', 'To', 'Start X', 'Start Y', 'End X', 'End Y']
     """
+    # drop row where gameEvents_startGameClock is NaN
+    event_df = event_df.dropna(subset=['gameEvents_startGameClock']).reset_index(drop=True)
+
     # set column name
     column_name = ['Team', 
           'Type',
@@ -158,6 +161,7 @@ def convert_pff2metrica(event_df, period_2_info=(None, None)):
     Metrica_df['Subtype'] = event_df['Subtype']
 
     fps = 29.97
+
     Metrica_df['Start Time [s]'] = (event_df['gameEvents_startGameClock']).round().astype(int)
     Metrica_df['End Time [s]'] = (event_df['duration'] + event_df['gameEvents_startGameClock']).round().astype(int)
 
@@ -173,7 +177,10 @@ def convert_pff2metrica(event_df, period_2_info=(None, None)):
     first_start_p2 = Metrica_df.loc[Metrica_df['Period'] == 2, 'Start Frame'].iloc[0]
 
     # compute offset
-    offset = first_start_p2 - first_period_2_index
+    if first_period_2_index is None:
+        offset = 0
+    else:
+        offset = first_start_p2 - first_period_2_index
 
     # adjust times directly with np.where (vectorized)
     Metrica_df['Start Frame'] = np.where(
