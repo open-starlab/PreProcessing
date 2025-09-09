@@ -148,16 +148,48 @@ def convert_pff2metrica(event_df, period_2_info=(None, None)):
     Metrica_df['Type'] = event_df['possessionEvents_possessionEventType']
     Metrica_df['Type'] = Metrica_df['Type'].apply(type_id2name)
 
-    success_mask = (
-        (event_df['possessionEvents_passOutcomeType'].isin(['C'])) |
-        (event_df['possessionEvents_crossOutcomeType'].isin(['C'])) |
-        (event_df['possessionEvents_shotOutcomeType'].isin(['G'])) |
-        (~event_df['possessionEvents_clearanceOutcomeType'].isin(['B', 'D'])) |
-        (event_df['possessionEvents_challengeOutcomeType'].isin(['B', 'C', 'M'])) |
-        (event_df['possessionEvents_ballCarryOutcome'].isin(['R'])) |
-        (event_df['possessionEvents_touchOutcomeType'].isin(['R']))
-    )
-    event_df['Subtype'] = success_mask.map({True: 'success', False: 'fail'})
+    idx = event_df.index
+
+    def col(name):
+        """Safe getter: returns Series aligned to df (all NaN if col missing)."""
+        return event_df[name] if name in event_df.columns else pd.Series(pd.NA, index=idx)
+
+    # Raw outcome columns
+    pass_out   = col('possessionEvents_passOutcomeType')       
+    cross_out  = col('possessionEvents_crossOutcomeType')       
+    shot_out   = col('possessionEvents_shotOutcomeType')        
+    clr_out    = col('possessionEvents_clearanceOutcomeType')  
+    tkl_out    = col('possessionEvents_challengeOutcomeType')   
+    carry_out  = col('possessionEvents_ballCarryOutcome')       
+    touch_out  = col('possessionEvents_touchOutcomeType')       
+
+    # Per-action success masks (nullable booleans)
+    event_df['pass_success']      = pass_out.isin(['C'])
+    event_df['cross_success']     = cross_out.isin(['C'])
+    event_df['shot_success']      = shot_out.isin(['G'])
+    event_df['clearance_success'] = ~clr_out.isin(['B','D']) & clr_out.notna()
+    event_df['tackle_success']    = tkl_out.isin(['B','C','M'])
+    event_df['dribble_success']   = carry_out.isin(['R'])
+    event_df['touch_success']     = touch_out.isin(['R'])
+
+    # Where each action is *present* (not NaN), assign Subtype based on its success
+    event_df['Subtype'] = np.nan
+
+    def apply_subtype(success_col, present_series):
+        """Set Subtype for rows where this action is present."""
+        is_present = present_series.notna()
+        success    = event_df[success_col] == True
+        fail       = event_df[success_col] == False
+        event_df.loc[is_present & success, 'Subtype'] = 'success'
+        event_df.loc[is_present & fail,    'Subtype'] = 'fail'
+
+    apply_subtype('pass_success',      pass_out)
+    apply_subtype('cross_success',     cross_out)
+    apply_subtype('shot_success',      shot_out)
+    apply_subtype('clearance_success', clr_out)
+    apply_subtype('tackle_success',    tkl_out)
+    apply_subtype('dribble_success',   carry_out)
+    apply_subtype('touch_success',     touch_out)
     Metrica_df['Subtype'] = event_df['Subtype']
 
     fps = 29.97
