@@ -1537,6 +1537,222 @@ def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbos
 
     return event_df
 
+def load_pff2metrica(event_path:str, match_id:str = None) -> pd.DataFrame:
+    """
+    Convert PFF-style event data to Metrica format.
+
+    Parameters
+    ----------
+    event_df : pd.DataFrame
+        Event data from PFF dataset with columns like:
+        - gameEvents_period
+        - gameEvents_playerName
+        - possessionEvents_receiverPlayerName
+        - possessionEvents_possessionEventType
+        - startTime, endTime, duration
+        - gameEvents_homeTeam
+        - various outcome types for success/failure
+    match_id : str, optional
+        Match identifier to add as a column, by default None
+
+    Returns
+    -------
+    Metrica_df : pd.DataFrame
+        DataFrame in Metrica format with columns:
+        ['Team', 'Type', 'Subtype', 'Period', 'Start Frame', 'Start Time [s]',
+         'End Frame', 'End Time [s]', 'From', 'To', 'Start X', 'Start Y', 'End X', 'End Y']
+    """
+    with open(event_path, 'r') as f:
+        event_data = json.load(f)
+        event_df = pd.json_normalize(event_data, sep='_')
+    
+    def type_id2name(x):
+        """
+        Map event type codes to descriptive names.
+
+        Parameters
+        ----------
+        x : str | int | float | None
+            Event type code (e.g., 'PA', 'SH', 'FO', etc.)
+
+        Returns
+        -------
+        str | None
+            Descriptive event type name, or None if not mapped.
+        """
+        import math
+        if x in ['PA']:
+            x = "pass"
+        elif x in ['CR']:
+            x = "cross"
+        # elif x == 2:
+        #     x = "throw_in"
+        # elif x == 5:
+        #     x = "corner_crossed"
+        # elif x == 7:
+        #     x = "take_on"
+        elif x in ['FO']:
+            x = "foul"
+        elif x in ['CH']:
+            x = "tackle"
+        # elif x == 10:
+        #     x = "interception"
+        elif x in ['SH']:
+            x = "shot"
+        elif x in ['CL']:
+            x = "clearance"
+        elif x in ['BC']:
+            x = "dribble"
+        # elif x == 22:
+        #     x = "goalkick"
+        elif x in ['IT', 'RE', 'TC']:
+            x = "other"
+        elif x is None or (isinstance(x, (float, int)) and math.isnan(x)):
+            x = None
+        else:
+            print(f"Unmapped event type: {x}")
+        return x
+    def extract_player_xy(row):
+        """
+        Extracts the (x, y) coordinates of the player involved in a game event.
+
+        Parameters
+        ----------
+        row : pd.Series
+            A row from a DataFrame containing game event and player information. 
+            Expected keys:
+                - "gameEvents_homeTeam" (bool): True if home team, False if away team.
+                - "homePlayers" (list|str): List or stringified list of home team players.
+                - "awayPlayers" (list|str): List or stringified list of away team players.
+                - "gameEvents_playerId" (int): ID of the player involved in the event.
+
+        Returns
+        -------
+        pd.Series
+            A Series with coordinates:
+            - "start_x"
+            - "start_y"
+            - "end_x"
+            - "end_y"
+            If the player is not found, all values are None.
+        """
+        # choose player list
+        if row["gameEvents_homeTeam"] is True:
+            player_dict = row["homePlayers"]
+        elif row["gameEvents_homeTeam"] is False:
+            player_dict = row["awayPlayers"]
+        else:
+            return pd.Series([None, None, None, None], index=["start_x", "start_y", "end_x", "end_y"])
+        
+        # find target player
+        player_dict = ast.literal_eval(player_dict) if type(player_dict) == str else player_dict
+        target_player = next((d for d in player_dict if d["playerId"] == row["gameEvents_playerId"]), None)
+
+        if target_player:
+            return pd.Series(
+                [target_player["x"], target_player["y"], target_player["x"], target_player["y"]],
+                index=["start_x", "start_y", "end_x", "end_y"]
+            )
+        else:
+            return pd.Series([None, None, None, None], index=["start_x", "start_y", "end_x", "end_y"])
+
+    # drop row where gameEvents_startGameClock is NaN
+    event_df = event_df.dropna(subset=['gameEvents_startGameClock']).reset_index(drop=True)
+
+    # set column name
+    column_name = ['Team', 
+          'Type',
+          'Subtype',
+          'Period',
+          'Start Frame',
+          'Start Time [s]',
+          'End Frame',
+          'End Time [s]',
+          'From',
+          'To',
+          'Start X',
+          'Start Y',
+          'End X',
+          'End Y']
+    Metrica_df = pd.DataFrame(columns=column_name)
+    Metrica_df['Period'] = event_df['gameEvents_period']
+    event_df[["start_x", "start_y", "end_x", "end_y"]] = event_df.apply(extract_player_xy, axis=1)
+    Metrica_df['Start X'] = event_df['start_x'] #- 52.5
+    Metrica_df['Start Y'] = event_df['start_y'] #- 34
+    Metrica_df['End X'] = event_df['end_x'] #- 52.5
+    Metrica_df['End Y'] = event_df['end_y'] #- 34
+    Metrica_df['From'] = event_df['gameEvents_playerName']
+    Metrica_df['To'] = event_df['possessionEvents_receiverPlayerName']
+    Metrica_df['Type'] = event_df['possessionEvents_possessionEventType']
+    Metrica_df['Type'] = Metrica_df['Type'].apply(type_id2name)
+
+    idx = event_df.index
+
+    def col(name):
+        """Safe getter: returns Series aligned to df (all NaN if col missing)."""
+        return event_df[name] if name in event_df.columns else pd.Series(pd.NA, index=idx)
+
+    # Raw outcome columns
+    pass_out   = col('possessionEvents_passOutcomeType')       
+    cross_out  = col('possessionEvents_crossOutcomeType')       
+    shot_out   = col('possessionEvents_shotOutcomeType')        
+    clr_out    = col('possessionEvents_clearanceOutcomeType')  
+    tkl_out    = col('possessionEvents_challengeOutcomeType')   
+    carry_out  = col('possessionEvents_ballCarryOutcome')       
+    touch_out  = col('possessionEvents_touchOutcomeType')       
+
+    # Per-action success masks (nullable booleans)
+    event_df['pass_success']      = pass_out.isin(['C'])
+    event_df['cross_success']     = cross_out.isin(['C'])
+    event_df['shot_success']      = shot_out.isin(['G'])
+    event_df['clearance_success'] = ~clr_out.isin(['B','D']) & clr_out.notna()
+    event_df['tackle_success']    = tkl_out.isin(['B','C','M'])
+    event_df['dribble_success']   = carry_out.isin(['R'])
+    event_df['touch_success']     = touch_out.isin(['R'])
+
+    # Where each action is *present* (not NaN), assign Subtype based on its success
+    event_df['Subtype'] = np.nan
+
+    def apply_subtype(success_col, present_series):
+        """Set Subtype for rows where this action is present."""
+        is_present = present_series.notna()
+        success    = event_df[success_col] == True
+        fail       = event_df[success_col] == False
+        event_df.loc[is_present & success, 'Subtype'] = 'success'
+        event_df.loc[is_present & fail,    'Subtype'] = 'fail'
+
+    apply_subtype('pass_success',      pass_out)
+    apply_subtype('cross_success',     cross_out)
+    apply_subtype('shot_success',      shot_out)
+    apply_subtype('clearance_success', clr_out)
+    apply_subtype('tackle_success',    tkl_out)
+    apply_subtype('dribble_success',   carry_out)
+    apply_subtype('touch_success',     touch_out)
+    Metrica_df['Subtype'] = event_df['Subtype']
+
+    fps = 29.97
+
+    Metrica_df['Start Time [s]'] = (event_df['gameEvents_startGameClock']).round().astype(int)
+    Metrica_df['End Time [s]'] = (event_df['duration'] + event_df['gameEvents_startGameClock']).round().astype(int)
+
+    Metrica_df['Start Frame'] = ((event_df['startTime'] - event_df['startTime'][0]) * fps).round().astype(int)
+    end_frame = ((event_df['endTime'] - event_df['startTime'][0]) * fps).round()
+    Metrica_df['End Frame'] = end_frame.fillna(Metrica_df['Start Frame']).astype(int)
+    Metrica_df['Team'] = np.where(event_df['gameEvents_homeTeam'] == True, 'Home',
+                      np.where(event_df['gameEvents_homeTeam'] == False, 'Away', None))
+
+    #drop rows where start_x or start_y is NaN
+    Metrica_df = Metrica_df.dropna(subset=['Start X', 'Start Y'])
+    Metrica_df = Metrica_df.reset_index(drop=True)
+
+    if match_id is not None:
+        Metrica_df['match_id'] = match_id
+        cols = Metrica_df.columns.tolist()
+        cols = cols[-1:] + cols[:-1]
+        Metrica_df = Metrica_df[cols]
+
+    return Metrica_df
+
 if __name__ == "__main__":
     import pdb
     import os

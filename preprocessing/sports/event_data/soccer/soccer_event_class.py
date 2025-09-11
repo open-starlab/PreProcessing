@@ -65,6 +65,8 @@ class Soccer_event_data:
         #based on the data provider, load the dataloading function from load_data.py (single file)
         if self.data_provider == 'datafactory':
             df=soccer_load_data.load_datafactory(self.event_path)
+        elif self.data_provider == 'pff_fc':
+            df=soccer_load_data.load_pff2metrica(self.event_path, match_id=self.match_id)
         elif self.data_provider == 'metrica':
             df=soccer_load_data.load_metrica(self.event_path,match_id=self.match_id,tracking_home_path=self.tracking_home_path,tracking_away_path=self.tracking_away_path)
         elif self.data_provider == 'opta':
@@ -115,10 +117,13 @@ class Soccer_event_data:
                         out_df_list.append(future.result())
                 df = pd.concat(out_df_list)
             #other data providers
-            elif self.data_provider in ['datafactory','opta','wyscout']:
+            elif self.data_provider in ['datafactory','opta','wyscout','pff_fc']:
                 event_path = self.event_path
                 files = sorted(os.listdir(self.event_path))
                 files = [f for f in files if not f.startswith('.')]
+                if self.data_provider == "pff_fc":
+                    #only json files
+                    files = [f for f in files if f.endswith('.json')]   
                 out_df_list = []
                 if self.data_provider == "opta":
                     if self.match_id is None:
@@ -135,6 +140,8 @@ class Soccer_event_data:
                         count+=1
                     elif self.data_provider == "wyscout":
                         self.wyscout_matches_path=os.path.join(matches_path, f.replace("events_","matches_"))
+                    elif self.data_provider == "pff_fc":
+                        self.match_id = f.split(".")[0]
                     self.event_path = os.path.join(event_path, f)
                     df = self.load_data_single_file()
                     out_df_list.append(df)

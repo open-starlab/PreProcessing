@@ -1,6 +1,6 @@
 class Event_data:
     soccer_data_provider = ['datafactory', 'metrica', 'opta', 'robocup_2d', 'sportec', 'statsbomb', 'statsbomb_skillcorner',
-                            'wyscout', 'datastadium','bepro']
+                            'wyscout', 'datastadium', 'bepro', 'pff_fc']
     handball_data_provider = []
     rocket_league_data_provider = ['carball']
 
