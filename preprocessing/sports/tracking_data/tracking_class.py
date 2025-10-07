@@ -4,7 +4,7 @@ from .ultimate.ultimate_tracking_class import Ultimate_tracking_data
 
 class Tracking_data:
     soccer_data_provider = ["soccer"]
-    ultimate_data_provider = ["ultimate_track"]
+    ultimate_data_provider = ["UltimateTrack", "UFA"]
     handball_data_provider = []
     rocket_league_data_provider = []
 
