@@ -1,61 +1,75 @@
-import os
-
 import numpy as np
 import pandas as pd
 
+from .preprocess_config import COORDINATE_SCALE, PLAYERS_PER_TEAM, TRACKING_HERZ
 
-def calculate_magnitude_angle_features(
-    vx, vy, ax, ay, prev_v_angle=None, prev_a_angle=None
-):
-    """Calculate magnitude and angle features"""
-    # Velocity magnitude and angle
-    v_mag = np.sqrt(vx**2 + vy**2) if not (np.isnan(vx) or np.isnan(vy)) else np.nan
-    v_angle = np.arctan2(vy, vx) if not (np.isnan(vx) or np.isnan(vy)) else np.nan
 
-    # Acceleration magnitude and angle
-    a_mag = np.sqrt(ax**2 + ay**2) if not (np.isnan(ax) or np.isnan(ay)) else np.nan
-    a_angle = np.arctan2(ay, ax) if not (np.isnan(ax) or np.isnan(ay)) else np.nan
+def preprocessing_for_ultimatetrack(data_path):
+    """
+    Complete pipeline: process Ultimate Track data -> create intermediate file -> convert to Metrica format
 
-    # Angle differences
-    diff_v_a_angle = np.nan
-    if not (np.isnan(v_angle) or np.isnan(a_angle)):
-        diff_v_a_angle = np.arctan2(
-            np.sin(v_angle - a_angle), np.cos(v_angle - a_angle)
-        )
+    Args:
+        data_path: Path to Ultimate Track CSV data file
 
-    diff_v_angle = np.nan
-    if prev_v_angle is not None and not (np.isnan(v_angle) or np.isnan(prev_v_angle)):
-        diff_v_angle = np.arctan2(
-            np.sin(v_angle - prev_v_angle), np.cos(v_angle - prev_v_angle)
-        )
+    Returns:
+        Tuple of (home_df, away_df, events_df): DataFrames in Metrica format
+            - home_df: Home team tracking data with MultiIndex columns
+            - away_df: Away team tracking data with MultiIndex columns
+            - events_df: Events data with disc position and holder information
+    """
 
-    diff_a_angle = np.nan
-    if prev_a_angle is not None and not (np.isnan(a_angle) or np.isnan(prev_a_angle)):
-        diff_a_angle = np.arctan2(
-            np.sin(a_angle - prev_a_angle), np.cos(a_angle - prev_a_angle)
-        )
+    # Load Ultimate Track data
+    raw_data = pd.read_csv(data_path)
 
-    return (
-        v_mag,
-        a_mag,
-        v_angle,
-        a_angle,
-        diff_v_a_angle,
-        diff_v_angle,
-        diff_a_angle,
-    )
+    # Validate required columns
+    required_columns = [
+        "frame",
+        "id",
+        "class",
+        "x",
+        "y",
+        "vx",
+        "vy",
+        "ax",
+        "ay",
+        "closest",
+        "holder",
+    ]
+    missing_columns = [col for col in required_columns if col not in raw_data.columns]
+    if missing_columns:
+        raise ValueError(f"Missing required columns: {missing_columns}")
+
+    # Apply coordinate scaling using config values
+    if "x" in raw_data.columns and "y" in raw_data.columns:
+        raw_data = raw_data.copy()
+        raw_data["x"] = raw_data["x"] * COORDINATE_SCALE
+        raw_data["y"] = raw_data["y"] * COORDINATE_SCALE
+
+    # Step 1: Create intermediate file with all required columns
+    print("Creating intermediate file with calculated features...")
+    intermediate_df = create_intermediate_file(raw_data)
+
+    # Step 2: Convert to Metrica format
+    print("Converting to Metrica format...")
+    home_df, away_df, events_df = convert_to_metrica_format(intermediate_df)
+
+    return home_df, away_df, events_df
 
 
 def create_intermediate_file(raw_data):
     """
-    Create intermediate file with specified columns:
-    frame,id,x,y,vx,vy,ax,ay,v_mag,a_mag,v_angle,a_angle,diff_v_a_angle,diff_v_angle,diff_a_angle,class,holder,closest
+    Create intermediate file with calculated motion features from raw Ultimate Track data
+
+    Processes frame-by-frame to calculate velocity/acceleration magnitudes and angles,
+    including differential angle features for each tracked entity.
 
     Args:
-        raw_data: Raw Ultimate Track data DataFrame
+        raw_data: Raw Ultimate Track data DataFrame with columns:
+                 frame, id, x, y, vx, vy, ax, ay, class, holder, closest
 
     Returns:
-        DataFrame: Intermediate data with calculated features
+        DataFrame: Intermediate data with calculated features including:
+                  v_mag, a_mag, v_angle, a_angle, diff_v_a_angle, diff_v_angle, diff_a_angle
     """
     intermediate_data = []
 
@@ -123,6 +137,90 @@ def create_intermediate_file(raw_data):
     return pd.DataFrame(intermediate_data)
 
 
+def calculate_magnitude_angle_features(
+    vx, vy, ax, ay, prev_v_angle=None, prev_a_angle=None
+):
+    """Calculate magnitude and angle features"""
+    # Velocity magnitude and angle
+    v_mag = (
+        round(np.sqrt(vx**2 + vy**2), 2)
+        if not (np.isnan(vx) or np.isnan(vy))
+        else np.nan
+    )
+    v_angle = (
+        round(np.arctan2(vy, vx), 2) if not (np.isnan(vx) or np.isnan(vy)) else np.nan
+    )
+
+    # Acceleration magnitude and angle
+    a_mag = (
+        round(np.sqrt(ax**2 + ay**2), 2)
+        if not (np.isnan(ax) or np.isnan(ay))
+        else np.nan
+    )
+    a_angle = (
+        round(np.arctan2(ay, ax), 2) if not (np.isnan(ax) or np.isnan(ay)) else np.nan
+    )
+
+    # Angle differences
+    diff_v_a_angle = np.nan
+    if not (np.isnan(v_angle) or np.isnan(a_angle)):
+        diff_v_a_angle = round(
+            np.arctan2(np.sin(v_angle - a_angle), np.cos(v_angle - a_angle)), 2
+        )
+
+    diff_v_angle = np.nan
+    if prev_v_angle is not None and not (np.isnan(v_angle) or np.isnan(prev_v_angle)):
+        diff_v_angle = round(
+            np.arctan2(np.sin(v_angle - prev_v_angle), np.cos(v_angle - prev_v_angle)),
+            2,
+        )
+
+    diff_a_angle = np.nan
+    if prev_a_angle is not None and not (np.isnan(a_angle) or np.isnan(prev_a_angle)):
+        diff_a_angle = round(
+            np.arctan2(np.sin(a_angle - prev_a_angle), np.cos(a_angle - prev_a_angle)),
+            2,
+        )
+
+    return (
+        v_mag,
+        a_mag,
+        v_angle,
+        a_angle,
+        diff_v_a_angle,
+        diff_v_angle,
+        diff_a_angle,
+    )
+
+
+def convert_to_metrica_format(intermediate_df):
+    """
+    Convert Ultimate Track intermediate data to Metrica format
+
+    Args:
+        intermediate_df: DataFrame with intermediate format containing calculated motion features
+
+    Returns:
+        Tuple of (home_df, away_df, events_df): Metrica format DataFrames
+            - home_df: Home team tracking data with MultiIndex columns
+            - away_df: Away team tracking data with MultiIndex columns
+            - events_df: Events data with disc position and holder information
+    """
+    # Create the Metrica DataFrame for events
+    events_df = create_events_metrica(intermediate_df)
+
+    # Create the Metrica DataFrame for Home and Away
+    home_df = create_tracking_metrica(intermediate_df, "Home")
+    away_df = create_tracking_metrica(intermediate_df, "Away")
+
+    # Drop non-data columns
+    events_df.dropna(subset=["Start Frame"], inplace=True)
+    home_df.dropna(subset=[("", "", "Frame")], inplace=True)
+    away_df.dropna(subset=[("", "", "Frame")], inplace=True)
+
+    return home_df, away_df, events_df
+
+
 def create_events_metrica(df):
     """
     Create the Metrica DataFrame for events
@@ -163,7 +261,7 @@ def create_events_metrica(df):
 
     # Create columns
     start_frame = pd.Series(np.arange(min_frame, max_frame + 1))
-    start_time = (start_frame / 15).round(6)
+    start_time = (start_frame / TRACKING_HERZ).round(6)
     start_x = disc_df["x"].round(2).reset_index(drop=True)
     start_y = disc_df["y"].round(2).reset_index(drop=True)
     offense_ids = sorted(df.loc[df["class"] == "offense", "id"].unique())
@@ -206,40 +304,42 @@ def create_events_metrica(df):
 
 def create_tracking_metrica(df, team):
     """
-    Create the Metrica DataFrame for tracking data
+    Create the Metrica format DataFrame for team tracking data from UFA data
 
     Args:
-        df (DataFrame): The DataFrame containing the data
-        team (str): The team name
+        df (DataFrame): The UFA intermediate DataFrame containing tracking data
+                       with columns: frame, class, x, y, id, closest
+        team (str): Team designation ("Home" for offense, "Away" for defense)
 
     Returns:
-        DataFrame: The DataFrame containing the tracking data
+        DataFrame: Tracking DataFrame in Metrica format with MultiIndex columns:
+                  - Level 0: "" for general columns, team name for player columns
+                  - Level 1: Player indices for player columns
+                  - Level 2: "Period", "Frame", "Time [s]", player position names, "Disc__"
+                  Contains position data for up to 7 players plus disc position.
     """
-    # Define the levels of the MultiIndex
-    level_0 = [""] * 3 + [team] * 14 + [""] * 3
-    level_1 = [""] * 3 + [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6] + [""] * 3
-    level_2 = [
-        "Period",
-        "Frame",
-        "Time [s]",
-        "Player0",
-        "Player0",
-        "Player1",
-        "Player1",
-        "Player2",
-        "Player2",
-        "Player3",
-        "Player3",
-        "Player4",
-        "Player4",
-        "Player5",
-        "Player5",
-        "Player6",
-        "Player6",
-        "Disc__",
-        "Disc__",
-        "Selected",
-    ]
+    # Define the levels of the MultiIndex using config values
+    player_columns = PLAYERS_PER_TEAM * 2  # x, y for each player
+    level_0 = [""] * 3 + [team] * player_columns + [""] * 2
+    level_1 = [""] * 3 + [i // 2 for i in range(player_columns)] + [""] * 2
+
+    # Generate player column names using config
+    player_names = []
+    for i in range(PLAYERS_PER_TEAM):
+        player_names.extend([f"Player{i}", f"Player{i}"])
+
+    level_2 = (
+        [
+            "Period",
+            "Frame",
+            "Time [s]",
+        ]
+        + player_names
+        + [
+            "Disc__",
+            "Disc__",
+        ]
+    )
 
     # Create the MultiIndex
     multi_columns = pd.MultiIndex.from_arrays([level_0, level_1, level_2])
@@ -250,7 +350,7 @@ def create_tracking_metrica(df, team):
     nan_column = pd.Series([np.nan] * (max_frame - min_frame + 1))
 
     frame = pd.Series(np.arange(min_frame, max_frame + 1))
-    time = (frame / 15).round(6)
+    time = (frame / TRACKING_HERZ).round(6)
 
     offense_ids = sorted(df.loc[df["class"] == "offense", "id"].unique())
     if team == "Home":
@@ -271,7 +371,9 @@ def create_tracking_metrica(df, team):
                 player_ids.append(closest_defense)
 
     positions = []
-    for i, player_id in enumerate(player_ids[:7]):  # Limit to 7 players
+    for i, player_id in enumerate(
+        player_ids[:PLAYERS_PER_TEAM]
+    ):  # Limit to config-defined player count
         if team == "Home":
             player_df = df[(df["id"] == player_id) & (df["class"] == "offense")]
         else:
@@ -288,7 +390,7 @@ def create_tracking_metrica(df, team):
         positions.append(y)
 
     # Add remaining player columns if less than 7 players
-    while len(positions) < 14:
+    while len(positions) < PLAYERS_PER_TEAM * 2:
         positions.append(pd.Series([np.nan] * len(frame)))
 
     disc_x = df.loc[df["class"] == "disc", "x"].round(2).reset_index(drop=True)
@@ -298,213 +400,7 @@ def create_tracking_metrica(df, team):
 
     positions_df = pd.concat(positions, axis=1)
 
-    selected = nan_column.copy()
-    try:
-        holder_data = df[df["holder"]]
-        if not holder_data.empty:
-            for _, holder_row in holder_data.iterrows():
-                frame_idx = holder_row["frame"] - min_frame
-                if holder_row["id"] in offense_ids:
-                    selected.iloc[frame_idx] = offense_ids.index(holder_row["id"])
-    except Exception:
-        pass
-    selected_df = pd.DataFrame(selected).reset_index(drop=True)
-
-    tracking_df = pd.concat(
-        [nan_column, frame, time, positions_df, selected_df], axis=1
-    )
+    tracking_df = pd.concat([nan_column, frame, time, positions_df], axis=1)
     tracking_df.columns = multi_columns
 
     return tracking_df
-
-
-def convert_to_metrica_format(intermediate_df):
-    """
-    Convert intermediate data to Metrica format
-
-    Args:
-        intermediate_df: DataFrame with intermediate format
-
-    Returns:
-        Tuple of (events_df, home_df, away_df): Metrica format DataFrames
-    """
-    # Create the Metrica DataFrame for events
-    events_df = create_events_metrica(intermediate_df)
-
-    # Create the Metrica DataFrame for Home and Away
-    home_df = create_tracking_metrica(intermediate_df, "Home")
-    away_df = create_tracking_metrica(intermediate_df, "Away")
-
-    # Drop non-data columns
-    events_df.dropna(subset=["Start Frame"], inplace=True)
-    home_df.dropna(subset=[("", "", "Frame")], inplace=True)
-    away_df.dropna(subset=[("", "", "Frame")], inplace=True)
-
-    return events_df, home_df, away_df
-
-
-def process_and_convert_to_metrica(
-    game_id, data_path, save_folder_path=None, save_intermediate=False
-):
-    """
-    Complete pipeline: process Ultimate Track data -> create intermediate file -> convert to Metrica format
-
-    Args:
-        game_id: Game identifier (file index)
-        data_path: Path to data directory containing CSV files
-        save_folder_path: Path to save output files (optional)
-        save_intermediate: Whether to save intermediate file
-
-    Returns:
-        Tuple of (intermediate_df, events_df, home_df, away_df): DataFrames
-    """
-
-    def get_csv_files(data_path):
-        """Get list of CSV files in data directory"""
-        csv_files = [f for f in os.listdir(data_path) if f.endswith(".csv")]
-        csv_files.sort()
-        return csv_files
-
-    # Get list of CSV files
-    csv_files = get_csv_files(data_path)
-
-    if game_id >= len(csv_files):
-        raise ValueError(
-            f"Game ID {game_id} out of range. Available files: {len(csv_files)}"
-        )
-
-    # Load the specified CSV file
-    file_path = os.path.join(data_path, csv_files[game_id])
-    print(f"Loading Ultimate Track data from: {file_path}")
-
-    raw_data = pd.read_csv(file_path)
-
-    # Validate required columns
-    required_columns = [
-        "frame",
-        "id",
-        "class",
-        "x",
-        "y",
-        "vx",
-        "vy",
-        "ax",
-        "ay",
-        "closest",
-        "holder",
-    ]
-    missing_columns = [col for col in required_columns if col not in raw_data.columns]
-    if missing_columns:
-        raise ValueError(f"Missing required columns: {missing_columns}")
-
-    print(f"Processing {len(raw_data)} rows from {csv_files[game_id]}")
-
-    # Step 1: Create intermediate file with all required columns
-    print("Creating intermediate file with calculated features...")
-    intermediate_df = create_intermediate_file(raw_data)
-
-    # Step 2: Convert to Metrica format
-    print("Converting to Metrica format...")
-    events_df, home_df, away_df = convert_to_metrica_format(intermediate_df)
-
-    # Save results if path is provided
-    if save_folder_path:
-        # Create output directory
-        os.makedirs(save_folder_path, exist_ok=True)
-
-        base_name = csv_files[game_id][:-4]  # Remove .csv extension
-
-        if save_intermediate:
-            intermediate_path = f"{save_folder_path}/{base_name}_intermediate.csv"
-            intermediate_df.to_csv(intermediate_path, index=False)
-            print(f"Saved intermediate file: {intermediate_path}")
-
-        # Save Metrica format files
-        events_path = f"{save_folder_path}/{base_name}_events.csv"
-        home_path = f"{save_folder_path}/{base_name}_Home.csv"
-        away_path = f"{save_folder_path}/{base_name}_Away.csv"
-
-        events_df.to_csv(events_path, index=False)
-        home_df.to_csv(home_path, index=False)
-        away_df.to_csv(away_path, index=False)
-
-        print("Saved Metrica files:")
-        print(f"  Events: {events_path}")
-        print(f"  Home: {home_path}")
-        print(f"  Away: {away_path}")
-
-    print("Processing completed!")
-    print(f"Intermediate data shape: {intermediate_df.shape}")
-    print(f"Events data shape: {events_df.shape}")
-    print(f"Home tracking shape: {home_df.shape}")
-    print(f"Away tracking shape: {away_df.shape}")
-
-    return intermediate_df, events_df, home_df, away_df
-
-
-def preprocessing_for_ultimatetrack(game_id, data_path):
-    """
-    Preprocessing function specifically for UltimateTrack data provider
-
-    Args:
-        game_id: Game identifier (file index)
-        data_path: Path to data directory containing CSV files
-
-    Returns:
-        Tuple of (home_df, away_df, events_df): DataFrames
-    """
-    intermediate_df, events_df, home_df, away_df = process_and_convert_to_metrica(
-        game_id, data_path
-    )
-    return home_df, away_df, events_df
-
-
-def preprocessing_for_ufa(game_id, data_path):
-    """
-    Preprocessing function specifically for UFA data provider
-
-    Args:
-        game_id: Game identifier (file index)
-        data_path: Path to data directory containing CSV files
-
-    Returns:
-        Tuple of (home_df, away_df, events_df): DataFrames
-    """
-
-    def get_csv_files(data_path):
-        """Get list of CSV files in data directory"""
-        csv_files = [f for f in os.listdir(data_path) if f.endswith(".csv")]
-        csv_files.sort()
-        return csv_files
-
-    # Get list of CSV files
-    csv_files = get_csv_files(data_path)
-
-    if game_id >= len(csv_files):
-        raise ValueError(
-            f"Game ID {game_id} out of range. Available files: {len(csv_files)}"
-        )
-
-    # Load the specified CSV file
-    file_path = os.path.join(data_path, csv_files[game_id])
-    print(f"Loading UFA data from: {file_path}")
-
-    raw_data = pd.read_csv(file_path)
-
-    # UFAデータから不要な列を削除
-    columns_to_remove = ["selected", "prev_holder", "def_selected"]
-    existing_columns_to_remove = [
-        col for col in columns_to_remove if col in raw_data.columns
-    ]
-
-    if existing_columns_to_remove:
-        print(f"Removing columns: {existing_columns_to_remove}")
-        processed_data = raw_data.drop(columns=existing_columns_to_remove)
-    else:
-        processed_data = raw_data.copy()
-        print("No columns to remove from UFA data")
-
-    # UFAデータ（中間ファイル形式）からMetrica形式に変換
-    events_df, home_df, away_df = convert_to_metrica_format(processed_data)
-
-    return home_df, away_df, events_df
