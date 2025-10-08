@@ -75,7 +75,7 @@ if __name__ == "__main__":
         if data_provider == "UFA":
             # Test UFA data
             print("\nTesting UFA data...")
-            data_path = os.getcwd() + "/data/UFA/2_1.txt"
+            data_path = os.getcwd() + "/test/sports/tracking_data/UFA/2_1.txt"
 
             try:
                 # Call the function for UFA directly
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 )
 
                 # Create output directory if it doesn't exist
-                output_dir = os.getcwd() + "/test/sports/tracking_data/data/ufa/"
+                output_dir = os.getcwd() + "/test/sports/tracking_data/UFA/metrica/"
                 base_name = os.path.splitext(os.path.basename(data_path))[0]
                 os.makedirs(output_dir, exist_ok=True)
 
@@ -106,7 +106,9 @@ if __name__ == "__main__":
         elif data_provider == "UltimateTrack":
             # Test Ultimate Track data
             print("\nTesting Ultimate Track data...")
-            data_path = os.getcwd() + "/data/UltimateTrack/1_1_1.csv"
+            data_path = (
+                os.getcwd() + "/test/sports/tracking_data/UltimateTrack/1_1_1.csv"
+            )
 
             try:
                 # Call the function for Ultimate Track directly
@@ -119,7 +121,7 @@ if __name__ == "__main__":
 
                 # Create output directory if it doesn't exist
                 output_dir = (
-                    os.getcwd() + "/test/sports/tracking_data/data/ultimatetrack/"
+                    os.getcwd() + "/test/sports/tracking_data/UltimateTrack/metrica/"
                 )
                 base_name = os.path.splitext(os.path.basename(data_path))[0]
                 os.makedirs(output_dir, exist_ok=True)
