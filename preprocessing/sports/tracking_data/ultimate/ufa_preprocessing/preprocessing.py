@@ -1,15 +1,20 @@
 import numpy as np
 import pandas as pd
 
-from .preprocess_config import COORDINATE_SCALE, PLAYERS_PER_TEAM, TRACKING_HERZ
+from .preprocess_config import (
+    COLUMNS_TO_REMOVE,
+    COORDINATE_SCALE,
+    PLAYERS_PER_TEAM,
+    TRACKING_HERZ,
+)
 
 
-def preprocessing_for_ultimatetrack(data_path):
+def preprocessing_for_ufa(data_path):
     """
-    Complete pipeline: process Ultimate Track data -> create intermediate file -> convert to Metrica format
+    Preprocessing function specifically for UFA data provider
 
     Args:
-        data_path: Path to Ultimate Track CSV data file
+        data_path: Path to the UFA data file (CSV/TXT format)
 
     Returns:
         Tuple of (home_df, away_df, events_df): DataFrames in Metrica format
@@ -18,179 +23,30 @@ def preprocessing_for_ultimatetrack(data_path):
             - events_df: Events data with disc position and holder information
     """
 
-    # Load Ultimate Track data
+    # Load UFA data
     raw_data = pd.read_csv(data_path)
 
-    # Validate required columns
-    required_columns = [
-        "frame",
-        "id",
-        "class",
-        "x",
-        "y",
-        "vx",
-        "vy",
-        "ax",
-        "ay",
-        "closest",
-        "holder",
+    # Remove unnecessary columns from UFA data
+    existing_columns_to_remove = [
+        col for col in COLUMNS_TO_REMOVE if col in raw_data.columns
     ]
-    missing_columns = [col for col in required_columns if col not in raw_data.columns]
-    if missing_columns:
-        raise ValueError(f"Missing required columns: {missing_columns}")
+
+    if existing_columns_to_remove:
+        print(f"Removing columns: {existing_columns_to_remove}")
+        processed_data = raw_data.drop(columns=existing_columns_to_remove)
+    else:
+        processed_data = raw_data.copy()
+        print("No columns to remove from UFA data")
 
     # Apply coordinate scaling using config values
-    if "x" in raw_data.columns and "y" in raw_data.columns:
-        raw_data = raw_data.copy()
-        raw_data["x"] = raw_data["x"] * COORDINATE_SCALE
-        raw_data["y"] = raw_data["y"] * COORDINATE_SCALE
+    if "x" in processed_data.columns and "y" in processed_data.columns:
+        processed_data["x"] = processed_data["x"] * COORDINATE_SCALE
+        processed_data["y"] = processed_data["y"] * COORDINATE_SCALE
 
-    # Step 1: Create intermediate file with all required columns
-    print("Creating intermediate file with calculated features...")
-    intermediate_df = create_intermediate_file(raw_data)
-
-    # Step 2: Convert to Metrica format
-    print("Converting to Metrica format...")
-    home_df, away_df, events_df = convert_to_metrica_format(intermediate_df)
+    # Convert UFA data (intermediate file format) to Metrica format
+    home_df, away_df, events_df = convert_to_metrica_format(processed_data)
 
     return home_df, away_df, events_df
-
-
-def create_intermediate_file(raw_data):
-    """
-    Create intermediate file with calculated motion features from raw Ultimate Track data
-
-    Processes frame-by-frame to calculate velocity/acceleration magnitudes and angles,
-    including differential angle features for each tracked entity.
-
-    Args:
-        raw_data: Raw Ultimate Track data DataFrame with columns:
-                 frame, id, x, y, vx, vy, ax, ay, class, holder, closest
-
-    Returns:
-        DataFrame: Intermediate data with calculated features including:
-                  v_mag, a_mag, v_angle, a_angle, diff_v_a_angle, diff_v_angle, diff_a_angle
-    """
-    intermediate_data = []
-
-    # Group by id to track previous angles for each entity
-    entity_prev_angles = {}
-
-    # Process data frame by frame
-    for frame in sorted(raw_data["frame"].unique()):
-        frame_data = raw_data[raw_data["frame"] == frame].copy()
-
-        for _, row in frame_data.iterrows():
-            entity_id = row["id"]
-            entity_key = f"{entity_id}_{row['class']}"
-
-            # Get previous angles for this entity
-            prev_v_angle = entity_prev_angles.get(f"{entity_key}_v", None)
-            prev_a_angle = entity_prev_angles.get(f"{entity_key}_a", None)
-
-            # Calculate magnitude and angle features
-            (
-                v_mag,
-                a_mag,
-                v_angle,
-                a_angle,
-                diff_v_a_angle,
-                diff_v_angle,
-                diff_a_angle,
-            ) = calculate_magnitude_angle_features(
-                row["vx"],
-                row["vy"],
-                row["ax"],
-                row["ay"],
-                prev_v_angle,
-                prev_a_angle,
-            )
-
-            # Create intermediate row
-            intermediate_row = {
-                "frame": row["frame"],
-                "id": row["id"],
-                "x": row["x"],
-                "y": row["y"],
-                "vx": row["vx"],
-                "vy": row["vy"],
-                "ax": row["ax"],
-                "ay": row["ay"],
-                "v_mag": v_mag,
-                "a_mag": a_mag,
-                "v_angle": v_angle,
-                "a_angle": a_angle,
-                "diff_v_a_angle": diff_v_a_angle,
-                "diff_v_angle": diff_v_angle,
-                "diff_a_angle": diff_a_angle,
-                "class": row["class"],
-                "holder": row["holder"],
-                "closest": row["closest"],
-            }
-
-            intermediate_data.append(intermediate_row)
-
-            # Update previous angles
-            entity_prev_angles[f"{entity_key}_v"] = v_angle
-            entity_prev_angles[f"{entity_key}_a"] = a_angle
-
-    return pd.DataFrame(intermediate_data)
-
-
-def calculate_magnitude_angle_features(
-    vx, vy, ax, ay, prev_v_angle=None, prev_a_angle=None
-):
-    """Calculate magnitude and angle features"""
-    # Velocity magnitude and angle
-    v_mag = (
-        round(np.sqrt(vx**2 + vy**2), 2)
-        if not (np.isnan(vx) or np.isnan(vy))
-        else np.nan
-    )
-    v_angle = (
-        round(np.arctan2(vy, vx), 2) if not (np.isnan(vx) or np.isnan(vy)) else np.nan
-    )
-
-    # Acceleration magnitude and angle
-    a_mag = (
-        round(np.sqrt(ax**2 + ay**2), 2)
-        if not (np.isnan(ax) or np.isnan(ay))
-        else np.nan
-    )
-    a_angle = (
-        round(np.arctan2(ay, ax), 2) if not (np.isnan(ax) or np.isnan(ay)) else np.nan
-    )
-
-    # Angle differences
-    diff_v_a_angle = np.nan
-    if not (np.isnan(v_angle) or np.isnan(a_angle)):
-        diff_v_a_angle = round(
-            np.arctan2(np.sin(v_angle - a_angle), np.cos(v_angle - a_angle)), 2
-        )
-
-    diff_v_angle = np.nan
-    if prev_v_angle is not None and not (np.isnan(v_angle) or np.isnan(prev_v_angle)):
-        diff_v_angle = round(
-            np.arctan2(np.sin(v_angle - prev_v_angle), np.cos(v_angle - prev_v_angle)),
-            2,
-        )
-
-    diff_a_angle = np.nan
-    if prev_a_angle is not None and not (np.isnan(a_angle) or np.isnan(prev_a_angle)):
-        diff_a_angle = round(
-            np.arctan2(np.sin(a_angle - prev_a_angle), np.cos(a_angle - prev_a_angle)),
-            2,
-        )
-
-    return (
-        v_mag,
-        a_mag,
-        v_angle,
-        a_angle,
-        diff_v_a_angle,
-        diff_v_angle,
-        diff_a_angle,
-    )
 
 
 def convert_to_metrica_format(intermediate_df):
@@ -223,13 +79,17 @@ def convert_to_metrica_format(intermediate_df):
 
 def create_events_metrica(df):
     """
-    Create the Metrica DataFrame for events
+    Create the Metrica format DataFrame for events from UFA data
 
     Args:
-        df (DataFrame): The DataFrame containing the data
+        df (DataFrame): The UFA intermediate DataFrame containing tracking data
+                       with columns: frame, class, x, y, id, holder
 
     Returns:
-        DataFrame: The DataFrame containing the events
+        DataFrame: Events DataFrame in Metrica format with columns:
+                  Team, Type, Subtype, Period, Start Frame, Start Time [s],
+                  End Frame, End Time [s], From, To, Start X, Start Y, End X, End Y.
+                  Contains disc position data and holder information per frame.
     """
     # Define the columns of the DataFrame
     columns = [
@@ -371,9 +231,7 @@ def create_tracking_metrica(df, team):
                 player_ids.append(closest_defense)
 
     positions = []
-    for i, player_id in enumerate(
-        player_ids[:PLAYERS_PER_TEAM]
-    ):  # Limit to config-defined player count
+    for i, player_id in enumerate(player_ids[:PLAYERS_PER_TEAM]):  # Limit to 7 players
         if team == "Home":
             player_df = df[(df["id"] == player_id) & (df["class"] == "offense")]
         else:

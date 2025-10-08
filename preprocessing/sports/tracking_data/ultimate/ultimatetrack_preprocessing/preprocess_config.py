@@ -20,13 +20,12 @@ coordinate_scale : float
 # Ultimate Frisbee field specifications (in meters for Ultimate Track data)
 FIELD_LENGTH: float = 94.0  # 94 meters total field length
 FIELD_WIDTH: float = 37.0  # 37 meters width
-PLAYING_FIELD_LENGTH: float = 64.0  # 64 meters playing field (without end zones)
-END_ZONE_LENGTH: float = 15.0  # 15 meters each end zone
+PLAYING_FIELD_LENGTH: float = 58.0  # 58 meters playing field (without end zones)
+END_ZONE_LENGTH: float = 18.0  # 18 meters each end zone
 
 # Player configuration
-ULTIMATE_PLAYERS_PER_TEAM: int = 7  # Standard Ultimate has 7 players per team
+PLAYERS_PER_TEAM: int = 7  # Standard Ultimate has 7 players per team
 MAX_SUBSTITUTIONS: int = 0  # Unlimited substitutions in Ultimate
-TOTAL_ROSTER_SIZE: int = 20  # Typical roster size
 
 # Data processing configuration
 TRACKING_HERZ: int = 15  # Ultimate Track data frame rate (15 fps)
@@ -37,7 +36,7 @@ OFFENSE_TEAM: str = "offense"
 DEFENSE_TEAM: str = "defense"
 DISC_ENTITY: str = "disc"
 
-# Data columns mapping
+# Data columns mapping for UltimateTrack
 ULTIMATE_TRACK_COLUMNS = {
     "frame": "frame",
     "id": "id",
@@ -52,18 +51,5 @@ ULTIMATE_TRACK_COLUMNS = {
     "holder": "holder",
 }
 
-
-# Output column templates
-def get_tracking_columns(team_name: str) -> list:
-    """Generate column names for tracking data output."""
-    base_columns = ["Period", "Time [s]"]
-    player_columns = []
-
-    for i in range(1, ULTIMATE_PLAYERS_PER_TEAM + 1):
-        player_columns.extend([f"{team_name}_{i}_x", f"{team_name}_{i}_y"])
-
-    return base_columns + player_columns + ["disc_x", "disc_y"]
-
-
 # File name patterns
-DEFAULT_FILE_PATTERN = r"(\d+)_(\d+)_(\d+)\.csv"  # game_half_point.csv
+DEFAULT_FILE_PATTERN = r"(\d+)_(\d+)_(\d+)\.csv"  # court_game_possession.csv
