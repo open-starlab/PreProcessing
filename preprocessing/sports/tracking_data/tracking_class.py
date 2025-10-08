@@ -1,7 +1,3 @@
-from .soccer.soccer_tracking_class import Soccer_tracking_data
-from .ultimate.ultimate_tracking_class import Ultimate_tracking_data
-
-
 class Tracking_data:
     soccer_data_provider = ["soccer"]
     ultimate_data_provider = ["UltimateTrack", "UFA"]
@@ -10,8 +6,10 @@ class Tracking_data:
 
     def __new__(cls, data_provider, *args, **kwargs):
         if data_provider in cls.soccer_data_provider:
+            from .soccer.soccer_tracking_class import Soccer_tracking_data
             return Soccer_tracking_data(*args, **kwargs)
         elif data_provider in cls.ultimate_data_provider:
+            from .ultimate.ultimate_tracking_class import Ultimate_tracking_data
             return Ultimate_tracking_data(*args, **kwargs)
         elif data_provider in cls.handball_data_provider:
             raise NotImplementedError("Handball event data not implemented yet")
