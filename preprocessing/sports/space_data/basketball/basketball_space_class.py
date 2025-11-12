@@ -1,11 +1,11 @@
 import os
-import pandas as pd
-from tqdm import tqdm
-from scipy.io import loadmat
-import pandas as pd
-import gdown
 import zipfile
-import os
+
+import gdown
+import pandas as pd
+from scipy.io import loadmat
+from tqdm import tqdm
+
 
 class Basketball_space_data:
     def __init__(self,data_provider,data_path, *args, **kwargs):
@@ -13,7 +13,7 @@ class Basketball_space_data:
         self.data_path = data_path
 
 
-    def preprocessing(self, nb_process_game):
+    def preprocessing(self, nb_process_game='ALL'):
 
         if self.data_provider == "SportVU_NBA":
 
@@ -159,4 +159,5 @@ class Basketball_space_data:
 
         os.remove(output_zip_path)
         print("delete the unecessary zip file")
+        return print("Data downloaded finish")        print("delete the unecessary zip file")
         return print("Data downloaded finish")
