@@ -55,7 +55,7 @@ class Ultimate_space_data:
                 os.path.splitext(os.path.basename(tracking_path_i))[0]
             )[0]
             match_tracking_df = pd.read_csv(tracking_path_i)
-            print(match_tracking_df)
+
             # Create intermediate DataFrame with all required columns
             intermidiate_df = create_intermediate_file(match_tracking_df)
 
