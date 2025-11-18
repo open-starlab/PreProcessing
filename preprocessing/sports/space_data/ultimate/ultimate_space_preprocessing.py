@@ -219,7 +219,7 @@ def create_events_metrica(df, tracking_herz):
     if not holder_data.empty:
         to_id = (
             holder_data["id"]
-            .map(lambda x: offense_ids.index(x) if x in offense_ids else np.nan)
+            .map(lambda x: offense_ids.index(x) + 1 if x in offense_ids else np.nan)
             .reset_index(drop=True)
         )
     else:
@@ -353,3 +353,62 @@ def create_tracking_metrica(df, team, tracking_herz):
     tracking_df.columns = multi_columns
 
     return tracking_df
+
+
+def format_tracking_headers(tracking_df, team_prefix="Home"):
+    """Convert the multi-index tracking output into a single-header format."""
+    if tracking_df.empty:
+        return tracking_df
+
+    flattened_columns = []
+    active_columns = []
+    seen_columns = set()
+
+    for column in tracking_df.columns:
+        # MultiIndex columns are returned as tuples
+        level2_name = column[2] if isinstance(column, tuple) else column
+
+        if column in seen_columns:
+            continue
+
+        if level2_name == "Frame":
+            continue
+
+        if level2_name == "Period":
+            flattened_columns.append("Period")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+        if level2_name == "Time [s]":
+            flattened_columns.append("Time [s]")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+        if level2_name == "Disc__":
+            flattened_columns.append("disc_x")
+            flattened_columns.append("disc_y")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+        if (
+            isinstance(column, tuple)
+            and column[0] == team_prefix
+            and level2_name.startswith("Player")
+        ):
+            player_index = int(level2_name.replace("Player", "")) + 1
+            for suffix in ["_x", "_y"]:
+                flattened_columns.append(f"{team_prefix}_{player_index}{suffix}")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+    formatted_df = tracking_df[active_columns].copy()
+    formatted_df.columns = flattened_columns
+
+    if "Period" in formatted_df.columns and formatted_df["Period"].isna().all():
+        formatted_df["Period"] = 1
+
+    return formatted_df

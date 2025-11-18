@@ -43,6 +43,7 @@ class Ultimate_space_data:
         from .ultimate_space_preprocessing import (
             convert_to_metrica_format,
             create_intermediate_file,
+            format_tracking_headers,
         )
 
         home_tracking_dict = {}
@@ -55,7 +56,7 @@ class Ultimate_space_data:
                 os.path.splitext(os.path.basename(tracking_path_i))[0]
             )[0]
             match_tracking_df = pd.read_csv(tracking_path_i)
-            print(match_tracking_df)
+
             # Create intermediate DataFrame with all required columns
             intermidiate_df = create_intermediate_file(match_tracking_df)
 
@@ -63,6 +64,9 @@ class Ultimate_space_data:
             home_df, away_df, events_df = convert_to_metrica_format(
                 intermidiate_df, self.tracking_herz
             )
+
+            home_df = format_tracking_headers(home_df, team_prefix="Home")
+            away_df = format_tracking_headers(away_df, team_prefix="Away")
 
             home_tracking_dict[match_i] = home_df
             away_tracking_dict[match_i] = away_df
