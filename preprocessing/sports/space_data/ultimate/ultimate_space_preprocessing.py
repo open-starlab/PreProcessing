@@ -219,7 +219,7 @@ def create_events_metrica(df, tracking_herz):
     if not holder_data.empty:
         to_id = (
             holder_data["id"]
-            .map(lambda x: offense_ids.index(x) if x in offense_ids else np.nan)
+            .map(lambda x: offense_ids.index(x) + 1 if x in offense_ids else np.nan)
             .reset_index(drop=True)
         )
     else:
