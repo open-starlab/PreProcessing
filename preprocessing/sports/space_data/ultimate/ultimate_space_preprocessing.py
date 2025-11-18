@@ -362,11 +362,14 @@ def format_tracking_headers(tracking_df, team_prefix="Home"):
 
     flattened_columns = []
     active_columns = []
-    player_counts = {}
+    seen_columns = set()
 
     for column in tracking_df.columns:
         # MultiIndex columns are returned as tuples
         level2_name = column[2] if isinstance(column, tuple) else column
+
+        if column in seen_columns:
+            continue
 
         if level2_name == "Frame":
             continue
@@ -374,18 +377,20 @@ def format_tracking_headers(tracking_df, team_prefix="Home"):
         if level2_name == "Period":
             flattened_columns.append("Period")
             active_columns.append(column)
+            seen_columns.add(column)
             continue
 
         if level2_name == "Time [s]":
             flattened_columns.append("Time [s]")
             active_columns.append(column)
+            seen_columns.add(column)
             continue
 
         if level2_name == "Disc__":
-            disc_count = player_counts.get("disc", 0)
-            flattened_columns.append("disc_x" if disc_count == 0 else "disc_y")
+            flattened_columns.append("disc_x")
+            flattened_columns.append("disc_y")
             active_columns.append(column)
-            player_counts["disc"] = disc_count + 1
+            seen_columns.add(column)
             continue
 
         if (
@@ -394,11 +399,10 @@ def format_tracking_headers(tracking_df, team_prefix="Home"):
             and level2_name.startswith("Player")
         ):
             player_index = int(level2_name.replace("Player", "")) + 1
-            count = player_counts.get(player_index, 0)
-            suffix = "_x" if count == 0 else "_y"
-            flattened_columns.append(f"{team_prefix}_{player_index}{suffix}")
+            for suffix in ["_x", "_y"]:
+                flattened_columns.append(f"{team_prefix}_{player_index}{suffix}")
             active_columns.append(column)
-            player_counts[player_index] = count + 1
+            seen_columns.add(column)
             continue
 
     formatted_df = tracking_df[active_columns].copy()
