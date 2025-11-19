@@ -22,7 +22,7 @@ For data format examples, visit [Kloppy](https://github.com/PySport/kloppy/tree/
 ## Supported Preprocessing Methods
 For information on supported preprocessing methods, visit [this documentation](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Data_Format/index.html). The available preprocessing methods are:
 
-- Unified and Integrated Event Data (UEID)
+- Unified and Integrated Event Data (UIED)
 - NMSTPP (same format required for [Football Match Event Forecast](https://github.com/calvinyeungck/Football-Match-Event-Forecast))
 - Other Event Data Formats
 
