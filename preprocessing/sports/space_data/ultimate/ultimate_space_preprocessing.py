@@ -216,14 +216,13 @@ def create_events_metrica(df, tracking_herz):
 
     # Get holder information
     holder_data = df.loc[df["holder"]]
+    to_id = pd.Series([np.nan] * len(start_frame))
     if not holder_data.empty:
-        to_id = (
-            holder_data["id"]
-            .map(lambda x: offense_ids.index(x) + 1 if x in offense_ids else np.nan)
-            .reset_index(drop=True)
-        )
-    else:
-        to_id = pd.Series([np.nan] * len(start_frame))
+        id_by_frame = holder_data.set_index("frame")["id"]
+        to_id.update(id_by_frame)
+        to_id = to_id.map(
+            lambda x: offense_ids.index(x) + 1 if x in offense_ids else np.nan
+        ).reset_index(drop=True)
 
     # Create the DataFrame for events
     events_df = pd.concat(
