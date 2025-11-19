@@ -2,9 +2,12 @@ import subprocess
 from preprocessing import Event_data
 import numpy as np
 import pandas as pd
+import os
+import requests
 
 def download_with_wget(url, output_directory='.'):
     # Construct the wget command
+    os.makedirs(output_directory, exist_ok=True)
     command = ['wget', url, '-P', output_directory]
 
     # Execute the command
@@ -14,6 +17,38 @@ def download_with_wget(url, output_directory='.'):
     except subprocess.CalledProcessError as e:
         print(f"Failed to download {url}. Error: {e}")
 
+def download_with_requests(url, output_directory='.'):
+    os.makedirs(output_directory, exist_ok=True)
+    filename = os.path.join(output_directory, url.split('/')[-1])
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/122.0.0.0 Safari/537.36"
+        )
+    }
+
+    try:
+        r = requests.get(url, headers=headers, stream=True)
+        r.raise_for_status()
+
+        with open(filename, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        print(f"Downloaded to {filename}")
+
+    except Exception as e:
+        print(f"Failed to download {url}. Error: {e}")
+
+def donwload_data(url, output_directory='.'):
+    try:
+        download_with_wget(url, output_directory)
+    except:
+        download_with_requests(url, output_directory)
+
 if __name__ == "__main__":
     #path for the wyscout data
     event_path='./event'
@@ -22,8 +57,8 @@ if __name__ == "__main__":
     #download the wyscout data
     event_url = "https://figshare.com/ndownloader/files/14464685/events.zip"
     matches_url = "https://figshare.com/ndownloader/files/14464622/matches.zip"
-    download_with_wget(event_url, event_path)
-    download_with_wget(matches_url, matches_path)
+    donwload_data(event_url, event_path)
+    donwload_data(matches_url, matches_path)
 
     #unzip the downloaded files
     subprocess.run(['unzip', 'event/events.zip', '-d', 'event'])
