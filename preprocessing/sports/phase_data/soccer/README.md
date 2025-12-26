@@ -1,30 +1,19 @@
-# Event Data in Football/Soccer ⚽
+# Phase Data in Football/Soccer ⚽
 [![Documentation Status](https://readthedocs.org/projects/openstarlab/badge/?version=latest)](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/index.html)
 ## Introduction
-This package offers functions to load and preprocess event data from various sources in football/soccer.
+This package offers functions to load and preprocess phase data from various sources in football/soccer.
 
 ## Supported Data Providers
-You can find detailed documentation on supported data providers [here](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Data_Provider/index.html). The supported providers include:
+You can find detailed documentation on supported data providers [here](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Phase_data/Data_Provider/index.html). The supported providers include:
 
-- DataFactory
-- DataStadium
-- Metrica
-- Opta
-- Robocup 2D Simulation
-- SoccerTrackv2 (BePro)
-- Sportec
-- Statsbomb
-- Statsbomb with Skillcorner Tracking Data
-- Wyscout
+- Bepro
+- Statsbomb and Skillcorner
+- (PFF FC)
 
 For data format examples, visit [Kloppy](https://github.com/PySport/kloppy/tree/master/kloppy/tests/files)
 
 ## Supported Preprocessing Methods
-For information on supported preprocessing methods, visit [this documentation](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Data_Format/index.html). The available preprocessing methods are:
-
-- Unified and Integrated Event Data (UIED)
-- NMSTPP (same format required for [Football Match Event Forecast](https://github.com/calvinyeungck/Football-Match-Event-Forecast))
-- Other Event Data Formats
+For information on supported preprocessing methods, visit [this documentation](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Phase_data/Data_Format/index.html).
 
 ## Examples
 Here are some examples of how to download and preprocess data:
