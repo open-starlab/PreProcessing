@@ -1,6 +1,6 @@
 class Phase_data:
-    soccer_data_provider = ['bepro', 'statsbomb_skillcorner', 'pff_fc'] 
-    other_soccer_data_provider = ['robocup_2d', 'datastadium']
+    soccer_data_provider = ['bepro', 'statsbomb_skillcorner'] 
+    other_soccer_data_provider = ['pff_fc', 'robocup_2d', 'datastadium']
     handball_data_provider = []
     rocket_league_data_provider = ['carball']
 

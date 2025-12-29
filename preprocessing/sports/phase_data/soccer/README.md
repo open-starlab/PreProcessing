@@ -8,7 +8,6 @@ You can find detailed documentation on supported data providers [here](https://o
 
 - Bepro
 - Statsbomb and Skillcorner
-- (PFF FC)
 
 For data format examples, visit [Kloppy](https://github.com/PySport/kloppy/tree/master/kloppy/tests/files)
 
@@ -18,11 +17,8 @@ For information on supported preprocessing methods, visit [this documentation](h
 ## Examples
 Here are some examples of how to download and preprocess data:
 
-- **Wyscout Data (NMSTPP format):**
-  - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Example/Football/Example_1/contents.html)
-  - [GitHub Example](https://github.com/open-starlab/PreProcessing/blob/master/example/NMSTPP_data.py)
-  - [Colab Example](https://colab.research.google.com/drive/1c7pAwXDVaT_XTYNHvgvxgmxj0E-6IEKH?authuser=1#scrollTo=p9AZJWlYfJYs)
+- **Bepro Data:**
+  - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Phase_data/Data_Provider/Football/Bepro/contents.html)
 
 - **StatsBomb and SkillCorner Data:**
-  - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Event_data/Example/Football/Example_2/contents.html)
-  - [GitHub Example](https://github.com/open-starlab/PreProcessing/blob/master/example/statsbomb_skillcorner.py)
+  - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/Phase_data/Data_Provider/Football/Statsbomb_Skillcorner/contents.html)

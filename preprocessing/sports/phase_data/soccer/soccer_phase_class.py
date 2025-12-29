@@ -1,28 +1,9 @@
 #Target data provider [Metrica,Robocup 2D simulation,Statsbomb,Wyscout,Opta data,DataFactory,sportec]
 
-'''
-format of the data source
-Metrica:csv and json (tracking data will be included in the future due to lack of matching data)
-Robocup 2D simulation:csv and gz
-Statsbomb: json
-Wyscout: json
-Opta data:xml
-DataFactory:json
-sportec:xml
-DataStadium:csv 
-soccertrack:csv and xml
-'''
-
-import os
-import pandas as pd
-from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 if __name__ == '__main__':
     import soccer_load_data
 else:
     from . import soccer_load_data
-import pdb
 
 #create a class to wrap the data source
 class Soccer_phase_data:
@@ -44,8 +25,8 @@ class Soccer_phase_data:
             df=soccer_load_data.load_bepro(self.bp_tracking_xml_path, self.bp_tracking_json_paths, self.bp_event_path, self.bp_meta_data)
         elif self.data_provider == 'statsbomb_skillcorner':
             df=soccer_load_data.load_statsbomb_skillcorner(sb_event_path=self.sb_event_path, sc_tracking_path=self.sc_tracking_path, sc_match_path=self.sc_match_path, sc_players_path=self.sc_players_path)
-        elif self.data_provider == 'pff_fc':
-            df=soccer_load_data.load_pff2metrica(self.bp_event_path)
+        # elif self.data_provider == 'pff_fc':
+        #     df=soccer_load_data.load_pff2metrica(self.bp_event_path)
         # elif self.data_provider == 'robocup_2d':
         #     df=soccer_load_data.load_robocup_2d(self.event_path,match_id=self.match_id,tracking_path=self.tracking_path)
         # elif self.data_provider == 'datastadium':
