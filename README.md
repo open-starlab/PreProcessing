@@ -36,7 +36,7 @@ pip install -e .
 - [Space data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/space_data/soccer/README.md)
 
 #### Phase Data
-- [Phase data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/Phase_data/soccer/README.md)
+- [Phase data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/phase_data/soccer/README.md)
 
 ## RoadMap
 - [x] Release the package
