@@ -2,7 +2,7 @@ class Space_data:
     # Modified the sports list to only include fully supported providers
     basketball_data_provider = ["SportVU_NBA"]
     soccer_data_provider = ["fifa_wc_2022"]
-    ultimate_data_provider = ["UltimateTrack", "UFATrack"]
+    ultimate_data_provider = ["UltimateTrack", "UFA"]
 
     def __new__(cls, data_provider, *args, **kwargs):
         if data_provider in cls.basketball_data_provider:
