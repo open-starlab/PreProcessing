@@ -251,10 +251,10 @@ def create_events_metrica(df, tracking_herz):
 
 def create_tracking_metrica(df, team, tracking_herz):
     """
-    Create the Metrica format DataFrame for team tracking data from UFA data
+    Create the Metrica format DataFrame for team tracking data from UFATrack data
 
     Args:
-        df (DataFrame): The UFA intermediate DataFrame containing tracking data
+        df (DataFrame): The UFATrack intermediate DataFrame containing tracking data
             with columns: frame, class, x, y, id, closest
         team (str): Team designation ("Home" for offense, "Away" for defense)
         tracking_herz (int): Frequency of tracking data (frames per second)
