@@ -18,7 +18,7 @@ class Ultimate_space_data:
         self.out_path = out_path
         if self.data_provider == "UltimateTrack":
             self.tracking_herz = 15
-        elif self.data_provider == "UFATrack":
+        elif self.data_provider == "UFA":
             self.tracking_herz = 10
 
     def get_files(self):
