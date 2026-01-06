@@ -1,6 +1,5 @@
 import json
 import pandas as pd
-pd.set_option('future.no_silent_downcasting', True)
 import numpy as np
 import xml.etree.ElementTree as ET
 import os
