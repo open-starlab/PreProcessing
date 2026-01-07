@@ -36,6 +36,9 @@ pip install -e .
 - [Space data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/space_data/soccer/README.md)
 - [Space data in Ultimate 🥏](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/space_data/ultimate/README.md)
 
+#### Phase Data
+- [Phase data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/phase_data/soccer/README.md)
+
 ## RoadMap
 - [x] Release the package
 - [ ] Incorporate more functions
@@ -55,6 +58,7 @@ pip install -e .
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/calvinyeungck"><img src="https://github.com/calvinyeungck.png" width="100px;" alt="Calvin Yeung"/><br /><sub><b>Calvin Yeung</b></sub></a><br /><a href="#Developer-CalvinYeung" title="Lead Developer">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/kenjiro-mk"><img src="https://github.com/kenjiro-mk.png" width="100px;" alt="Kenjiro Ide"/><br /><sub><b>Kenjiro Ide</b></sub></a><br /><a href="#Developer-KenjiroIde" title="Developer">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/czzzzz129"><img src="https://github.com/czzzzz129.png" width="100px;" alt="Zheng Chen"/><br /><sub><b>Zheng Chen</b></sub></a><br /><a href="#Developer-ZhengChen" title="Developer">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/KentoKuroda"><img src="https://github.com/KentoKuroda.png" width="100px;" alt="Kento Kuroda"/><br /><sub><b>Kento Kuroda</b></sub></a><br /><a href="#Developer-KentoKuroda" title="Lead Developer">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/shunsuke-iwashita"><img src="https://github.com/shunsuke-iwashita.png" width="100px;" alt="Shunsuke Iwashita"/><br /><sub><b>Shunsuke Iwashita</b></sub></a><br /><a href="#Developer-ShunsukeIwashita" title="Developer">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/keisuke198619"><img src="https://github.com/keisuke198619.png" width="100px;" alt="Keisuke Fujii"/><br /><sub><b>Keisuke Fujii</b></sub></a><br /><a href="#lead-KeisukeFujii" title="Team Leader">🧑‍💻</a></td>
     </tr>
