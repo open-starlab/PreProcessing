@@ -325,9 +325,7 @@ def interpolate_ball_tracking_data(
             interpolated_tracking_ball.duplicated(subset=["frame_id"], keep=False)
         ]
         print("duplicated_frame_id:", duplicated_frame_id)
-        import pdb
-
-        pdb.set_trace()
+        raise AssertionError("There are still duplicate frame_ids after interpolation.")
 
     assert interpolated_tracking_ball["frame_id"].nunique() == len(interpolated_tracking_ball)
     return interpolated_tracking_ball
@@ -748,9 +746,7 @@ def get_player_change_log_legacy(
                 print("new_players_home:", new_players_home)
                 print("changed_player_list_in_home:", changed_player_list_in_home)
                 print("player_ever_on_pitch_home:", player_ever_on_pitch_home)
-                import pdb
-
-                pdb.set_trace()
+                raise AssertionError("Jersey number mismatch.")
 
         if len(new_players_away := players_in_frame_away - player_ever_on_pitch_away) > 0:
             player_change_info.extend(
@@ -973,9 +969,7 @@ def pad_players_and_interpolate_tracking_data(
                         print(f"game_id: {tracking_data['game_id'].iloc[0]}")
                         print(f"player_change_info: {player_change_info}")
                         print(f"player_on_pitch_home: {player_on_pitch_home}")
-                        import pdb
-
-                        pdb.set_trace()
+                        raise AssertionError("Jersey number mismatch.")
                 else:
                     try:
                         player_on_pitch_away.remove(player_change_info["player_out"])
@@ -985,9 +979,7 @@ def pad_players_and_interpolate_tracking_data(
                         print(f"game_id: {tracking_data['game_id'].iloc[0]}")
                         print(f"player_change_info: {player_change_info}")
                         print(f"player_on_pitch_away: {player_on_pitch_away}")
-                        import pdb
-
-                        pdb.set_trace()
+                        raise AssertionError("Jersey number mismatch.")
 
     new_tracking_data = pd.concat(new_data_list)
     new_tracking_data = new_tracking_data.sort_values(by=["half", "frame_id", "home_away", "jersey_number"]).reset_index(
