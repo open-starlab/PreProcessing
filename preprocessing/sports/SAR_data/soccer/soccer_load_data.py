@@ -501,7 +501,7 @@ def load_single_fifawc(data_path: str, match_id: str):
         with open(event_file, "r") as f:
             event_df = json.load(f)
 
-    # Tracking Data処理
+    # Tracking Data processing
     tracking_file = data_path / "Tracking Data" / f"{match_id}.jsonl.bz2"
     tracking_list = []
     with bz2.open(tracking_file, "rt") as f:
@@ -510,7 +510,7 @@ def load_single_fifawc(data_path: str, match_id: str):
                 record = json.loads(line)
                 tracking_list.append(record)
 
-    # Players Data処理
+    # Players Data processing
     metadata_file = data_path / "Metadata" / f"{match_id}.json"
     roster_file = data_path / "Rosters" / f"{match_id}.json"
     with open(metadata_file, "r") as f:
