@@ -325,9 +325,7 @@ def interpolate_ball_tracking_data(
             interpolated_tracking_ball.duplicated(subset=["frame_id"], keep=False)
         ]
         print("duplicated_frame_id:", duplicated_frame_id)
-        import pdb
-
-        pdb.set_trace()
+        raise AssertionError("There are still duplicate frame_ids after interpolation.")
 
     assert interpolated_tracking_ball["frame_id"].nunique() == len(interpolated_tracking_ball)
     return interpolated_tracking_ball
@@ -748,9 +746,7 @@ def get_player_change_log_legacy(
                 print("new_players_home:", new_players_home)
                 print("changed_player_list_in_home:", changed_player_list_in_home)
                 print("player_ever_on_pitch_home:", player_ever_on_pitch_home)
-                import pdb
-
-                pdb.set_trace()
+                raise AssertionError("Jersey number mismatch.")
 
         if len(new_players_away := players_in_frame_away - player_ever_on_pitch_away) > 0:
             player_change_info.extend(
@@ -973,9 +969,7 @@ def pad_players_and_interpolate_tracking_data(
                         print(f"game_id: {tracking_data['game_id'].iloc[0]}")
                         print(f"player_change_info: {player_change_info}")
                         print(f"player_on_pitch_home: {player_on_pitch_home}")
-                        import pdb
-
-                        pdb.set_trace()
+                        raise AssertionError("Jersey number mismatch.")
                 else:
                     try:
                         player_on_pitch_away.remove(player_change_info["player_out"])
@@ -985,9 +979,7 @@ def pad_players_and_interpolate_tracking_data(
                         print(f"game_id: {tracking_data['game_id'].iloc[0]}")
                         print(f"player_change_info: {player_change_info}")
                         print(f"player_on_pitch_away: {player_on_pitch_away}")
-                        import pdb
-
-                        pdb.set_trace()
+                        raise AssertionError("Jersey number mismatch.")
 
     new_tracking_data = pd.concat(new_data_list)
     new_tracking_data = new_tracking_data.sort_values(by=["half", "frame_id", "home_away", "jersey_number"]).reset_index(
@@ -1222,7 +1214,7 @@ def resample_tracking_data(
         ]
     ].reset_index(drop=True)
 
-    # 選手数が11を超えた場合の修正処理（交代を考慮）
+    # Fix processing when the number of players exceeds 11 (considering substitutions)
     def fix_player_count(df):
         player_data = df.query("home_away != 'BALL'").copy()
         player_counts = player_data.groupby(["time_from_half_start", "half", "home_away"])["jersey_number"].nunique()
@@ -1238,7 +1230,7 @@ def resample_tracking_data(
             current_players = df[current_mask]["jersey_number"].tolist()
 
             if len(current_players) > 11:
-                # 前後の時刻で実際にプレーしている選手を確認
+                # Check actual players playing at surrounding times
                 time_values = sorted(
                     player_data[(player_data["half"] == half) & (player_data["home_away"] == team)][
                         "time_from_half_start"
@@ -1247,8 +1239,8 @@ def resample_tracking_data(
 
                 current_idx = time_values.index(time_point)
 
-                # 前後10フレームの選手を確認（交代の瞬間を考慮）
-                # より高速なベクトル化されたアプローチ
+                # Check actual players playing at surrounding times (considering substitutions)
+                # More efficient vectorized approach
                 time_values = np.array(
                     sorted(
                         player_data[(player_data["half"] == half) & (player_data["home_away"] == team)][
@@ -1259,12 +1251,12 @@ def resample_tracking_data(
 
                 current_idx = np.where(time_values == time_point)[0][0]
 
-                # 前後10フレームのインデックス範囲を計算
+                # Calculate the index range for the surrounding 10 frames
                 start_idx = max(0, current_idx - 10)
                 end_idx = min(len(time_values), current_idx + 11)
                 context_time_range = time_values[start_idx:end_idx]
 
-                # 一度のクエリで該当する全フレームのデータを取得
+                # Retrieve data for all relevant frames in a single query
                 context_mask = (
                     player_data["time_from_half_start"].isin(context_time_range)
                     & (player_data["half"] == half)
@@ -1272,22 +1264,22 @@ def resample_tracking_data(
                 )
                 context_data = player_data[context_mask]
 
-                # 正常なフレーム（11人）のみをフィルタリング
+                # Filter only valid frames (11 players)
                 valid_frames = context_data.groupby("time_from_half_start")["jersey_number"].nunique()
                 valid_times = valid_frames[valid_frames == 11].index
 
-                # 正常なフレームの選手を集計
+                # Aggregate players from valid frames
                 context_players = set(
                     context_data[context_data["time_from_half_start"].isin(valid_times)]["jersey_number"].tolist()
                 )
 
-                # パディング選手と実選手を分離
-                padding_players = [p for p in current_players if p < 0]  # 負の背番号はパディング選手
-                real_players = [p for p in current_players if p > 0]  # 正の背番号は実選手
+                # Separate padding players and real players
+                padding_players = [p for p in current_players if p < 0]  # Negative jersey numbers are padding players
+                real_players = [p for p in current_players if p > 0]  # Positive jersey numbers are real players
 
-                # 実選手が11人を超えている場合の処理
+                # Processing when the number of real players exceeds 11
                 if len(real_players) > 11:
-                    # 前後のフレームに出現する実選手を優先
+                    # Prioritize real players appearing in surrounding frames
                     if len(context_players) >= 11:
                         context_real_players = [p for p in real_players if p in context_players]
                         other_real_players = [p for p in real_players if p not in context_players]
@@ -1296,23 +1288,23 @@ def resample_tracking_data(
                         if len(players_to_keep) < 11:
                             players_to_keep.extend(other_real_players[: 11 - len(players_to_keep)])
                     else:
-                        # 前後のフレーム情報が不十分な場合、背番号順で選択
+                        # If surrounding frame information is insufficient, select by jersey number
                         players_to_keep = sorted(real_players)[:11]
                 elif len(real_players) <= 11:
-                    # 実選手が11人以下の場合、すべての実選手を保持
+                    # If the number of real players is 11 or less, keep all real players
                     players_to_keep = real_players.copy()
-                    # 不足分をパディング選手で補う（最大11人まで）
+                    # Supplement the shortage with padding players (up to 11)
                     needed_padding = 11 - len(players_to_keep)
                     if needed_padding > 0 and padding_players:
-                        # パディング選手を背番号順でソートして必要数だけ追加
-                        sorted_padding = sorted(padding_players, reverse=True)  # -1, -2, -3...の順
+                        # Sort padding players by jersey number and add the required number
+                        sorted_padding = sorted(padding_players, reverse=True)  # -1, -2, -3... order
                         players_to_keep.extend(sorted_padding[:needed_padding])
 
                 logger.info(
                     f"Player selection at time {time_point}: Real={len([p for p in players_to_keep if p > 0])}, Padding={len([p for p in players_to_keep if p < 0])}"
                 )
 
-                # 選択されなかった選手を除去
+                # Remove players who were not selected
                 players_to_remove = [p for p in current_players if p not in players_to_keep]
                 remove_mask = current_mask & df["jersey_number"].isin(players_to_remove)
                 df = df[~remove_mask].copy()
@@ -1520,7 +1512,7 @@ def parse_tracking_data(x):
     if isinstance(x, dict):
         if len(x) == 0:
             return None
-        # velocityキーが存在する辞書は空ではない
+        # Dictionaries containing the key "velocity" are not considered empty
         if "velocity" in x or "acceleration" in x or "position" in x:
             return x
         return x
@@ -1537,7 +1529,7 @@ def parse_tracking_data(x):
 def clean_empty_data(series):
     def convert_empty(x):
         if isinstance(x, dict):
-            # 重要なキーが含まれている場合は空と判定しない
+            # Dictionaries containing important keys are not considered empty
             if any(key in x for key in ["velocity", "acceleration", "position"]):
                 return x
             if len(x) == 0:
@@ -1755,9 +1747,9 @@ def calculate_acceleration(tracking_data: pd.DataFrame, sampling_rate: int = 10)
             player_name = player.get("player_name")
             jersey_number = player.get("jersey_number", 0)
 
-            # パディング選手（負の背番号）をスキップ
+            # Skip padding players (negative jersey numbers)
             if jersey_number < 0:
-                # パディング選手のvelocityはデフォルトで0に設定
+                # Set velocity of padding players to zero by default
                 player2vel[f"padding_{jersey_number}"] = {"x": 0, "y": 0}
                 continue
 
@@ -1795,18 +1787,18 @@ def calculate_acceleration(tracking_data: pd.DataFrame, sampling_rate: int = 10)
                     player_name = d.get("player_name")
                     jersey_number = d.get("jersey_number", 0)
 
-                    # パディング選手の処理
+                    # Skip padding players (negative jersey numbers)
                     if jersey_number < 0:
                         d["acceleration"] = {"x": 0, "y": 0}
                         continue
 
-                    # 実選手の処理
+                    # Process real players
                     if player_name and player_name in prev_player2vel:
                         d["acceleration"] = deepcopy(prev_player2vel[player_name])
                     elif jersey_number < 0 and f"padding_{jersey_number}" in prev_player2vel:
                         d["acceleration"] = {"x": 0, "y": 0}
                     else:
-                        if player_name:  # 実選手のみログ出力
+                        if player_name:  # Log output for real players only
                             # Use substitution detection for better context
                             is_substitution = __is_likely_substitution_scenario(player_name, jersey_number, tracking_data, idx)
                             substitution_note = " (substitution detected)" if is_substitution else " (unexpected absence)"
@@ -1837,7 +1829,7 @@ def calculate_acceleration(tracking_data: pd.DataFrame, sampling_rate: int = 10)
                     player_name = d.get("player_name")
                     jersey_number = d.get("jersey_number", 0)
 
-                    # パディング選手の処理
+                    # Skip padding players (negative jersey numbers)
                     if jersey_number < 0:
                         d["acceleration"] = {"x": 0, "y": 0}
                         continue
