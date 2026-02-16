@@ -1535,7 +1535,9 @@ def UIED_bepro(data):
     
     # Create 'action' column by concatenating 'event_type' and 'event_type_2'
     df["success"]=df["event_type"].apply(
-                    lambda x: 0 if ("Failed" in str(x) or "Missed" in str(x) or "OnTarget" in str(x) or "shot" in str(x)) else 1
+                    lambda x: 0 if ("Blocked" in str(x) or \
+                    "Failed" in str(x) or "Missed" in str(x) \
+                    or "OnTarget" in str(x) or "shot" in str(x)) else 1
                 )
     df["action"] = df["event_type"] = (
                                         df["event_type"]
@@ -1552,7 +1554,7 @@ def UIED_bepro(data):
        'handballFoul', 'changeOut', 'changeIn', 'deflection',
        'cornerKick', 'saveByPunching', 'crossReceived',
        'saveByCatching', 'keyPass', 'assist', 'goal', 'goalAgainst',
-       'offside'
+       'offside', 'pause', 'defensiveLineSupport'
        ]
     
     possession_team_actions = ['pass', 'possession', 'duel', 'passReceived',
@@ -1641,7 +1643,7 @@ def UIED_bepro(data):
        'handballFoul', 'changeOut', 'changeIn', 'deflection',
         'saveByPunching', 'crossReceived',
        'saveByCatching', 'keyPass', 'assist',  'goalAgainst',
-       'offside'
+       'offside', 'pause', 'defensiveLineSupport', 
        ]
     
     action_list=[]
@@ -1660,7 +1662,7 @@ def UIED_bepro(data):
             action_list.append("dribble")
         elif df["action"].iloc[i] in cross_actions:
             action_list.append("cross")
-        elif df["action"].iloc[i] in drop_actions:
+        elif df["action"].iloc[i] in drop_actions or np.isnan(df["action"].iloc[i]) or df["action"].iloc[i] in ["nan", "None"]:
             action_list.append("drop")
         else:
             action= df["action"].iloc[i]
