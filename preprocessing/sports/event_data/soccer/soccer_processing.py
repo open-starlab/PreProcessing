@@ -1643,7 +1643,7 @@ def UIED_bepro(data):
        'handballFoul', 'changeOut', 'changeIn', 'deflection',
         'saveByPunching', 'crossReceived',
        'saveByCatching', 'keyPass', 'assist',  'goalAgainst',
-       'offside', 'pause', 'defensiveLineSupport', 'None' None
+       'offside', 'pause', 'defensiveLineSupport', 'None', None
        ]
     
     action_list=[]
