@@ -306,12 +306,14 @@ class Soccer_event_data:
     
     def preprocessing_single_df(self,df):
         df_out=None
-        if self.data_provider in ["statsbomb", "wyscout","statsbomb_skillcorner","datastadium"]:
+        if self.data_provider in ["statsbomb", "wyscout","statsbomb_skillcorner","datastadium","bepro"]:
             if self.data_provider in ["statsbomb","statsbomb_skillcorner"]:
                 df = df.reset_index(drop=True)
                 df_out=soccer_processing.UIED_statsbomb(df)
             elif self.data_provider == "datastadium":
                 df_out=soccer_processing.UIED_datastadium(df)
+            elif self.data_provider == "bepro":
+                df_out=soccer_processing.UIED_bepro(df)
             elif self.data_provider == "wyscout":
                 if self.preprocess_method == "UIED":
                     df_out=soccer_processing.UIED_wyscout(df)
@@ -579,7 +581,7 @@ if __name__ == '__main__':
     soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
     soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
     soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
-    df_soccertrack=Soccer_event_data('soccertrack',soccer_track_event_path,
+    df_soccertrack=Soccer_event_data('bepro',soccer_track_event_path,
                                      st_track_path = soccer_track_tracking_path,
                                      st_meta_path = soccer_track_meta_path,
                                      verbose = True).load_data()

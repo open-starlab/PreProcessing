@@ -1341,7 +1341,7 @@ def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbos
 
         event_type_list = []
         for i in range(len(event_df)):
-            event_i = event_df.iloc[i].event_types
+            event_i = event_df.iloc[i].filtered_event_types
             # print(event_i)
             if not isinstance(event_i, str):
                 event_type_list.append(None)
@@ -1830,7 +1830,7 @@ if __name__ == "__main__":
     soccer_track_tracking_path="/data_pool_1/soccertrackv2/2023-11-18/Tracking/tracking.xml"
     soccer_track_meta_path="/data_pool_1/soccertrackv2/2023-11-18/Tracking/meta.xml"
     df_soccertrack=load_soccertrack(soccer_track_event_path,soccer_track_tracking_path,soccer_track_meta_path,True)
-    df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_function_sync.csv",index=False)
+    df_soccertrack.head(1000).to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/load.csv",index=False)
 
     print("----------------done-----------------")
     # pdb.set_trace()

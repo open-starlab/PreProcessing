@@ -1510,6 +1510,344 @@ def UIED_datastadium(data):
 
     return df
 
+def UIED_bepro(data):
+    """
+    Processes football event data from a DataFrame or CSV file, creating various features for analysis.
+
+    Parameters:
+    - data (pd.DataFrame or str): If a string, it should be a path to a CSV file. If a DataFrame, it should contain the event data.
+
+    Returns:
+    - pd.DataFrame: Processed DataFrame with additional features and cleaned data.
+    """
+    # Load data from DataFrame or file path
+    if isinstance(data, pd.DataFrame):
+        df = data
+    elif isinstance(data, str):
+        if os.path.exists(data):
+            df = pd.read_csv(data)
+        else:
+            raise FileNotFoundError("The file path does not exist")
+    else:
+        raise ValueError("The data must be a pandas DataFrame or a file path")
+    
+    df = df.copy()
+    
+    # Create 'action' column by concatenating 'event_type' and 'event_type_2'
+    df["success"]=df["event_type"].apply(
+                    lambda x: 0 if ("Failed" in str(x) or "Missed" in str(x) or "OnTarget" in str(x) or "shot" in str(x)) else 1
+                )
+    df["action"] = df["event_type"] = (
+                                        df["event_type"]
+                                            .astype(str)
+                                            .str.replace("(Failed|Succeeded|Received|OnTarget)$", "", regex=True)
+                                    )
+    # Define possession team actions
+
+    all_cation=['pass', 'nan', 'possession', 'duel', 'passReceived', 'tackle',
+       'cutoff', 'cross', 'clearance', 'block', 'intercept', 'ballMissed',
+       'foulCommitted', 'foulConceded', 'freeKick', 'dribbleToSpace',
+       'shot', 'goalKick', 'dribble', 'shotMissed', 'ball',
+       'controlUnderPressure', 'hit', 'throwIn', 'ballReceived',
+       'handballFoul', 'changeOut', 'changeIn', 'deflection',
+       'cornerKick', 'saveByPunching', 'crossReceived',
+       'saveByCatching', 'keyPass', 'assist', 'goal', 'goalAgainst',
+       'offside'
+       ]
+    
+    possession_team_actions = ['pass', 'possession', 'duel', 'passReceived',
+        'cross', 'ballMissed', 'ball',
+        'foulConceded', 'freeKick', 'dribbleToSpace',
+       'shot', 'goalKick', 'dribble', 'shotMissed',
+       'controlUnderPressure', 'hit', 'throwIn', 'ballReceived',
+       'handballFoul', 'deflection',
+       'cornerKick', 'crossReceived',
+       'keyPass', 'assist', 'goal', 'offside'
+        ]
+
+    possession = []
+    # Determine possession
+    for i in range(len(df)):
+        if i == 0:
+            possession.append(df["team_id"].iloc[i])
+        else:
+            if df.action.iloc[i] not in all_cation:
+                print(f"Warning: action {df.action.iloc[i]} was not found in the all action list")
+            if df["team_id"].iloc[i] == df["team_id"].iloc[i - 1]:
+                possession.append(df["team_id"].iloc[i])
+            else:
+                if df["action"].iloc[i] in possession_team_actions:
+                    possession.append(df["team_id"].iloc[i])
+                else:
+                    possession.append(df["team_id"].iloc[i - 1])
+
+    df["possession_team"] = possession
+
+    temp_home_score = 0
+    temp_away_score = 0
+    home_score = []
+    away_score = []
+    goal_diff = []
+    goal= []
+    for i in range(len(df)):
+        home_score.append(temp_home_score)
+        away_score.append(temp_away_score)
+        goal_diff.append(temp_home_score - temp_away_score)
+        #check if Goal but not GoalKick and goalagainstis in the str of df["action"].iloc[i]
+        if "goal" in str(df["action"].iloc[i]).lower() and "goalkick" not in str(df["action"].iloc[i]).lower() and "goalagainst" not in str(df["action"].iloc[i]).lower():
+            if df["home_team"].iloc[i] == 1:
+                temp_home_score += 1
+            else:                
+                temp_away_score += 1
+            goal.append(1)
+        else:
+            goal.append(0)
+
+    df["home_score"] = home_score
+    df["away_score"] = away_score
+    df["goal_diff"] = goal_diff
+    df["goal"] = goal
+
+    #consider the side of the 2 team
+    side_dict={}
+    period_list=df.period.unique()
+    period_list=period_list[(period_list==1) | (period_list==2) | (period_list==3) | (period_list==4) | (period_list==5)]
+    for period in period_list:
+        period_df=df[df["period"]==period]
+        home_team_df=period_df[period_df["home_team"]==1]
+        goal_kick= home_team_df[home_team_df["action"]=="goalKick"]
+        if len(goal_kick)>0:
+            goal_kick=goal_kick.iloc[0]
+            if goal_kick["x_unscaled"]<50:
+                side_dict[period]=1
+            else:
+                side_dict[period]=0
+        else:
+            side_dict[period]=1
+            
+
+    #group the event into simpliefied actions
+    short_pass_actions=['pass','throwIn']
+    long_pass_actions=['freeKick','goalKick','cornerKick']
+    high_pass_actions=[]
+    shot_actions=['shot','shotMissed','goal']
+    carray_actions=[]
+    dribble_actions=['dribbleToSpace', 'dribble',]
+    cross_actions=['cross']
+    drop_actions=[ 'nan', 'possession', 'duel', 'passReceived', 'tackle',
+       'cutoff',  'clearance', 'block', 'intercept', 'ballMissed',
+       'foulCommitted', 'foulConceded', 'ball',
+       'controlUnderPressure', 'hit', 'ballReceived',
+       'handballFoul', 'changeOut', 'changeIn', 'deflection',
+        'saveByPunching', 'crossReceived',
+       'saveByCatching', 'keyPass', 'assist',  'goalAgainst',
+       'offside'
+       ]
+    
+    action_list=[]
+    for i in range(len(df)):
+        if df["action"].iloc[i] in short_pass_actions:
+            action_list.append("short_pass")
+        elif df["action"].iloc[i] in long_pass_actions:
+            action_list.append("long_pass")
+        elif df["action"].iloc[i] in high_pass_actions:
+            action_list.append("high_pass")
+        elif df["action"].iloc[i] in shot_actions:
+            action_list.append("shot")
+        elif df["action"].iloc[i] in carray_actions:
+            action_list.append("carry")
+        elif df["action"].iloc[i] in dribble_actions:
+            action_list.append("dribble")
+        elif df["action"].iloc[i] in cross_actions:
+            action_list.append("cross")
+        elif df["action"].iloc[i] in drop_actions:
+            action_list.append("drop")
+        else:
+            action= df["action"].iloc[i]
+            print(f"Warning: action {action} was not found in the action list, it will be dropped")
+            action_list.append("drop")
+
+    df["action"]=action_list
+    #drop the drop actions
+    df=df[df["action"]!="drop"].reset_index(drop=True)
+
+    #compute 
+    #consider the 
+    dist2gaol_list=[]
+    angle2goal_list=[]
+    for i in range(len(df)):
+        period=df["period"].iloc[i]
+        home_team=df["home_team"].iloc[i]
+        side = side_dict.get(period, 1)  # default to 1 if period not found
+        if (side == 1 and home_team == 1) or (side == 0 and home_team == 0):
+            distance2goal = ((df["x_unscaled"].iloc[i] - 105) ** 2 + 
+                            (df["y_unscaled"].iloc[i] - 34) ** 2) ** 0.5
+            angle = np.abs(np.arctan2(df["y_unscaled"].iloc[i] - 34, 
+                                        df["x_unscaled"].iloc[i] - 105))
+        elif (side == 1 and home_team == 0) or (side == 0 and home_team == 1):
+            distance2goal = ((df["x_unscaled"].iloc[i] - 0) ** 2 + 
+                            (df["y_unscaled"].iloc[i] - 34) ** 2) ** 0.5
+            angle = np.abs(np.arctan2(df["y_unscaled"].iloc[i] - 34, 
+                                        df["x_unscaled"].iloc[i] - 0))
+        dist2gaol_list.append(distance2goal)
+        angle2goal_list.append(angle)
+
+    df["dist2goal"] = dist2gaol_list
+    df["angle2goal"] = angle2goal_list
+
+    #create the time related features (delta_T)
+    delta_t_list=[]
+    for i in range(len(df)):
+        if i==0:
+            delta_t_list.append(0)
+        else:
+            delta_t_list.append(df["seconds"].iloc[i]-df["seconds"].iloc[i-1])
+    df["delta_T"]=delta_t_list
+
+    #create the location related features (deltaX, deltaY, distance)
+    delta_x_list=[]
+    delta_y_list=[]
+    dist_list=[]
+
+    for i in range(len(df)):
+        if i==0:
+            delta_x=0
+            delta_y=0
+            distance=0
+        else:
+            delta_x=df["x_unscaled"].iloc[i]-df["x_unscaled"].iloc[i-1]
+            delta_y=df["y_unscaled"].iloc[i]-df["y_unscaled"].iloc[i-1]
+            distance = np.sqrt(delta_x**2+delta_y**2)
+        delta_x_list.append(delta_x)
+        delta_y_list.append(delta_y)
+        dist_list.append(distance)
+    df["deltaX"]=delta_x_list
+    df["deltaY"]=delta_y_list
+    df["distance"]=dist_list
+    
+
+    #create the possession id, end of possession, end of period, end of game
+    poss_id_list = []
+    poss_id = 0
+    for match in df.match_id.unique():
+        match_df = df[df["match_id"] == match]
+        for i in range(len(match_df)):
+            if i == 0:
+                poss_id_list.append(poss_id)
+            else:
+                if match_df["possession_team"].iloc[i] == match_df["possession_team"].iloc[i - 1]:
+                    poss_id_list.append(poss_id)
+                else:
+                    poss_id += 1
+                    poss_id_list.append(poss_id)
+        poss_id+=1
+    df["poss_id"] = poss_id_list
+
+    new_df = []
+    for match in df.match_id.unique():
+        match_df = df[df["match_id"] == match]
+        period_list=match_df.period.unique()
+        #drop unusual period like 0, 5, 6
+        period_list=period_list[(period_list==1) | (period_list==2) | (period_list==3) | (period_list==4) | (period_list==5)]
+        for period in period_list:
+            period_df = match_df[match_df["period"] == period]
+            for poss_id in period_df.poss_id.unique():
+                poss_df = period_df[period_df["poss_id"] == poss_id]
+                for i in range(len(poss_df)):
+                    new_df.append(poss_df.iloc[i])
+                last_row = poss_df.iloc[-1].copy()
+                last_row["action"] = "_"
+                #change the value of the features to 0
+                last_row['goal']=0
+                last_row["success"]=0
+                last_row["deltaX"]=0
+                last_row["deltaY"]=0
+                last_row["distance"]=0
+                last_row["dist2goal"]=0
+                last_row["angle2goal"]=0.5
+                last_row["delta_T"]=0
+                new_df.append(last_row)
+            last_row = period_df.iloc[-1].copy()
+            #change the value of the features to 0
+            last_row['goal']=0
+            last_row["success"]=0
+            last_row["deltaX"]=0
+            last_row["deltaY"]=0
+            last_row["distance"]=0
+            last_row["dist2goal"]=0
+            last_row["angle2goal"]=0.5
+            last_row["delta_T"]=0
+            if period == df.period.unique()[-1]:
+                last_row["action"] = "game_over"
+                new_df.append(last_row)
+            else:
+                last_row["action"] = "period_over"
+                new_df.append(last_row)
+    df = pd.concat(new_df, axis=1).T.reset_index(drop=True)
+
+    # #create the seconds column
+    # seconds_list=[]
+    # for i in range(len(df)):
+    #     if df["Period"].iloc[i]==1:
+    #         seconds_list.append(df.Minute.iloc[i]*60+df.Second.iloc[i])
+    #     elif df["Period"].iloc[i]==2:
+    #         seconds_list.append(df.Minute.iloc[i]*60+df.Second.iloc[i]+60*45)
+    #     #if there is error in the period col, use the previous row period
+
+    # df["seconds"]=seconds_list
+    
+    #reset the features value to 0 (angle2goal to 0.5)for beginning of each period
+    new_df=[]
+    for match in df.match_id.unique():
+        match_df=df[df["match_id"]==match]
+        period_list=match_df.period.unique()
+        #drop unusual period like 0, 5, 6
+        period_list=period_list[(period_list==1) | (period_list==2) | (period_list==3) | (period_list==4) | (period_list==5)]
+        for period in period_list:
+            period_df=match_df[match_df["period"]==period].copy()
+            for i in range(len(period_df)):
+                if i==0:
+                    first_row=period_df.iloc[i].copy()
+                    first_row["deltaX"]=0
+                    first_row["deltaY"]=0
+                    first_row["distance"]=0
+                    first_row["dist2goal"]=0
+                    first_row["angle2goal"]=0.5
+                    first_row["delta_T"]=0
+                    new_df.append(first_row)
+                else:
+                    new_df.append(period_df.iloc[i])
+    df=pd.concat(new_df,axis=1).T.reset_index(drop=True)
+
+    #convert seconds, distance, dist2goal, angle2goal, start_x, start_y into type float
+    df["seconds"]=df["seconds"].astype(float)
+    df["distance"]=df["distance"].astype(float)
+    df["dist2goal"]=df["dist2goal"].astype(float)
+    df["angle2goal"]=df["angle2goal"].astype(float)
+    df["start_x"]=df["x_unscaled"].astype(float)
+    df["start_y"]=df["y_unscaled"].astype(float)
+
+    #round numerical columns to 4 decimal places (period, minute, second, X, Y)
+    df = df.round({"Period": 4, "Minute": 4, "Second": 4, "seconds": 4, "start_x": 4, "start_y": 4, "deltaX": 4, "deltaY": 4, "distance": 4, "dist2goal": 4, "angle2goal": 4})
+
+    df['team'] = df.team_id
+    df['Period'] = df.period
+    df['Minute'] = df.seconds // 60 
+    df['Second'] = df.seconds % 60
+
+    #reorder columns
+    # away_player_id_23	away_x_23	away_y_23	away_speed_23	away_name_23	away_nameEn_23	away_shirtNumber_23	away_position_23
+
+    tracking_col_home = df.columns[df.columns.str.startswith("home_")].tolist()
+    tracking_col_home = [col for col in tracking_col_home if col != "home_team"]
+    tracking_col_away = df.columns[df.columns.str.startswith("away_")].tolist()
+
+    df = df[['match_id', 'poss_id', 'team', 'home_team', 'action', 'success', 'goal', 'home_score', 
+             'away_score', 'goal_diff', 'Period', 'Minute', 'Second', 'seconds', "delta_T", 'start_x', 
+             'start_y', 'deltaX', 'deltaY', 'distance', 'dist2goal', 'angle2goal']+tracking_col_home+tracking_col_away]
+
+    return df
+
 
 if __name__ == '__main__':
     import pdb
@@ -1549,6 +1887,11 @@ if __name__ == '__main__':
     # df_datastadium_path=os.getcwd()+"/test/sports/event_data/data/datastadium/load.csv"
     # df_datastadium=UIED_datastadium(df_datastadium_path)
     # df_datastadium.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/preprocess_UIED.csv",index=False)
+
+    
+    df_bepro_path=os.getcwd()+"/test/sports/event_data/data/soccertrack/load.csv"
+    df_bepro=UIED_bepro(df_bepro_path)
+    df_bepro.to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/preprocess_UIED.csv",index=False)
 
     print('-----------------end-----------------')
     # pdb.set_trace()
