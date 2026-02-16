@@ -1554,7 +1554,7 @@ def UIED_bepro(data):
        'handballFoul', 'changeOut', 'changeIn', 'deflection',
        'cornerKick', 'saveByPunching', 'crossReceived',
        'saveByCatching', 'keyPass', 'assist', 'goal', 'goalAgainst',
-       'offside', 'pause', 'defensiveLineSupport', None
+       'offside', 'pause', 'defensiveLineSupport', None, 'None'
        ]
     
     possession_team_actions = ['pass', 'possession', 'duel', 'passReceived',
@@ -1643,7 +1643,7 @@ def UIED_bepro(data):
        'handballFoul', 'changeOut', 'changeIn', 'deflection',
         'saveByPunching', 'crossReceived',
        'saveByCatching', 'keyPass', 'assist',  'goalAgainst',
-       'offside', 'pause', 'defensiveLineSupport', None
+       'offside', 'pause', 'defensiveLineSupport', 'None' None
        ]
     
     action_list=[]
@@ -1665,7 +1665,6 @@ def UIED_bepro(data):
         elif df["action"].iloc[i] in drop_actions or pd.isna(df["action"].iloc[i]):
             action_list.append("drop")
         else:
-            pdb.set_trace()
             action= df["action"].iloc[i]
             print(f"Warning: action {action} was not found in the action list, it will be dropped")
             action_list.append("drop")
