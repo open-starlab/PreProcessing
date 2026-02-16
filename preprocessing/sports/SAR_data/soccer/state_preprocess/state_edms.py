@@ -67,15 +67,15 @@ def velocity_points(points, velocities):
 
 
 def calculate_voronoi(players: List[Player], ball: Ball, team_info: str, key: str):
-    # プレイヤーの位置情報を取得し、スケール変換
+    # Get player position info and apply scale conversion
     points = [[player.position.x + 52.5, player.position.y + 34] for player in players]
 
     velocities = [[player.velocity.x, player.velocity.y] for player in players]
 
-    # プレイヤーのチーム情報を取得
+    # Get player team information
     team = [player.team_name for player in players]
 
-    # ボールの位置
+    # Ball position
     ball_loc = [ball.position.x + 52.5, ball.position.y + 34]
 
     player_name = [player.player_name for player in players]
@@ -86,7 +86,7 @@ def calculate_voronoi(players: List[Player], ball: Ball, team_info: str, key: st
     # judge offside
     filtered_points, offside_f = judge_offside(points, ball_loc, team, team_info)
 
-    # ボロノイ図を計算
+    # Calculate Voronoi diagram
     vor = Voronoi(filtered_points)
 
     return vor, team, player_name, offside_f
@@ -256,34 +256,34 @@ def voronoi_finite_polygons_2d_cached(vor: Voronoi, radius: Optional[float] = No
 
 
 def weighted_area(polygon, weight_image, team, team_name):
-    # 多角形の頂点を取得
+    # Get polygon vertices
     if isinstance(polygon, Polygon):
         vertices = np.array(polygon.exterior.coords, dtype=np.int32)
     else:
         raise TypeError("polygon must be a shapely.geometry.Polygon object")
 
-    # 多角形のマスクを作成
+    # Create a mask for the polygon
     mask = np.zeros(weight_image.shape, dtype=np.uint8)
-    
+
     # Create a path object from the polygon vertices
     path = mpath.Path(vertices)
-    
+
     # Create a grid of coordinates for the mask
-    y_coords, x_coords = np.mgrid[0:weight_image.shape[0], 0:weight_image.shape[1]]
+    y_coords, x_coords = np.mgrid[0 : weight_image.shape[0], 0 : weight_image.shape[1]]
     points = np.vstack([x_coords.ravel(), y_coords.ravel()]).T
-    
+
     # Check which points are inside the polygon
     mask_flat = path.contains_points(points)
     mask = mask_flat.reshape(weight_image.shape).astype(np.uint8)
 
-    # team が team_name と異なる場合、weight_image を x 軸方向に反転
+    # If team differs from team_name, flip the weight image horizontally
     if team != team_name:
         weight_image = np.flip(weight_image, axis=1)
 
-    # 重み画像とマスクを掛け合わせて重み付き領域を取得
+    # Multiply weight image and mask to get weighted region
     weighted_region = weight_image * mask
 
-    # 重み付き領域の合計を計算
+    # Calculate the sum of the weighted region
     area = np.sum(weighted_region)
 
     return area

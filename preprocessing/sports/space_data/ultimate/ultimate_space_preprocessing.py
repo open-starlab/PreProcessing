@@ -1,60 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from .preprocess_config import COORDINATE_SCALE, PLAYERS_PER_TEAM, TRACKING_HERZ
-
-
-def preprocessing_for_ultimatetrack(data_path):
-    """
-    Complete pipeline: process Ultimate Track data -> create intermediate file -> convert to Metrica format
-
-    Args:
-        data_path: Path to Ultimate Track CSV data file
-
-    Returns:
-        Tuple of (home_df, away_df, events_df): DataFrames in Metrica format
-            - home_df: Home team tracking data with MultiIndex columns
-            - away_df: Away team tracking data with MultiIndex columns
-            - events_df: Events data with disc position and holder information
-    """
-
-    # Load Ultimate Track data
-    raw_data = pd.read_csv(data_path)
-
-    # Validate required columns
-    required_columns = [
-        "frame",
-        "id",
-        "class",
-        "x",
-        "y",
-        "vx",
-        "vy",
-        "ax",
-        "ay",
-        "closest",
-        "holder",
-    ]
-    missing_columns = [col for col in required_columns if col not in raw_data.columns]
-    if missing_columns:
-        raise ValueError(f"Missing required columns: {missing_columns}")
-
-    # Apply coordinate scaling using config values
-    if "x" in raw_data.columns and "y" in raw_data.columns:
-        raw_data = raw_data.copy()
-        raw_data["x"] = raw_data["x"] * COORDINATE_SCALE
-        raw_data["y"] = raw_data["y"] * COORDINATE_SCALE
-
-    # Step 1: Create intermediate file with all required columns
-    print("Creating intermediate file with calculated features...")
-    intermediate_df = create_intermediate_file(raw_data)
-
-    # Step 2: Convert to Metrica format
-    print("Converting to Metrica format...")
-    home_df, away_df, events_df = convert_to_metrica_format(intermediate_df)
-
-    return home_df, away_df, events_df
-
 
 def create_intermediate_file(raw_data):
     """
@@ -65,11 +11,11 @@ def create_intermediate_file(raw_data):
 
     Args:
         raw_data: Raw Ultimate Track data DataFrame with columns:
-                 frame, id, x, y, vx, vy, ax, ay, class, holder, closest
+            frame, id, x, y, vx, vy, ax, ay, class, holder, closest
 
     Returns:
         DataFrame: Intermediate data with calculated features including:
-                  v_mag, a_mag, v_angle, a_angle, diff_v_a_angle, diff_v_angle, diff_a_angle
+            v_mag, a_mag, v_angle, a_angle, diff_v_a_angle, diff_v_angle, diff_a_angle
     """
     intermediate_data = []
 
@@ -193,12 +139,13 @@ def calculate_magnitude_angle_features(
     )
 
 
-def convert_to_metrica_format(intermediate_df):
+def convert_to_metrica_format(intermediate_df, tracking_herz):
     """
     Convert Ultimate Track intermediate data to Metrica format
 
     Args:
         intermediate_df: DataFrame with intermediate format containing calculated motion features
+        tracking_herz: Frequency of tracking data (frames per second)
 
     Returns:
         Tuple of (home_df, away_df, events_df): Metrica format DataFrames
@@ -207,11 +154,11 @@ def convert_to_metrica_format(intermediate_df):
             - events_df: Events data with disc position and holder information
     """
     # Create the Metrica DataFrame for events
-    events_df = create_events_metrica(intermediate_df)
+    events_df = create_events_metrica(intermediate_df, tracking_herz)
 
     # Create the Metrica DataFrame for Home and Away
-    home_df = create_tracking_metrica(intermediate_df, "Home")
-    away_df = create_tracking_metrica(intermediate_df, "Away")
+    home_df = create_tracking_metrica(intermediate_df, "Home", tracking_herz)
+    away_df = create_tracking_metrica(intermediate_df, "Away", tracking_herz)
 
     # Drop non-data columns
     events_df.dropna(subset=["Start Frame"], inplace=True)
@@ -221,12 +168,13 @@ def convert_to_metrica_format(intermediate_df):
     return home_df, away_df, events_df
 
 
-def create_events_metrica(df):
+def create_events_metrica(df, tracking_herz):
     """
     Create the Metrica DataFrame for events
 
     Args:
         df (DataFrame): The DataFrame containing the data
+        tracking_herz (int): Frequency of tracking data (frames per second)
 
     Returns:
         DataFrame: The DataFrame containing the events
@@ -261,21 +209,20 @@ def create_events_metrica(df):
 
     # Create columns
     start_frame = pd.Series(np.arange(min_frame, max_frame + 1))
-    start_time = (start_frame / TRACKING_HERZ).round(6)
+    start_time = (start_frame / tracking_herz).round(6)
     start_x = disc_df["x"].round(2).reset_index(drop=True)
     start_y = disc_df["y"].round(2).reset_index(drop=True)
     offense_ids = sorted(df.loc[df["class"] == "offense", "id"].unique())
 
     # Get holder information
     holder_data = df.loc[df["holder"]]
+    to_id = pd.Series([np.nan] * len(start_frame))
     if not holder_data.empty:
-        to_id = (
-            holder_data["id"]
-            .map(lambda x: offense_ids.index(x) if x in offense_ids else np.nan)
-            .reset_index(drop=True)
-        )
-    else:
-        to_id = pd.Series([np.nan] * len(start_frame))
+        id_by_frame = holder_data.set_index("frame")["id"]
+        to_id.update(id_by_frame)
+        to_id = to_id.map(
+            lambda x: offense_ids.index(x) + 1 if x in offense_ids else np.nan
+        ).reset_index(drop=True)
 
     # Create the DataFrame for events
     events_df = pd.concat(
@@ -302,30 +249,31 @@ def create_events_metrica(df):
     return events_df
 
 
-def create_tracking_metrica(df, team):
+def create_tracking_metrica(df, team, tracking_herz):
     """
-    Create the Metrica format DataFrame for team tracking data from UFA data
+    Create the Metrica format DataFrame for team tracking data from UFATrack data
 
     Args:
-        df (DataFrame): The UFA intermediate DataFrame containing tracking data
-                       with columns: frame, class, x, y, id, closest
+        df (DataFrame): The UFATrack intermediate DataFrame containing tracking data
+            with columns: frame, class, x, y, id, closest
         team (str): Team designation ("Home" for offense, "Away" for defense)
+        tracking_herz (int): Frequency of tracking data (frames per second)
 
     Returns:
         DataFrame: Tracking DataFrame in Metrica format with MultiIndex columns:
-                  - Level 0: "" for general columns, team name for player columns
-                  - Level 1: Player indices for player columns
-                  - Level 2: "Period", "Frame", "Time [s]", player position names, "Disc__"
-                  Contains position data for up to 7 players plus disc position.
+            - Level 0: "" for general columns, team name for player columns
+            - Level 1: Player indices for player columns
+            - Level 2: "Period", "Frame", "Time [s]", player position names, "Disc__"
+                Contains position data for up to 7 players plus disc position.
     """
     # Define the levels of the MultiIndex using config values
-    player_columns = PLAYERS_PER_TEAM * 2  # x, y for each player
+    player_columns = 7 * 2  # x, y for each player
     level_0 = [""] * 3 + [team] * player_columns + [""] * 2
     level_1 = [""] * 3 + [i // 2 for i in range(player_columns)] + [""] * 2
 
     # Generate player column names using config
     player_names = []
-    for i in range(PLAYERS_PER_TEAM):
+    for i in range(7):
         player_names.extend([f"Player{i}", f"Player{i}"])
 
     level_2 = (
@@ -350,7 +298,7 @@ def create_tracking_metrica(df, team):
     nan_column = pd.Series([np.nan] * (max_frame - min_frame + 1))
 
     frame = pd.Series(np.arange(min_frame, max_frame + 1))
-    time = (frame / TRACKING_HERZ).round(6)
+    time = (frame / tracking_herz).round(6)
 
     offense_ids = sorted(df.loc[df["class"] == "offense", "id"].unique())
     if team == "Home":
@@ -372,7 +320,7 @@ def create_tracking_metrica(df, team):
 
     positions = []
     for i, player_id in enumerate(
-        player_ids[:PLAYERS_PER_TEAM]
+        player_ids[:7]
     ):  # Limit to config-defined player count
         if team == "Home":
             player_df = df[(df["id"] == player_id) & (df["class"] == "offense")]
@@ -390,7 +338,7 @@ def create_tracking_metrica(df, team):
         positions.append(y)
 
     # Add remaining player columns if less than 7 players
-    while len(positions) < PLAYERS_PER_TEAM * 2:
+    while len(positions) < 7 * 2:
         positions.append(pd.Series([np.nan] * len(frame)))
 
     disc_x = df.loc[df["class"] == "disc", "x"].round(2).reset_index(drop=True)
@@ -404,3 +352,62 @@ def create_tracking_metrica(df, team):
     tracking_df.columns = multi_columns
 
     return tracking_df
+
+
+def format_tracking_headers(tracking_df, team_prefix="Home"):
+    """Convert the multi-index tracking output into a single-header format."""
+    if tracking_df.empty:
+        return tracking_df
+
+    flattened_columns = []
+    active_columns = []
+    seen_columns = set()
+
+    for column in tracking_df.columns:
+        # MultiIndex columns are returned as tuples
+        level2_name = column[2] if isinstance(column, tuple) else column
+
+        if column in seen_columns:
+            continue
+
+        if level2_name == "Frame":
+            continue
+
+        if level2_name == "Period":
+            flattened_columns.append("Period")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+        if level2_name == "Time [s]":
+            flattened_columns.append("Time [s]")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+        if level2_name == "Disc__":
+            flattened_columns.append("disc_x")
+            flattened_columns.append("disc_y")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+        if (
+            isinstance(column, tuple)
+            and column[0] == team_prefix
+            and level2_name.startswith("Player")
+        ):
+            player_index = int(level2_name.replace("Player", "")) + 1
+            for suffix in ["_x", "_y"]:
+                flattened_columns.append(f"{team_prefix}_{player_index}{suffix}")
+            active_columns.append(column)
+            seen_columns.add(column)
+            continue
+
+    formatted_df = tracking_df[active_columns].copy()
+    formatted_df.columns = flattened_columns
+
+    if "Period" in formatted_df.columns and formatted_df["Period"].isna().all():
+        formatted_df["Period"] = 1
+
+    return formatted_df

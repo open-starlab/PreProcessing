@@ -21,20 +21,29 @@ def get_changed_player_list(event_data: pd.DataFrame, league: str) -> Tuple[List
     Tuple[List[int], List[int]]:
         Tuple containing two lists of players who have changed in the home and away teams respectively
     """
-    if league == "jleague" or league == "fifawc":
-        changed_player_list_in_home = list(
-            event_data.query("event_name == '交代' and home_away == 'HOME'")["jersey_number"].values.astype(int)
-        )
-        changed_player_list_in_away = list(
-            event_data.query("event_name == '交代' and home_away == 'AWAY'")["jersey_number"].values.astype(int)
-        )
-    elif league == "laliga":
-        changed_player_list_in_home = list(
-            event_data.query("event_name == 'Substitution' and home_away == 'HOME'")["jersey_number"].values.astype(int)
-        )
-        changed_player_list_in_away = list(
-            event_data.query("event_name == 'Substitution' and home_away == 'AWAY'")["jersey_number"].values.astype(int)
-        )
+    # Fill missing jersey_number for substitution events using player_name within same team.
+    sub_event_name = {"jleague": "交代", "fifawc": "交代", "laliga": "Substitution"}.get(league)
+    assert sub_event_name is not None, f"Unsupported league: {league}"
+
+    sub_mask = event_data["event_name"].eq(sub_event_name)
+    missing_mask = (
+        sub_mask & event_data["jersey_number"].isna() & event_data["player_name"].notna() & event_data["home_away"].notna()
+    )
+    if missing_mask.any():
+        known = event_data.loc[
+            event_data["jersey_number"].notna() & event_data["player_name"].notna() & event_data["home_away"].notna(),
+            ["home_away", "player_name", "jersey_number"],
+        ]
+        if not known.empty:
+            jersey_map = known.groupby(["home_away", "player_name"], sort=False)["jersey_number"].agg(
+                lambda s: s.value_counts().idxmax()
+            )
+            keys = pd.MultiIndex.from_frame(event_data.loc[missing_mask, ["home_away", "player_name"]])
+            event_data.loc[missing_mask, "jersey_number"] = keys.map(jersey_map).to_numpy()
+
+    sub_df = event_data.loc[sub_mask, ["home_away", "jersey_number"]]
+    changed_player_list_in_home = sub_df.loc[sub_df["home_away"].eq("HOME"), "jersey_number"].dropna().astype(int).tolist()
+    changed_player_list_in_away = sub_df.loc[sub_df["home_away"].eq("AWAY"), "jersey_number"].dropna().astype(int).tolist()
     return changed_player_list_in_home, changed_player_list_in_away
 
 
@@ -65,7 +74,7 @@ def get_timestamp(event_data: pd.DataFrame, league: str) -> Dict[str, int]:
                 "second_start_frame": event_data.loc[event_data["event_name"] == "Half Start 2", "frame_id"].values[0],
                 "second_end_frame": event_data.loc[event_data["event_name"] == "Half End 2", "frame_id"].values[0],
             }
-        except:
+        except IndexError:
             timestamp_dict = {
                 "first_start_frame": event_data.loc[event_data["event_name"] == "Half Start 1", "frame_id"].values[0],
                 "first_end_frame": event_data.loc[event_data["event_name"] == "Half End 1", "frame_id"].values[0],
