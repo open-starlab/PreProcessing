@@ -1542,7 +1542,7 @@ def UIED_bepro(data):
     df["action"] = df["event_type"] = (
                                         df["event_type"]
                                             .astype(str)
-                                            .str.replace("(Failed|Succeeded|Received|OnTarget)$", "", regex=True)
+                                            .str.replace("(Blocked|Failed|Succeeded|Received|OnTarget)$", "", regex=True)
                                     )
     # Define possession team actions
 
@@ -1662,7 +1662,7 @@ def UIED_bepro(data):
             action_list.append("dribble")
         elif df["action"].iloc[i] in cross_actions:
             action_list.append("cross")
-        elif df["action"].iloc[i] in drop_actions or np.isnan(df["action"].iloc[i]) or df["action"].iloc[i] in ["nan", "None"]:
+        elif df["action"].iloc[i] in drop_actions or pd.isna(df["action"].iloc[i]):
             action_list.append("drop")
         else:
             action= df["action"].iloc[i]
