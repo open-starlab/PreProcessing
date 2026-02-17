@@ -36,7 +36,7 @@ class Soccer_event_data:
                  statsbomb_event_dir=None, skillcorner_tracking_dir=None, skillcorner_match_dir=None,
                  preprocess_method=None,sb360_path=None,wyscout_matches_path=None,
                  st_track_path=None, st_meta_path=None,verbose=False,
-                 preprocess_tracking=False):
+                 preprocess_tracking=False, soccertrackv2=False):
         self.data_provider = data_provider
         self.event_path = event_path
         self.match_id = match_id
@@ -60,6 +60,7 @@ class Soccer_event_data:
         self.preprocess_tracking = preprocess_tracking
         self.verbose = verbose
         self.call_preprocess = False
+        self.soccertrackv2 = soccertrackv2
 
     def load_data_single_file(self):
         #based on the data provider, load the dataloading function from load_data.py (single file)
@@ -88,7 +89,10 @@ class Soccer_event_data:
         elif self.data_provider == 'datastadium':
             df=soccer_load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
         elif self.data_provider == 'bepro':
-            df=soccer_load_data.load_soccertrack(self.event_path, self.st_track_path, self.st_meta_path, self.verbose)
+            if self.soccertrackv2 == True:
+                df=soccer_load_data.load_soccertrack(self.event_path, self.tracking_path, self.meta_data, self.verbose)
+            elif self.soccertrackv2 == False:
+                df=soccer_load_data.load_bepro(self.event_path, self.tracking_path, self.meta_data, self.verbose)
         else:
             raise ValueError('Data provider not supported or not found')
         return df
@@ -313,7 +317,10 @@ class Soccer_event_data:
             elif self.data_provider == "datastadium":
                 df_out=soccer_processing.UIED_datastadium(df)
             elif self.data_provider == "bepro":
-                df_out=soccer_processing.UIED_bepro(df)
+                if self.soccertrackv2 == True:
+                    df_out=soccer_processing.UIED_soccertrackv2(df)
+                elif self.soccertrackv2 == False:
+                    df_out=soccer_processing.UIED_bepro(df)
             elif self.data_provider == "wyscout":
                 if self.preprocess_method == "UIED":
                     df_out=soccer_processing.UIED_wyscout(df)
