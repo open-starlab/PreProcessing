@@ -92,7 +92,7 @@ class Soccer_event_data:
             if self.soccertrackv2 == True:
                 df=soccer_load_data.load_soccertrack(self.event_path, self.tracking_path, self.meta_data, self.verbose)
             elif self.soccertrackv2 == False:
-                df=soccer_load_data.load_bepro(self.event_path, self.tracking_path, self.meta_data, self.verbose)
+                df=soccer_load_data.load_bepro(self.event_path, self.tracking_path, self.meta_data, self.match_id, self.verbose)
         else:
             raise ValueError('Data provider not supported or not found')
         return df
@@ -100,7 +100,9 @@ class Soccer_event_data:
     def load_data(self):
         print(f'Loading data from {self.data_provider}')
         #check if the event path is a single file or a directory
-        if ((self.event_path is not None and os.path.isfile(self.event_path)) and self.data_provider != 'statsbomb') or \
+        if self.data_provider == 'bepro' and self.soccertrackv2 == False:
+            df = self.load_data_single_file()
+        elif ((self.event_path is not None and os.path.isfile(self.event_path)) and self.data_provider != 'statsbomb') or \
            (self.data_provider == 'statsbomb' and self.statsbomb_match_id is None and os.path.isfile(self.event_path)) or \
             (self.data_provider == 'statsbomb_skillcorner' and self.statsbomb_match_id is not None):
             df = self.load_data_single_file()
@@ -585,12 +587,31 @@ if __name__ == '__main__':
     # df_datastadium.to_csv(os.getcwd()+"/test/sports/event_data/data/datastadium/preprocess_UIED_class_multi.csv",index=False)
     
     #test soccertrack
-    soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
-    soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
-    soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
-    df_soccertrack=Soccer_event_data('bepro',soccer_track_event_path,
-                                     st_track_path = soccer_track_tracking_path,
-                                     st_meta_path = soccer_track_meta_path,
-                                     verbose = True).load_data()
-    df_soccertrack.to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_soccer_event_class.csv",index=False)
+    # soccer_track_event_path="/data_pool_1/soccertrackv2/2024-03-18/Event/event.csv"
+    # soccer_track_tracking_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/tracking.xml"
+    # soccer_track_meta_path="/data_pool_1/soccertrackv2/2024-03-18/Tracking/meta.xml"
+    # df_soccertrack=Soccer_event_data('bepro',soccer_track_event_path,
+    #                                  st_track_path = soccer_track_tracking_path,
+    #                                  st_meta_path = soccer_track_meta_path,
+    #                                  verbose = True).load_data()
+    # df_soccertrack.to_csv(os.getcwd()+"/test/sports/event_data/data/soccertrack/test_load_soccer_event_class.csv",index=False)
+
+    #test bepro
+    data_dir=["/data_pool_1/soccertrackv2/117093/2023-11-25_筑波大学 vs 筑波大学 - B1_1st Half.json",
+                            "/data_pool_1/soccertrackv2/117093/2023-11-25_筑波大学 vs 筑波大学 - B1_2nd Half.json"]
+    tracking_path="/data_pool_1/soccertrackv2/117093/tracker_box_data_125091.xml"
+    meta_data="/data_pool_1/soccertrackv2/117093/tracker_box_metadata_125091.xml"
+
+    df_bepro=Soccer_event_data(data_provider='bepro',
+                                            event_path=data_dir,
+                                            tracking_path=tracking_path,
+                                            meta_data=meta_data,
+                                            preprocess_method="UIED",
+                                            max_workers=1,
+                                            match_id=117093,
+                                            verbose=True).preprocessing()
+
+    #save
+    df_bepro.to_csv(os.getcwd()+"/test/sports/event_data/data/bepro/test_load_soccer_event_class.csv",index=False)
+
     print("-----------done-----------")

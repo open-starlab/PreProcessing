@@ -2068,7 +2068,6 @@ def UIED_bepro(data):
             else:
                 poss_id += 1
                 poss_id_list.append(poss_id)
-        poss_id+=1
     df["poss_id"] = poss_id_list
 
     new_df = []
@@ -2166,7 +2165,7 @@ def UIED_bepro(data):
     tracking_col_home = [col for col in tracking_col_home if col != "home_team"]
     tracking_col_away = df.columns[df.columns.str.startswith("away_")].tolist()
 
-    df = df[['poss_id', 'team', 'home_team', 'action', 'success', 'goal', 'home_score', 
+    df = df[['match_id', 'poss_id', 'team', 'home_team', 'action', 'success', 'goal', 'home_score', 
              'away_score', 'goal_diff', 'Period', 'Minute', 'Second', 'seconds', "delta_T", 'start_x', 
              'start_y', 'deltaX', 'deltaY', 'distance', 'dist2goal', 'angle2goal']+tracking_col_home+tracking_col_away]
 
