@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 from statsbombpy import sb
 from tqdm import tqdm
 from datetime import datetime
+from typing import Union
 import os
 import pdb
 
@@ -1537,7 +1538,7 @@ def load_soccertrack(event_path: str, tracking_path: str, meta_path: str, verbos
 
     return event_df
 
-def load_bepro(event_path: str, tracking_path: str, meta_path: str, verbose: bool = False) -> pd.DataFrame:
+def load_bepro(event_path: str, tracking_path: str, meta_path: str, match_id:Union[int, str], verbose: bool = False) -> pd.DataFrame:
     """
     Loads and processes event and tracking data from soccer match recordings.
 
@@ -1697,7 +1698,10 @@ def load_bepro(event_path: str, tracking_path: str, meta_path: str, verbose: boo
 
         #load the event data
     
-    def get_additional_features(event_df, meta_data):
+    def get_additional_features(event_df, meta_data, match_id=None):
+
+        event_df['match_id'] = match_id
+
         #player info: id name nameEN shirtNumber position
         # create features period, seconds, event_type, event_type_2, outcome, home_team, x_unscaled, y_unscaled,
         period_dict = {1:"FIRST_HALF",2:"SECOND_HALF",3:"EXTRA_FIRST_HALF",4:"EXTRA_SECOND_HALF"}
@@ -1902,7 +1906,7 @@ def load_bepro(event_path: str, tracking_path: str, meta_path: str, verbose: boo
     # Load the meta data
     meta_data = read_meta_data(meta_path)
     # Get additional features
-    event_df = get_additional_features(event_df, meta_data)
+    event_df = get_additional_features(event_df, meta_data, match_id=match_id)
     # Get tracking features
     event_df = get_tracking_features(event_df, tracking_data, meta_data, verbose=verbose)
 
