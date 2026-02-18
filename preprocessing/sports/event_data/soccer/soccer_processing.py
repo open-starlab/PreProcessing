@@ -1955,14 +1955,14 @@ def UIED_bepro(data):
             
 
     #group the event into simpliefied actions
-    short_pass_actions=['Passes', 'Set Pieces', 'Key Passes',]
+    short_pass_actions=['Passes', 'Set Pieces',]
     long_pass_actions=[]
     high_pass_actions=[]
     shot_actions=['Shots & Goals',]
     carray_actions=[]
     dribble_actions=[]
     cross_actions=['Crosses',]
-    drop_actions=[  'Passes Received',  'Turnovers',
+    drop_actions=[  'Passes Received',  'Turnovers', 'Key Passes',
        'Interceptions',   
        'Aerial Control', 'Clearances', 'Recoveries', 'Step-in', 'Blocks',
        'Tackles', 'Take-on', 'Duels', 'Fouls', 'Mistakes',
@@ -1974,11 +1974,21 @@ def UIED_bepro(data):
     for i in range(len(df)):
         if df["action"].iloc[i] in short_pass_actions:
             distance_i = np.sqrt((df["x_unscaled"].iloc[i] - df["to_x_unscaled"].iloc[i])**2 +\
-                                 (df["y_unscaled"].iloc[i] - df["to_y_unscaled"].iloc[i])**2)
-            if distance_i>=45:
-                action_list.append("long_pass")
+                                        (df["y_unscaled"].iloc[i] - df["to_y_unscaled"].iloc[i])**2)
+
+            if i!=len(df)-1 and df["action"].iloc[i]=='Set Pieces':
+                if df["x"].iloc[i]==df["x"].iloc[i+1] and df["y"].iloc[i]==df["y"].iloc[i+1]:
+                    action_list.append("drop")
+                else:
+                    if distance_i>=45:
+                        action_list.append("long_pass")
+                    else:
+                        action_list.append("short_pass")
             else:
-                action_list.append("short_pass")
+                if distance_i>=45:
+                        action_list.append("long_pass")
+                else:
+                    action_list.append("short_pass")
 
         elif df["action"].iloc[i] in high_pass_actions:
             action_list.append("high_pass")
@@ -2164,6 +2174,10 @@ def UIED_bepro(data):
     tracking_col_home = df.columns[df.columns.str.startswith("home_")].tolist()
     tracking_col_home = [col for col in tracking_col_home if col != "home_team"]
     tracking_col_away = df.columns[df.columns.str.startswith("away_")].tolist()
+
+    #check if match_id is in the col
+    if "match_id" not in df.columns:
+        df["match_id"] = 0
 
     df = df[['match_id', 'poss_id', 'team', 'home_team', 'action', 'success', 'goal', 'home_score', 
              'away_score', 'goal_diff', 'Period', 'Minute', 'Second', 'seconds', "delta_T", 'start_x', 
