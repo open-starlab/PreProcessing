@@ -30,6 +30,7 @@ pip install -e .
 
 #### SAR (State-Action-Reward) Data
 - [SAR data in Football/Soccer ⚽](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/SAR_data/soccer/README.md)
+- [RL-ready Datasets (DQN / QMIX)](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/SAR_data/soccer/README.md#rl-ready-datasets-dqn--qmix)
 
 #### Space Data
 - [Space data in Basketball 🏀](https://github.com/open-starlab/PreProcessing/blob/master/preprocessing/sports/space_data/basketball/README.md)
