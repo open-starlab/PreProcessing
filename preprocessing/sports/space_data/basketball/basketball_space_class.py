@@ -159,5 +159,4 @@ class Basketball_space_data:
 
         os.remove(output_zip_path)
         print("delete the unecessary zip file")
-        return print("Data downloaded finish")        print("delete the unecessary zip file")
         return print("Data downloaded finish")
