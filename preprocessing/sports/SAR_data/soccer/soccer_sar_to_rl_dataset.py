@@ -578,7 +578,7 @@ def build_rl_datasets_from_sar_events(
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Build RL-ready (DQN/QMIX) datasets from SAR `events.jsonl` outputs.")
+    p = argparse.ArgumentParser(description="Build DQN/QMIX datasets from SAR `events.jsonl` outputs.")
     p.add_argument("--sar-preprocessed-dir", type=str, required=True, help="Directory containing `**/events.jsonl`.")
     p.add_argument("--output-dir", type=str, required=True, help="Output directory for .npz + meta.json.")
     p.add_argument("--max-seq-len", type=int, default=600)
