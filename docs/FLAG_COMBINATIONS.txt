@@ -1,0 +1,218 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║           DEFENSE LINE ANALYSIS - 5 FLAGS × 32 CONFIGURATIONS            ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+FLAG STRUCTURE:
+├─ Flag 1: data_match (2 options)
+├─ Flag 2: back_four (2 options)
+├─ Flag 3: sequence_type (2 options)
+├─ Flag 4: reward_features (2 options)
+└─ Flag 5: method (2 options)
+
+Total: 2 × 2 × 2 × 2 × 2 = 32 CONFIGURATIONS
+
+═══════════════════════════════════════════════════════════════════════════════
+
+EXAMPLE CONFIGURATIONS:
+
+1. DEFAULT (All Matches, All Players, All Defensive, 5 Features, Computation)
+   python main.py
+   Output: features_all_matches_all_players_all_defensive_5_features_feature_computation.csv
+
+2. BARCELONA/MADRID ONLY (For El Clasico Analysis)
+   python main.py --data_match barcelona_madrid
+   Output: features_barcelona_madrid_all_players_all_defensive_5_features_feature_computation.csv
+
+3. BACK FOUR FOCUS (Only Center-backs & Full-backs)
+   python main.py --back_four back_four
+   Output: features_all_matches_back_four_all_defensive_5_features_feature_computation.csv
+
+4. NEGATIVE TRANSITIONS (High-pressure after ball loss)
+   python main.py --sequence_type negative_transition
+   Output: features_all_matches_all_players_negative_transition_5_features_feature_computation.csv
+
+5. 4-FEATURE SET (Without line_height_absolute)
+   python main.py --reward_features 4_features
+   Output: features_all_matches_all_players_all_defensive_4_features_feature_computation.csv
+
+6. GIRL METHOD (Goal-based Reward Learning - framework prepared)
+   python main.py --method girl
+   Output: features_all_matches_all_players_all_defensive_5_features_girl.csv
+
+7. COMBINED: BARCELONA, BACK FOUR, TRANSITIONS, 4 FEATURES, COMPUTATION
+   python main.py \
+     --data_match barcelona_madrid \
+     --back_four back_four \
+     --sequence_type negative_transition \
+     --reward_features 4_features \
+     --method feature_computation \
+     --save
+   Output: features_barcelona_madrid_back_four_negative_transition_4_features_feature_computation.csv
+
+8. GENERATE ALL 32 COMBINATIONS
+   python main.py --compare --save
+   Generates 32 CSV files with different configurations
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FLAG MEANINGS:
+
+FLAG 1: data_match
+├─ all_matches ............ Use all 376 La Liga matches (default)
+└─ barcelona_madrid ....... Only Barcelona vs Real Madrid matches (EL CLASICO)
+
+FLAG 2: back_four
+├─ all_players ............ Include all defending players (default)
+└─ back_four .............. Only center-backs and full-backs
+
+FLAG 3: sequence_type
+├─ all_defensive .......... All defensive sequences (default)
+└─ negative_transition .... Only high-pressure after possession loss
+
+FLAG 4: reward_features
+├─ 4_features ............ space_score, pressure_index, stretch_index, line_height_relative
+└─ 5_features ............ Above 4 + line_height_absolute (default)
+
+FLAG 5: method
+├─ feature_computation ... Direct feature engineering (default, IMPLEMENTED)
+└─ girl ................... Goal-based Interpretable Reward Learning (framework ready)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FEATURE OUTPUT COLUMNS:
+
+Common to all configurations:
+  • match_id ................. Unique match identifier
+  • home_team ................ Home team name
+  • away_team ................ Away team name
+  • start_frame .............. Sequence start frame
+  • end_frame ................ Sequence end frame
+  • num_frames ............... Number of frames in sequence
+
+ALWAYS computed:
+  • space_score .............. Compression around ball (0-1)
+  • pressure_index ........... Defenders in pressure radius (0-1)
+  • stretch_index ............ Line left-right stretching (0-1)
+  • line_height_relative ..... Distance from own goal normalized (0-1)
+
+Optionally computed (if reward_features='5_features'):
+  • line_height_absolute ..... Actual x-coordinate on field (0-105m)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+DIMENSION REDUCTION:
+
+Number of sequences analyzed varies by flags:
+  - Flag 1 (data_match): all_matches (376) vs barcelona_madrid (~10)
+  - Flag 3 (sequence_type): all_defensive (more sequences) vs negative_transition (fewer)
+
+Typical output sizes:
+  • all_matches + all_defensive ≈ 20,000-30,000 sequences
+  • barcelona_madrid + all_defensive ≈ 500-700 sequences
+  • any configuration + negative_transition ≈ 50% of above
+
+═══════════════════════════════════════════════════════════════════════════════
+
+USE CASES BY CONFIGURATION:
+
+1. GENERAL ANALYSIS: all_matches / all_players / all_defensive / 5_features
+   → Broad overview of all La Liga defensive patterns
+
+2. ELITE COMPARISON: barcelona_madrid / all_players / all_defensive / 5_features
+   → Compare two top teams in detail
+
+3. BACK FOUR STUDY: all_matches / back_four / all_defensive / 5_features
+   → Focus on core defensive structure
+
+4. TRANSITION ANALYSIS: all_matches / all_players / negative_transition / 5_features
+   → Study pressing behavior after possession loss
+
+5. MINIMAL FEATURES: all_matches / all_players / all_defensive / 4_features
+   → Simpler model, faster computation
+
+6. RESEARCH READY: all_matches / back_four / negative_transition / 4_features
+   → Focused, clean dataset for statistical analysis
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PYTHON API EXAMPLES:
+
+from config import PipelineConfig
+from main import run_pipeline, save_features
+from pathlib import Path
+
+# Configuration 1: Default
+config = PipelineConfig()
+df = run_pipeline(config)
+
+# Configuration 2: Custom
+config = PipelineConfig(
+    data_match='barcelona_madrid',
+    back_four='back_four',
+    sequence_type='negative_transition',
+    reward_features='4_features',
+    method='feature_computation'
+)
+df = run_pipeline(config)
+save_features(df, Path('./output'), config)
+
+# Configuration 3: Compare two
+configs = {
+    'All Players': PipelineConfig(back_four='all_players'),
+    'Back Four': PipelineConfig(back_four='back_four')
+}
+for name, cfg in configs.items():
+    df = run_pipeline(cfg)
+    print(f"{name}: {len(df)} sequences, space_score={df['space_score'].mean():.3f}")
+
+═══════════════════════════════════════════════════════════════════════════════
+
+IMPLEMENTATION STATUS:
+
+✅ IMPLEMENTED:
+  • Flag 1: data_match (barcelona_madrid, all_matches)
+  • Flag 2: back_four (back_four, all_players)
+  • Flag 3: sequence_type (negative_transition, all_defensive)
+  • Flag 4: reward_features (4_features, 5_features)
+  • Flag 5: method (feature_computation) ← MAIN METHOD IMPLEMENTED
+
+🚧 FRAMEWORK READY (method='girl'):
+  • Flag 5: method (girl) ← SKELETON PREPARED, READY FOR YOUR IMPLEMENTATION
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FILE NAMING CONVENTION:
+
+features_{flag1}_{flag2}_{flag3}_{flag4}_{flag5}.csv
+
+Examples:
+  features_all_matches_all_players_all_defensive_5_features_feature_computation.csv
+  features_barcelona_madrid_back_four_negative_transition_4_features_girl.csv
+  features_all_matches_back_four_negative_transition_4_features_feature_computation.csv
+
+═══════════════════════════════════════════════════════════════════════════════
+
+QUICK START COMMANDS:
+
+# Show all options
+python main.py --help
+
+# Run with defaults
+python main.py --save
+
+# Run Barcelona/Madrid only
+python main.py --data_match barcelona_madrid --save
+
+# Run back four analysis
+python main.py --back_four back_four --save
+
+# Run transitions only
+python main.py --sequence_type negative_transition --save
+
+# Run with 4 features
+python main.py --reward_features 4_features --save
+
+# Generate all 32 combinations
+python main.py --compare --save
+
+═══════════════════════════════════════════════════════════════════════════════
