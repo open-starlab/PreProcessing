@@ -25,17 +25,14 @@ Here are some examples of how to download and preprocess data:
 - **StatsBomb and SkillCorner Data:**
   - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/SAR_data/Example/Soccer/Example_2/contents.html)
   - [Example Config File](https://github.com/open-starlab/PreProcessing/blob/master/example/config/statsbomb_skillcorner/preprocessing_statsbomb_skillcorner2024.json)
-    
-## RL-ready datasets (DQN / QMIX)
-If you are training RL models such as DQN (single-agent) and QMIX (multi-agent), you can convert the SAR `events.jsonl`
-outputs into padded tensors with consistent action tokenization and train/val/test splits.
+
+## SAR-to-RL Dataset Conversion (DQN / QMIX)
+This section describes a SAR-to-RL dataset conversion step that formats SAR outputs (`events.jsonl`) into tensors used by
+DQN and QMIX training. This is a preprocessing/data-format step, not a training algorithm.
+The conversion script is `soccer_sar_to_rl_dataset.py`.
 
 This produces a single shared multi-agent dataset with:
 - `observation`: `(B, T, N, O)` (N=10 attackers)
 - `action`: `(B, T, N)` (discrete action ids; default vocab size 16 with `PAD=15`)
 - `reward`, `done`, `mask`: `(B, T)`
 - `onball_mask`: `(B, T, N)` (for masking unavailable actions)
-
-Notes:
-- For DQN, you can flatten the agent dimension `N` into the batch dimension at load time.
-- For QMIX, consume the tensors as-is.
