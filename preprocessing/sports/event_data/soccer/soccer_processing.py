@@ -2159,9 +2159,14 @@ def UIED_bepro(data):
     df["angle2goal"]=df["angle2goal"].astype(float)
     df["start_x"]=df["x_unscaled"].astype(float)
     df["start_y"]=df["y_unscaled"].astype(float)
+    df["end_x"]=df["to_x_unscaled"].astype(float)
+    df["end_y"]=df["to_y_unscaled"].astype(float)
 
     #round numerical columns to 4 decimal places (period, minute, second, X, Y)
-    df = df.round({"Period": 4, "Minute": 4, "Second": 4, "seconds": 4, "start_x": 4, "start_y": 4, "deltaX": 4, "deltaY": 4, "distance": 4, "dist2goal": 4, "angle2goal": 4})
+    df = df.round({"Period": 4, "Minute": 4, "Second": 4, "seconds": 4, 
+                   "start_x": 4, "start_y": 4, "end_x": 4, "end_y": 4, 
+                   "deltaX": 4, "deltaY": 4, "distance": 4, "dist2goal": 4, 
+                   "angle2goal": 4})
 
     df['team'] = df.team_id
     df['Period'] = df.period
@@ -2181,7 +2186,7 @@ def UIED_bepro(data):
 
     df = df[['match_id', 'poss_id', 'team', 'home_team', 'action', 'success', 'goal', 'home_score', 
              'away_score', 'goal_diff', 'Period', 'Minute', 'Second', 'seconds', "delta_T", 'start_x', 
-             'start_y', 'deltaX', 'deltaY', 'distance', 'dist2goal', 'angle2goal']+tracking_col_home+tracking_col_away]
+             'start_y', 'end_x', 'end_y', 'deltaX', 'deltaY', 'distance', 'dist2goal', 'angle2goal', 'ball_x', 'ball_y']+tracking_col_home+tracking_col_away]
 
     return df
 
