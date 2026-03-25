@@ -1,3 +1,6 @@
+Full current contents of `[soccer_SAR_class.py](/Users/akshatgarg/Desktop/PreProcessing/preprocessing/sports/SAR_data/soccer/soccer_SAR_class.py)`:
+
+```python
 # Target data provider [Metrica,Robocup 2D simulation,Statsbomb,Wyscout,Opta data,DataFactory,sportec]
 
 """
@@ -351,17 +354,15 @@ class Soccer_SAR_data:
                 else:
                     raise ValueError(f"Preprocessing method not supported for {self.data_provider}")
         elif self.preprocess_method == "SAR2RL":
+            if self.data_provider != "robocup_2d":
+                raise ValueError(
+                    "SAR2RL preprocessing is only supported for data_provider='robocup_2d'."
+                )
+
             if preprocessed_dir is None:
-                if self.data_provider == "datastadium":
-                    preprocessed_dir = os.getcwd() + "/data/dss/preprocess_data"
-                elif self.data_provider == "statsbomb_skillcorner":
-                    preprocessed_dir = os.getcwd() + "/data/stb_skc/preprocess_data"
-                elif self.data_provider == "fifawc":
-                    preprocessed_dir = os.getcwd() + "/data/fifawc/preprocess_data"
-                else:
-                    raise ValueError(
-                        "preprocessed_dir is required for preprocess_method='SAR2RL' when no provider default exists."
-                    )
+                raise ValueError(
+                    "preprocessed_dir is required for preprocess_method='SAR2RL' and data_provider='robocup_2d'."
+                )
 
             sar_preprocessed_dir = Path(preprocessed_dir)
             if not sar_preprocessed_dir.exists() or not sar_preprocessed_dir.is_dir():
