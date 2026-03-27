@@ -1,3 +1,4 @@
+```python
 # Target data provider [Metrica,Robocup 2D simulation,Statsbomb,Wyscout,Opta data,DataFactory,sportec]
 
 """
@@ -14,6 +15,7 @@ soccertrack:csv and xml
 """
 
 import os
+from pathlib import Path
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -343,15 +345,41 @@ class Soccer_SAR_data:
                                     cleaning_dir,
                                     preprocessed_dir,
                                 )
-                            )
+                                )
                         # Collect results as they are completed
                         for future in tqdm(as_completed(futures), total=len(futures)):
                             future.result()
                 else:
                     raise ValueError(f"Preprocessing method not supported for {self.data_provider}")
+        elif self.preprocess_method == "SAR2RL":
+            if self.data_provider != "robocup_2d":
+                raise ValueError(
+                    "SAR2RL preprocessing is only supported for data_provider='robocup_2d'."
+                )
+
+            if preprocessed_dir is None:
+                raise ValueError(
+                    "preprocessed_dir is required for preprocess_method='SAR2RL' and data_provider='robocup_2d'."
+                )
+
+            sar_preprocessed_dir = Path(preprocessed_dir)
+            if not sar_preprocessed_dir.exists() or not sar_preprocessed_dir.is_dir():
+                raise ValueError(
+                    f"SAR2RL input directory not found: {sar_preprocessed_dir}. "
+                    "Run SAR preprocessing first or pass a valid preprocessed_dir."
+                )
+
+            output_dir = sar_preprocessed_dir / "rl_dataset"
+            print("Starting SAR-to-RL dataset conversion...")
+            from .soccer_sar_to_rl_dataset import build_rl_datasets_from_sar_events
+
+            build_rl_datasets_from_sar_events(
+                sar_preprocessed_dir=sar_preprocessed_dir,
+                output_dir=output_dir,
+            )
         else:
             raise ValueError(
-                "Preprocessing method is not defined. Please set preprocess_method to 'SAR' or other valid methods."
+                "Preprocessing method is not defined. Please set preprocess_method to 'SAR' or 'SAR2RL'."
             )
 
         print("Data preprocessing completed successfully!")
