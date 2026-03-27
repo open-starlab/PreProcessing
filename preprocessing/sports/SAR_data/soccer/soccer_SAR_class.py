@@ -1,5 +1,3 @@
-Full current contents of `[soccer_SAR_class.py](/Users/akshatgarg/Desktop/PreProcessing/preprocessing/sports/SAR_data/soccer/soccer_SAR_class.py)`:
-
 ```python
 # Target data provider [Metrica,Robocup 2D simulation,Statsbomb,Wyscout,Opta data,DataFactory,sportec]
 
