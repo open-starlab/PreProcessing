@@ -9,6 +9,7 @@ You can find detailed documentation on supported data providers [here](https://o
 
 - DataStadium
 - Statsbomb with Skillcorner Tracking Data
+- RoboCup2D (SAR2RL only)
 
 ## Supported Preprocessing Methods
 For information on supported preprocessing methods, visit [this documentation](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/SAR_data/Data_Format/Soccer/index.html). The available preprocessing methods are:
@@ -26,6 +27,10 @@ Here are some examples of how to download and preprocess data:
 - **StatsBomb and SkillCorner Data:**
   - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/SAR_data/Example/Soccer/Example_2/contents.html)
   - [Example Config File](https://github.com/open-starlab/PreProcessing/blob/master/example/config/statsbomb_skillcorner/preprocessing_statsbomb_skillcorner2024.json)
+
+- **RoboCup2D Data (SAR2RL):**
+  - [Read the Docs Example](https://openstarlab.readthedocs.io/en/latest/Pre_Processing/Sports/SAR_data/Data_Format/Soccer/index.html)
+  - [Example Action Map File](https://github.com/open-starlab/PreProcessing/blob/master/example/config/rl/action_map_dqn_qmix.json)
 
 ## SAR-to-RL Dataset Conversion (DQN / QMIX)
 This section describes a SAR-to-RL dataset conversion step that formats SAR outputs (`events.jsonl`) into tensors used by
