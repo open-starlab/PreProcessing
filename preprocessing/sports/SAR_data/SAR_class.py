@@ -26,7 +26,6 @@ class SAR_data:
             # routed into Soccer_SAR_data, which then invokes the canonical
             # soccer/SAR2RL preprocessing implementation.
             from .soccer.soccer_SAR_class import Soccer_SAR_data
-
             return Soccer_SAR_data(data_provider, state_def, *args, **kwargs)
 
         else:
