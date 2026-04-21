@@ -20,12 +20,14 @@ class SAR_data:
                 raise NotImplementedError(
                     "RoboCup 2D SAR data is only supported for preprocess_method='SAR2RL'."
                 )
+
             # This keeps the public API path:
             # SAR_data(..., data_provider='robocup_2d', preprocess_method='SAR2RL')
             # routed into Soccer_SAR_data, which then invokes the canonical
             # soccer/SAR2RL preprocessing implementation.
             from .soccer.soccer_SAR_class import Soccer_SAR_data
             return Soccer_SAR_data(data_provider, state_def, *args, **kwargs)
+
         else:
             raise ValueError(
                 f"Unsupported data provider '{data_provider}' or state definition '{state_def}'. "
