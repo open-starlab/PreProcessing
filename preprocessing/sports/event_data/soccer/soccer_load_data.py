@@ -932,7 +932,7 @@ def calculate_velocity_and_max_timestamp(data):
 
     return max_velocity_timestamp, max_velocity
 
-def load_wyscout(event_path: str, matches_path: str = None, count_penalty_as_goal: bool = False) -> pd.DataFrame:
+def load_wyscout(event_path: str, matches_path: str = None, count_set_piece_shots_as_goal: bool = False) -> pd.DataFrame:
     """
     Load and process Wyscout event data from a JSON file and optionally match data from another JSON file.
     
@@ -942,7 +942,7 @@ def load_wyscout(event_path: str, matches_path: str = None, count_penalty_as_goa
     Args:
         event_path (str): Path to the event JSON file.
         matches_path (str, optional): Path to the matches JSON file. Default is None.
-        count_penalty_as_goal (bool, optional): Whether to count penalty kicks as goals. Default is False.
+        count_set_piece_shots_as_goal (bool, optional): Whether to count set piece as goals. Default is False.
     Returns:
         pd.DataFrame: DataFrame containing processed event data.
 
@@ -979,7 +979,7 @@ def load_wyscout(event_path: str, matches_path: str = None, count_penalty_as_goa
             if id_i['id']==1801:
                 accurate=True
                 break
-        if count_penalty_as_goal == True and data.get('subEventName', None) == "Penalty":
+        if count_set_piece_shots_as_goal == True and data.get('subEventName', None) in ["Penalty","Free kick shot"]:
             tag=data.get('tags', None)
             for id_i in tag:
                 if id_i["id"]==102:
