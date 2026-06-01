@@ -932,7 +932,7 @@ def calculate_velocity_and_max_timestamp(data):
 
     return max_velocity_timestamp, max_velocity
 
-def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
+def load_wyscout(event_path: str, matches_path: str = None, count_penalty_as_goal: bool = False) -> pd.DataFrame:
     """
     Load and process Wyscout event data from a JSON file and optionally match data from another JSON file.
     
@@ -942,7 +942,7 @@ def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
     Args:
         event_path (str): Path to the event JSON file.
         matches_path (str, optional): Path to the matches JSON file. Default is None.
-
+        count_penalty_as_goal (bool, optional): Whether to count penalty kicks as goals. Default is False.
     Returns:
         pd.DataFrame: DataFrame containing processed event data.
 
@@ -958,10 +958,10 @@ def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
         #check if matches_path exist
         if not os.path.exists(matches_path):
             matches_dict={}
+            matches_path=None
         else:
             with open(matches_path) as f:
                 matches = json.load(f)
-                matches_path=None
             matches_dict={}
             for i in range(len(matches)):
                 matches_dict[matches[i]["wyId"]]={matches[i]["teamsData"][list(matches[i]["teamsData"].keys())[0]]['teamId']:matches[i]["teamsData"][list(matches[i]["teamsData"].keys())[0]]['side'],
@@ -979,7 +979,18 @@ def load_wyscout(event_path: str, matches_path: str = None) -> pd.DataFrame:
             if id_i['id']==1801:
                 accurate=True
                 break
-        if event_type == "Shot":
+        if count_penalty_as_goal == True and data.get('subEventName', None) == "Penalty":
+            tag=data.get('tags', None)
+            for id_i in tag:
+                if id_i["id"]==102:
+                    event_type_2="Own_goal"
+                    break
+                elif id_i["id"]==101:
+                    event_type_2="Goal"
+                    break
+                else:
+                    event_type_2 = data.get('subEventName', None)
+        elif event_type == "Shot":
             tag=data.get('tags', None)
             for id_i in tag:
                 if id_i["id"]==102:
