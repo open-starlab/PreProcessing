@@ -34,7 +34,7 @@ class Soccer_event_data:
                  tracking_path=None,meta_data=None,statsbomb_api_args=[],
                  statsbomb_match_id=None,skillcorner_match_id=None,max_workers=1,match_id_df=None,
                  statsbomb_event_dir=None, skillcorner_tracking_dir=None, skillcorner_match_dir=None,
-                 preprocess_method=None,sb360_path=None,wyscout_matches_path=None, count_penalty_as_goal = False,
+                 preprocess_method=None,sb360_path=None,wyscout_matches_path=None, count_set_piece_shots_as_goal = False,
                  st_track_path=None, st_meta_path=None,verbose=False,
                  preprocess_tracking=False, soccertrackv2=False):
         self.data_provider = data_provider
@@ -61,7 +61,7 @@ class Soccer_event_data:
         self.verbose = verbose
         self.call_preprocess = False
         self.soccertrackv2 = soccertrackv2
-        self.count_penalty_as_goal = count_penalty_as_goal
+        self.count_set_piece_shots_as_goal = count_set_piece_shots_as_goal
 
     def load_data_single_file(self):
         #based on the data provider, load the dataloading function from load_data.py (single file)
@@ -86,7 +86,7 @@ class Soccer_event_data:
             if self.preprocess_method is not None and not self.call_preprocess:
                 df=soccer_tracking_data.statsbomb_skillcorner_event_data_preprocessing(df,process_event_coord=False)
         elif self.data_provider == 'wyscout':
-            df=soccer_load_data.load_wyscout(self.event_path,self.wyscout_matches_path,self.count_penalty_as_goal)
+            df=soccer_load_data.load_wyscout(self.event_path,self.wyscout_matches_path,self.count_set_piece_shots_as_goal)
         elif self.data_provider == 'datastadium':
             df=soccer_load_data.load_datastadium(self.event_path,self.tracking_home_path,self.tracking_away_path)
         elif self.data_provider == 'bepro':
