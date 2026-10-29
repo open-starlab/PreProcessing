@@ -236,7 +236,7 @@ def convert_pff2metrica(event_df, period_2_info=(None, None)):
 
 def convert_tracking_data_fixed_ids(tracking_df):
     """
-    Convert raw tracking data into fixed-format home and away tracking DataFrames with consistent player IDs.
+    Convert raw tracking data into home and away tracking DataFrames with 17 fixed player slots per team.
 
     Parameters
     ----------
@@ -253,6 +253,8 @@ def convert_tracking_data_fixed_ids(tracking_df):
     away_tracking : pd.DataFrame
         Away team tracking data with player coordinates, ball position, and time.
     """
+    max_players = 17
+
     # Convert string representation to lists/dicts
     for col in ['homePlayers', 'awayPlayers', 'balls']:
         tracking_df[col] = tracking_df[col].apply(
@@ -265,16 +267,16 @@ def convert_tracking_data_fixed_ids(tracking_df):
     home_tracking.columns = ['Period', 'Time [s]']
     away_tracking.columns = ['Period', 'Time [s]']
 
-    # Extract unique jerseys and map to fixed IDs 1-16
+    # Extract unique jerseys and map to fixed IDs 1-17
     all_home_jerseys = sorted({p['jerseyNum'] for lst in tracking_df['homePlayers'] for p in lst})
     all_away_jerseys = sorted({p['jerseyNum'] for lst in tracking_df['awayPlayers'] for p in lst})
-    home_jersey_to_id = {jersey: i+1 for i, jersey in enumerate(all_home_jerseys[:16])}
-    away_jersey_to_id = {jersey: i+1 for i, jersey in enumerate(all_away_jerseys[:16])}
+    home_jersey_to_id = {jersey: i+1 for i, jersey in enumerate(all_home_jerseys[:max_players])}
+    away_jersey_to_id = {jersey: i+1 for i, jersey in enumerate(all_away_jerseys[:max_players])}
 
-    # Helper to map players to fixed IDs 1-16
+    # Helper to map players to fixed IDs 1-17
     def map_players(players_col, jersey_to_id, prefix):
-        cols_x = [f'{prefix}_{i}_x' for i in range(1, 17)] 
-        cols_y = [f'{prefix}_{i}_y' for i in range(1, 17)]
+        cols_x = [f'{prefix}_{i}_x' for i in range(1, max_players + 1)]
+        cols_y = [f'{prefix}_{i}_y' for i in range(1, max_players + 1)]
         cols_list = []
         for col_x_i, col_y_i in zip(cols_x, cols_y):
             cols_list.append(col_x_i)
@@ -282,7 +284,7 @@ def convert_tracking_data_fixed_ids(tracking_df):
         cols = cols_list
         df = pd.DataFrame(index=players_col.index, columns=cols, dtype=float)
 
-        for i in range(16):
+        for i in range(max_players):
             x_col = f'{prefix}_{i+1}_x'
             y_col = f'{prefix}_{i+1}_y'
 
